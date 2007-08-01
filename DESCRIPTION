@@ -1,13 +1,17 @@
 Package: cellHTS2
-Version: 2.0.0
-Date: 5 June 2007
+Version: 2.0.1
+Date: 31 July 2007
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras <ligia@ebi.ac.uk>, Wolfgang Huber <huber@ebi.ac.uk>, Michael Boutros <m.boutros@dkfz.de>
 Maintainer: Ligia Bras <ligia@ebi.ac.uk>
-Depends: R (>= 2.6.0), prada (>= 1.9.4), RColorBrewer, Biobase (>= 1.11.12), genefilter (>= 1.11.2)
+Depends: R (>= 2.6.0), prada (>= 1.9.4), RColorBrewer, Biobase (>= 1.11.12), methods, genefilter (>= 1.11.2)
 Description: Analysis of cell-based RNA interference screens
 Reference: Michael Boutros and Ligia P. Bras L and Wolfgang Huber.
 	Analysis of cell-based RNAi screens. Genome Biology 7:7 R66 (2006).
 License: Artistic License 2.0
 URL: http://www.dkfz.de/signaling, http://www.ebi.ac.uk/huber
 biocViews: CellBasedAssays, Preprocessing, Visualization
+Collate: AllClasses.R  AllGeneric.R
+	 checkColumns.R  methods-cellHTS.R  
+         oneRowPerId.R  pos2i.R  readPlateData.R  
+         write.tabdel.R  zzz.R

@@ -1,0 +1,19 @@
+[Description]
+Screen: p38 screen
+Screentitle: Example data set for a two-way assay
+Version: 0.9
+Date: 07 Jul 2006
+Screentype: RNA interference
+Organism: Human
+Library: Dharmacon
+Assay: Luminescence-reporter assay
+Assaytype: homogenous
+Assaydescription:  Description goes here
+Web: webadress goes here
+License: 
+
+[Files]
+plateList: Platelist.txt
+annotation: GeneIDs.txt
+plateConf: Plateconf.txt
+screenLog: 

@@ -1,0 +1,16 @@
+[Description]
+Screen: Example data set for a dual-color screen
+Screentitle: RNAi screen
+Version: 0.9
+Date: Feb 2006
+
+Screentype: RNA interference
+Organism: Drosophila melanogaster
+Library: HFA
+Assay: Reporter 1 for growth and viability and Reporter 2 for pathway activity
+Assaydescription:  Cells were treated with dsRNAs in three 384-well plates
+
+[Files]
+plateList: Platelist.txt
+plateConf: Plateconf.txt
+screenLog: Screenlog.txt

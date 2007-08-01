@@ -1,0 +1,7 @@
+Filename	Plate	Replicate
+FT01-G01.txt	1	1
+FT01-G02.txt	1	2
+FT02-G01.txt	2	1
+FT02-G02.txt	2	2
+FT03-G01.txt	3	1
+FT03-G02.txt	3	2

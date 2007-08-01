@@ -1,0 +1,19 @@
+importFrom("methods", "show")
+
+exportClasses("cellHTS")
+
+export("oneRowPerId",
+       "readPlateData",
+       "write.tabdel")
+
+exportMethods("annotate",
+       "configure",
+       "description",
+       "scores",
+       "scores<-",  
+       "show",
+       "state",
+       "writeTab")
+
+
+
