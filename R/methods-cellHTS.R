@@ -226,7 +226,7 @@ setReplaceMethod("scores",
                  function(object, value) {
                      object@score <- value
                      validObject(object)
-                     object
+                     return(object)
                  })
 
 
@@ -240,7 +240,37 @@ setMethod("state", signature(object="cellHTS"),
              slot(object, "state")
           })
 
+setMethod("rawdata", signature(object="cellHTS"),
+          function(object){
+             slot(object, "xraw")
+})
 
+
+setReplaceMethod("rawdata",
+                 signature=signature(
+                   object="cellHTS",
+                   value="array"),
+                 function(object, value) {
+                     object@xraw <- value
+                     validObject(object)
+                     return(object)
+                 })
+
+setMethod("normdata", signature(object="cellHTS"),
+          function(object){
+             slot(object, "xnorm")
+})
+
+
+setReplaceMethod("normdata",
+                 signature=signature(
+                   object="cellHTS",
+                   value="array"),
+                 function(object, value) {
+                     object@xnorm <- value
+                     validObject(object)
+                     return(object)
+                 })
 
 
 ## Should we also define a method for subsetting the cellHTS object like in vsn package?
@@ -258,11 +288,3 @@ setMethod("state", signature(object="cellHTS"),
 #     return(x)
 #   })
 
-
-
-# Should we add also similar features?
-# setMethod("coefficients", signature(object="vsn"),
-#           function(object) object@coefficients)
-# 
-# setMethod("exprs", signature(object="vsn"),
-#           function(object) object@hx)

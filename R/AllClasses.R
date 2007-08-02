@@ -46,6 +46,10 @@ validityCellHTS = function(object){
 
   if(length(dim(object@xnorm))!=4) return("'xnorm' must be a 4D array.")
  
+  if(length(dim(object@rowcol.effects))!=4) return("'rowcol.effects' must be a 4D array.")
+
+  if(length(dim(object@overall.effects))!=4) return("'overall.effects' must be a 4D array.")
+
   if(!equalOrZero(length(object@score), prod(dim(object@xraw)[1:2]))) return("'score' must be a vector of length 'prod(dim(xraw)[1:2])'.")
 
   if(prod(object@pdim)!=dim(object@xraw)[1]) return("'prod(pdim)' and 'dim(xraw)[1]' must match.")
@@ -55,9 +59,14 @@ validityCellHTS = function(object){
   if(!equalOrZero(length(object@wellAnno), prod(dim(object@xraw)[1:2]))) return("'length(wellAnno)' must be equal to 'prod(dim(xraw)[1:2])'.")
 
   if(any(dim(object@xraw)[1:3]!=dim(object@xnorm)[1:3]) && length(object@xnorm)!=0) return("Please check dimensions of 'xraw' and/or 'xnorm'.")
+  
+  if(any(dim(object@xraw)[1:3]!=dim(object@rowcol.effects)[1:3]) && length(object@rowcol.effects)!=0) return("Please check dimensions of 'rowcol.effects'.")
+
+  if(any(dim(object@xraw)[2:3]!=dim(object@overall.effects)[2:3]) && length(object@overall.effects)!=0) return("Please check dimension of 'overall.effects'.")
+
+  if(dim(object@overall.effects)[1]!=1) return("Please check dimension of 'overall.effects'.")
 
   if(length(object@intensityFiles)!=nrow(object@plateList)) return("'length(intensityFiles)' should match 'nrow(plateList)'.")
-
 
   if(object@state["configured"]) {
      if(length(object@plateConf)==0) return("If state['configured']==TRUE, 'plateConf' should not be empty!")
@@ -113,7 +122,10 @@ setClass("cellHTS",
     screenDesc = "character",
     wellAnno = "factor",
     geneAnno = "data.frame",
-    score = "numeric"),
+    score = "numeric",
+    rowcol.effects = "array",
+    overall.effects = "array"
+   ),
 
 prototype = list(
     name = "", 
@@ -130,5 +142,8 @@ prototype = list(
     screenDesc = "",
     wellAnno = factor(integer()),
     geneAnno = data.frame(),
-    score = numeric()),
+    score = numeric(),
+    rowcol.effects = array(dim=c(0,0,0,0)),
+    overall.effects = array(dim=c(1, 0,0,0))
+    ),
   validity = validityCellHTS)

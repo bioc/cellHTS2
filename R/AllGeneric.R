@@ -13,3 +13,14 @@ setGeneric("scores<-", def=function(object, value) standardGeneric("scores<-"))
 setGeneric("description", def=function(object) standardGeneric("description"))
 
 setGeneric("state", def=function(object) standardGeneric("state"))
+
+setGeneric("rawdata", def=function(object) standardGeneric("rawdata"))
+
+setGeneric("rawdata<-", def=function(object, value) standardGeneric("rawdata<-"))
+
+setGeneric("normdata", def=function(object) standardGeneric("normdata"))
+
+setGeneric("normdata<-", def=function(object, value) standardGeneric("normdata<-"))
+
+setGeneric("normalizePlates", def=function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) standardGeneric("normalizePlates"))
+

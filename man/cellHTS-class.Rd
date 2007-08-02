@@ -49,7 +49,9 @@ and \code{Flag}.}
  \item{\code{score}:}{a numeric vector containing the scored values for each well in
   every plate. Its length is to the product
   between the plateSize and the number of plates.}
-
+ \item{\code{rowcol.effects}:}{a 4D array of size plateSize x number of plates x
+    number of replicates x number of channels containing estimated row and column offsets.}
+ \item{\code{overall.effects}:}{a 4D array of size 1 x number of plates x number of replicates x number of channels containing estimated plate overall offsets.}
   }
 }
 
@@ -65,10 +67,19 @@ and \code{Flag}.}
        \code{signature(object = "cellHTS", value = "numeric")}: Access
        and replace the \code{score} slot of a \code{\linkS4class{cellHTS}} instance. 
        \code{scores} returns a numeric vector of length Number of wells per plate x Number of plates.}
+    \item{\code{rawdata(object), rawdata(object) <- value}:}{
+       \code{signature(object = "cellHTS", value = "array")}: Access
+       and replace the \code{xraw} slot of a \code{\linkS4class{cellHTS}} instance. 
+       \code{rawdata} returns a 4D array of dimension Number of wells per plate x Number of plates x Number of replicates x Number of channels.}
+    \item{\code{normdata(object), normdata(object) <- value}:}{
+       \code{signature(object = "cellHTS", value = "array")}: Access
+       and replace the \code{xnorm} slot of a \code{\linkS4class{cellHTS}} instance. 
+       \code{normdata} returns a 4D array of dimension Number of wells per plate x Number of plates x Number of replicates x Number of channels.}
     \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}} object using the \emph{screen annotation file}.}
     \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the \emph{screen configuration file}, the \emph{screen log file} and the \emph{screen description file}.} 
-    \item{\code{writeTab}}{Write the data from a \code{\linkS4class{cellHTS}} object to a tab-delimited file}
-}
+    \item{\code{writeTab}}{Write the data from a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
+\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
+  }
 }
 
 \author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
@@ -78,6 +89,11 @@ and \code{Flag}.}
   \code{\link[cellHTS2:annotate]{annotate}}
   \code{\link[cellHTS2:annotate]{configure}}
   \code{\link[cellHTS2:writeTab]{writeTab}}
+  \code{\link[cellHTS2:description]{description}}
+  \code{\link[cellHTS2:scores]{scores}}
+  \code{\link[cellHTS2:state]{state}}
+  \code{\link[cellHTS2:rawdata]{rawdata}}
+  \code{\link[cellHTS2:normalizePlates]{normalizePlates}}
 }
 
 \examples{

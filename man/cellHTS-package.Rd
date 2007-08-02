@@ -16,7 +16,8 @@
   \code{openVignette()}.
 
   Class-specific methods: \code{\link{annotate}}, \code{\link{configure}}, 
-  \code{\link{state}}, \code{\link{description}}, \code{\link{scores}}, \code{\link{scores<-}}.
+  \code{\link{state}}, \code{\link{description}}, \code{\link{scores}}, \code{\link{scores<-}},
+  \code{\link{rawdata}}, \code{\link{rawdata<-}}.
 
   Standard generic methods: \code{\link{show}}, \code{\link{initialize}}, 
      \code{\link{validObject}}.

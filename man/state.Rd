@@ -1,5 +1,6 @@
 \name{state}
 \alias{state}
+\alias{state,cellHTS-method}
 
 \title{Retrieve the state of a cellHTS object.}
 

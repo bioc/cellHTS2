@@ -1,5 +1,6 @@
 \name{description}
 \alias{description}
+\alias{description,cellHTS-method}
 
 \title{Retrieve description information from a cellHTS object.}
 
