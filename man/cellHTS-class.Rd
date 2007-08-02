@@ -78,7 +78,7 @@ and \code{Flag}.}
     \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}} object using the \emph{screen annotation file}.}
     \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the \emph{screen configuration file}, the \emph{screen log file} and the \emph{screen description file}.} 
     \item{\code{writeTab}}{Write the data from a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
-\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
+%\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
   }
 }
 
