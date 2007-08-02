@@ -19,6 +19,7 @@
 
 normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) {
 
+  if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
   ## Check the status of the 'cellHTS' object
   if(!object@state["configured"])
     stop("Please configure 'object' (using the function 'configure') before normalization.")

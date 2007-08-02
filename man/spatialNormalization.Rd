@@ -1,6 +1,6 @@
 \name{spatialNormalization}
 \alias{spatialNormalization}
-\alias{spatialNormalization,cellHTS-method}
+%\alias{spatialNormalization,cellHTS-method}
 \concept{Spatial normalization}
 
 \concept{normalization}

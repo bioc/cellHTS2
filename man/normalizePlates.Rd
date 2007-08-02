@@ -1,7 +1,7 @@
 \name{normalizePlates}
 \alias{normalizePlates}
 \alias{plate effects}
-\alias{normalizePlates,cellHTS-method}
+%\alias{normalizePlates,cellHTS-method}
 
 \concept{normalization}
 

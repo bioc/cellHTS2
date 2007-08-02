@@ -22,5 +22,5 @@ setGeneric("normdata", def=function(object) standardGeneric("normdata"))
 
 setGeneric("normdata<-", def=function(object, value) standardGeneric("normdata<-"))
 
-setGeneric("normalizePlates", def=function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) standardGeneric("normalizePlates"))
+#setGeneric("normalizePlates", def=function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) standardGeneric("normalizePlates"))
 

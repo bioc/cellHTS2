@@ -2,15 +2,17 @@ importFrom("methods", "show")
 
 exportClasses("cellHTS")
 
-export("oneRowPerId", "Bscore",  
+export("oneRowPerId", 
+       "Bscore",
+       "normalizePlates",
        "readPlateData",
        "spatialNormalization",
+       "plotSpatialEffects",
        "write.tabdel")
 
 exportMethods("annotate",
        "configure",
        "description",
-       "normalizePlates",
        "normdata",
        "normdata<-",
        "rawdata",

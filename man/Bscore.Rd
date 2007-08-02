@@ -1,6 +1,6 @@
 \name{Bscore}
 \alias{Bscore}
-\alias{Bscore,cellHTS-method}
+%\alias{Bscore,cellHTS-method}
 \concept{B score method}
 
 \concept{normalization}

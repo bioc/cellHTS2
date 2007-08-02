@@ -114,7 +114,8 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
 
 
 Bscore <- function(object, save.model=FALSE) {
-
+  if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
+## acts on slot 'xraw'
   normdata(object) <- rawdata(object)
   xdat <- normdata(object)
 
@@ -188,6 +189,10 @@ return(object)
 ## -------------------------------------------------------------
 
 spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.model=FALSE){
+   
+  if(!inherits(object, "cellHTS")) stop("'object' should be of 'cellHTS' class.")
+
+
   ## acts on slot 'xraw'
   normdata(object) <- rawdata(object)
 
