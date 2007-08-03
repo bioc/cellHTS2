@@ -10,7 +10,7 @@
 
 \title{Access and replace the raw or normalized data from a cellHTS object.}
 \description{
-These generic functions accesses and replaces raw or normalized data stored in slot \code{xraw} or \code{xnorm} 
+These generic functions access and replace raw or normalized data stored in slot \code{xraw} or \code{xnorm} 
 of an object of \code{\linkS4class{cellHTS}} class.
 }
 \usage{

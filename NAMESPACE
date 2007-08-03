@@ -4,23 +4,30 @@ exportClasses("cellHTS")
 
 export("oneRowPerId", 
        "Bscore",
+       "getReplicatesMatrix",
        "normalizePlates",
+       "normalizePlatesAgain",
        "readPlateData",
        "spatialNormalization",
+       "summarizeChannels",
+       "summarizeReplicates",
        "plotSpatialEffects",
        "write.tabdel")
 
 exportMethods("annotate",
        "configure",
        "description",
+       "geneAnno",
        "normdata",
        "normdata<-",
+       "plateEffects",
        "rawdata",
        "rawdata<-",
        "scores",
        "scores<-",  
        "show",
        "state",
+       "wellAnno",
        "writeTab")
 
 

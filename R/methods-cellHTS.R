@@ -22,13 +22,13 @@ checkDots = function(...) {
 
 setMethod("show", signature("cellHTS"),
   function(object) {
-  d=dim(object@xraw)
+  d=dim(rawdata(object))
   bt=object@batch
   if(length(bt)==0) bt=0 else bt=max(bt) 
   cat(class(object), sprintf("object of name '%s'.\n", object@name))
   cat(sprintf("%d plates with %d wells, %d replicates, %d channel%s. \nExperiment conducted in %d batch%s. State:\n",
               d[2], d[1], d[3], d[4], ifelse(d[4]>1, "s", ""), bt, ifelse(bt>1, "es", "")))
-  print(object@state)
+  print(state(object))
   })
 
 
@@ -56,7 +56,7 @@ function(object, geneIDFile, path=dirname(geneIDFile), ...) {
   ## Some checkings for dimension of "Plate" and "Well"
   ## expect prod(x@pdim) * x@nrPlate rows
   nrWpP   = prod(object@pdim)
-  nrPlate = dim(object@xraw)[2]
+  nrPlate = dim(rawdata(object))[2]
 
   if (!((nrow(geneIDs)==nrWpP*nrPlate) && all(pos2i(geneIDs$Well, object@pdim)==rep(1:nrWpP, times=nrPlate)) &&
        all(geneIDs$Plate == rep(1:nrPlate, each=nrWpP))))
@@ -133,8 +133,8 @@ if (!missing(path))
   ## expect prod(x@pdim) * x@nrBatch rows
   nrWpP   = prod(object@pdim)
   nrBatch = max(object@batch)
-  nrPlate = dim(object@xraw)[2]
-  stopifnot(nrWpP==dim(object@xraw)[1])
+  nrPlate = dim(rawdata(object))[2]
+  stopifnot(nrWpP==dim(rawdata(object))[1])
   
   if(!((nrow(conf)==nrWpP*nrBatch) && all(conf$Position==rep(1:nrWpP, nrBatch)) &&
        all(conf$Batch==rep(1:nrBatch, each=nrWpP))))
@@ -152,13 +152,13 @@ if (!missing(path))
   ## Process the configuration file into wellAnno slot
   ## and set all 'empty' wells to NA in object
   conf$Content = tolower(conf$Content)  ## ignore case!
-  wellAnno = factor(rep(NA, nrWpP*nrPlate), levels=unique(conf$Content))
+  wAnno = factor(rep(NA, nrWpP*nrPlate), levels=unique(conf$Content))
   for(p in seq(along=object@batch)) {
     wa = conf$Content[ conf$Batch==object@batch[p] ]
-    wellAnno[(1:nrWpP)+nrWpP*(p-1)] = wa
-    object@xraw[ wa=="empty", p,,] = NA
+    wAnno[(1:nrWpP)+nrWpP*(p-1)] = wa
+    rawdata(object)[ wa=="empty", p,,] <- NA
   }
-  object@wellAnno=wellAnno
+  object@wellAnno=wAnno
 
   ## Process screenlog
   if (!is.null(slog)) {
@@ -183,7 +183,7 @@ if (!missing(path))
     ich  = object@plateList$Channel[mt]
     ipos = pos2i(slog$Well, object@pdim)
     stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))
-    object@xraw[cbind(ipos, ipl, irep, ich)] = NA 
+    rawdata(object)[cbind(ipos, ipl, irep, ich)] = NA 
   } 
 
   object@state["configured"] = TRUE
@@ -204,9 +204,9 @@ setMethod("writeTab", signature("cellHTS"),
     return(m)
   }
 
-   out = cbind(object@geneAnno, toMatrix(object@xraw, "R"))
-   if(object@state["normalized"])		    
-     out = cbind(out, toMatrix(object@xnorm, "N")) 
+   out = cbind(geneAnno(object), toMatrix(rawdata(object), "R"))
+   if(state(object)["normalized"])		    
+     out = cbind(out, toMatrix(normdata(object), "N")) 
   
   write.table(out, file=file, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
   return(file)
@@ -273,8 +273,28 @@ setReplaceMethod("normdata",
                  })
 
 
+setMethod("plateEffects", signature(object="cellHTS"),
+          function(object){
+             list(rowcol=slot(object, "rowcol.effects"),
+                 overall = slot(object, "overall.effects")) 
+})
+
+
+setMethod("wellAnno", signature(object="cellHTS"),
+          function(object){
+             slot(object, "wellAnno")
+})
+
+
+setMethod("geneAnno", signature(object="cellHTS"),
+          function(object){
+             slot(object, "geneAnno")
+})
+
+
+
 ## Should we also define a method for subsetting the cellHTS object like in vsn package?
-# setMethod("[", "cellHTS",
+# setMethod("[", "vsn",
 #   function(x, i, j, ..., drop=FALSE) {
 #     stopifnot(missing(j), length(list(...))==0, !drop)
 # 

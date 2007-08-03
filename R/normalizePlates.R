@@ -1,5 +1,12 @@
-## Per-plate normalization 
+## ----------------------------------------------------------------------------
+## Functions for data normalization and summarization
+## ----------------------------------------------------------------------------
+
+## =============================================================================
+## 	 	------- Per-plate normalization of raw data ---------
+## Uses the contents of slot 'xraw'
 ## modified by Ligia Bras, AUG 2007
+## 
 ## 
 ## object - cellHTS instance
 ## scale - argument to define whether the data are in "additive" or "multiplicative" scale
@@ -15,13 +22,13 @@
 ##   1. Log transformation (if asked)
 ##   2. Plate adjustment using the chosen method
 ##   3. Variance adjustment 
-
+## =============================================================================
 
 normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) {
 
   if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
   ## Check the status of the 'cellHTS' object
-  if(!object@state["configured"])
+  if(!state(object)["configured"])
     stop("Please configure 'object' (using the function 'configure') before normalization.")
 
   ## Check the conformity between the scale of the data and the chosen preprocessing
@@ -83,3 +90,56 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
   return(object)
 }
  
+
+## =============================================================================
+## 		-------- Channel summarization  -------
+## Function that combines plate-corrected intensities from dual-channel screens.
+## Modified by LPB, AUG 2007
+## =============================================================================
+summarizeChannels = function(object,
+    fun = function(r1, r2, thresh) ifelse(r1>thresh, r2/r1, as.numeric(NA)),...) {
+    #funargs = list(thresh=quantile(r1, probs=0.1, na.rm=TRUE)),
+
+  if(!state(object)["normalized"])
+    stop("Please normalize the data in each channel in a plate-by-plate basis using 'normalizePlates').")
+
+  if(dim(normdata(object))[4] != 2)
+    stop("Currently this function is implemented only for dual-channel data.")
+
+  ## The argument 'fun' allows using different normalizations, and also to define
+  ## the numerator/denominator for the ratio (i.e. R1/R2 or R2/R1)
+  normdata(object) <- array(
+     do.call("fun", list(r1=normdata(object)[,,,1], r2=normdata(object)[,,,2])),
+#append(list(r1=object@xnorm[,,,1], r2=object@xnorm[,,,2]), funargs)),
+            dim=c(dim(normdata(object))[1:3], 1))
+  return(object)
+}
+
+
+
+## =============================================================================
+##            ----- Per-plate normalization of xnorm data -----
+## Per-plate normalization after channels summarization
+## Ligia Bras, AUG 2007
+## This function acts on xnorm slot, and calls normalizePlates.
+## =============================================================================
+
+normalizePlatesAgain = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) {
+
+  if(!state(object)["normalized"])
+    stop("Only raw data is availabe! This function should be called as a further normalization step for already pre-processed data! Please call 'normalizePlates' and 'summarizeChannels' first.")
+
+oldraw <- rawdata(object)
+# replace xraw by xnorm
+rawdata(object)<-normdata(object)
+
+# call 'normalizePlates' on object with 'xraw' replcaed by 'xnorm'
+object <- normalizePlates(object, scale, log, method, varianceAdjust, ...)
+
+# restore original raw data in 'xraw' slot
+rawdata(object) <- oldraw
+validObject(object)
+return(object)
+}
+
+##================================================================================

@@ -15,11 +15,11 @@ adjustVariance <- function(object, type="byBatch") {
 #  if(!(type %in% c("byPlate", "byBatch", "byExperiment"))) stop(sprintf("Undefined value %s for 'type'.", type))
 
   ## use the array stored in slot 'xnorm'
-   nrWpP <- dim(object@xnorm)[1]
-   nrPlates <- dim(object@xnorm)[2]
-   nrReplicates <- dim(object@xnorm)[3]
+   nrWpP <- dim(normdata(object))[1]
+   nrPlates <- dim(normdata(object))[2]
+   nrReplicates <- dim(normdata(object))[3]
 
-   samps <- (object@wellAnno=="sample")
+   samps <- (wellAnno(object)=="sample")
 
 
   if(type=="byBatch") {

@@ -1,5 +1,6 @@
 \name{normalizePlates}
 \alias{normalizePlates}
+\alias{normalizePlatesAgain}
 \alias{plate effects}
 %\alias{normalizePlates,cellHTS-method}
 
@@ -7,12 +8,13 @@
 
 \title{Per-plate data transformation, normalization and variance adjustment}
 \description{
-  Plate-by-plate normalization of the raw data stored in slot \code{xraw} of a \code{\linkS4class{cellHTS}} object.
+  Plate-by-plate normalization of the raw data stored in slot \code{xraw} or \code{xnorm} of a \code{\linkS4class{cellHTS}} object.
   Normalization is performed separately for each plate, replicate and channel.
   \code{Log2} data transformation and variance adjustment can be performed.
 }
 \usage{
 normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,\ldots)
+normalizePlatesAgain(object,  scale="additive", log=FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,\ldots)
 }
 \arguments{
   \item{object}{a \code{\linkS4class{cellHTS}} object that has already been configured. See details.}
@@ -29,20 +31,24 @@ normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceA
 }
 
 \details{
-The normalization is performed in a plate-by-plate fashion, following this workflow:
+
+Function \code{normalizePlates} uses the content of \code{object@xraw}, while function \code{normalizePlatesAgain} uses the content of \code{object@xnorm}. 
+For dual-channel data, the user should first correct for plate effects using \code{normalizePlates} function, then combine the two channels using function \code{summarizeChannels}, and finally, if necessary, normalize the summarized intensities calling \code{normalizePlatesAgain}. 
+
+In both functions, the normalization is performed in a plate-by-plate fashion, following this workflow:
 \enumerate{
-   \item Log transformation of the raw data (optional, if data are in multiplicative scale);
+   \item Log transformation of the data (optional, if data are in multiplicative scale);
    \item Per-plate normalization using the chosen method;
    \item Variance adjustment of the plate intensity corrected data.
 }
 
-The argument \code{scale} defines the scale of the raw data. If data are in multiplicative scale 
+The argument \code{scale} defines the scale of the data. If data are in multiplicative scale 
 (\code{scale="multiplicative"}), data can be \code{\link{log2}} transformed by setting \code{log=TRUE}. This changes the scale of the data to "additive".
 
 In the next step of preprocessing, intensities are corrected in a plate-by-plate basis using the chosen normalization method:
 
  \itemize{
-    \item If \code{method="median"} (median scaling), plates effects are corrected  by dividing each measurement by the median value across wells annotated as \code{sample} in \code{x@wellAnno}, for each plate and replicate.
+    \item If \code{method="median"} (median scaling), plates effects are corrected  by dividing each measurement by the median value across wells annotated as \code{sample} in \code{object@wellAnno}, for each plate and replicate.
     \item If \code{method="mean"} (mean scaling), the average in the \code{sample} wells is consider instead.
     \item If \code{method="shorth"} (scaling by the midpoint of the shorth), for each plate and replicate, the midpoint of the \code{\link[genefilter:shorth]{shorth}} of the distribution of values in the wells annotated 
            as \code{sample} is calculated. Then, every measurement is divided by this value.
@@ -73,7 +79,7 @@ In the final preprocessing step, variance of plate-corrected intensities can be 
   The arguments \code{posControls} and \code{negControls} are required for applying the normalization methods based on the control measurements (that is, when \code{method="POC"}, or \code{method="NPI"}, or \code{method="negatives"}). 
   \code{posControls} and \code{negControls} should be given as a vector of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file (and stored in \code{object@wellAnno}). The length of these vectors should be equal to the number of reporters used in the screen (\code{dim(object@xraw)[4]}) or to \code{dim(object@xnorm)[4]}, in case \code{object} contains multi-channel data that has been normalized by combining the values from two or more channels.
   By default, if \code{posControls} is not given, \emph{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negControls} is missing, by default \emph{neg} will be considered as the name used to annotated the negative controls. 
-  The content of \code{posControls} and \code{negControls} will be passed to \code{\link[base:regexpr]{regexpr}} for pattern matching within the well annotation given in \code{x@wellAnno} (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). The arguments \code{posControls} and \code{negControls} are particularly useful in
+  The content of \code{posControls} and \code{negControls} will be passed to \code{\link[base:regexpr]{regexpr}} for pattern matching within the well annotation given in \code{object@wellAnno} (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). The arguments \code{posControls} and \code{negControls} are particularly useful in
 multi-channel data since the controls might be reporter-specific, or
 after normalizing multi-channel data. 
 }

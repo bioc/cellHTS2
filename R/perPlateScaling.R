@@ -2,7 +2,6 @@
 ## perPlateScaling
 ## controlsBasedNormalization
 
-
 ## ===========================================================
 ## Auxiliary functions
 
@@ -18,7 +17,7 @@ POC = function(a, pos,...){
 NPI = function(a, pos, neg){
 (mean(a[pos], na.rm=TRUE) - a)/(mean(a[pos], na.rm=TRUE) - mean(a[neg], na.rm=TRUE))
 }
-
+## ===========================================================
 
 ## 		----	perPlateScaling ------
 ##
@@ -42,17 +41,17 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
 
   normdata(object) <- rawdata(object)
 
-  nrWpP <- dim(object@xraw)[1]
-  nrPlates <- dim(object@xraw)[2]
-  nrReplicates <- dim(object@xraw)[3]
-  nrChannels <- dim(object@xraw)[4]
+  nrWpP <- dim(rawdata(object))[1]
+  nrPlates <- dim(rawdata(object))[2]
+  nrReplicates <- dim(rawdata(object))[3]
+  nrChannels <- dim(rawdata(object))[4]
 
   for(p in 1:nrPlates) {
-    wellAnno = as.character(object@wellAnno[(1:nrWpP)+nrWpP*(p-1)])
-    inds <- (wellAnno=="sample")
+    wAnno = as.character(wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)])
+    inds <- (wAnno=="sample")
     for(ch in 1:nrChannels){
         if(stats %in% "negatives"){
-          if (!(negControls[ch] %in% c(NA, ""))) inds = regexpr(negControls[ch], wellAnno, perl=TRUE)>0 else inds=FALSE
+          if (!(negControls[ch] %in% c(NA, ""))) inds = regexpr(negControls[ch], wAnno, perl=TRUE)>0 else inds=FALSE
           if((stats %in% c("negatives", "NPI")) & !sum(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
         }
 
@@ -76,19 +75,20 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
 
   normdata(object) <- rawdata(object)
 
-  nrWpP <- dim(object@xraw)[1]
-  nrPlates <- dim(object@xraw)[2]
-  nrReplicates <- dim(object@xraw)[3]
-  nrChannels <- dim(object@xraw)[4]
+  d <- dim(rawdata(object))
+  nrWpP <- d[1]
+  nrPlates <- d[2]
+  nrReplicates <- d[3]
+  nrChannels <- d[4]
 
   fun <- get(method, mode="function")
 
   for(p in 1:nrPlates) {
-    wellAnno <- as.character(object@wellAnno[(1:nrWpP)+nrWpP*(p-1)])
+    wAnno <- as.character(wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)])
 
       for(ch in 1:nrChannels) {
-        if (!(posControls[ch] %in% c(NA, ""))) pos <- regexpr(posControls[ch], wellAnno, perl=TRUE)>0  else pos <- FALSE
-        if (!(negControls[ch] %in% c(NA, ""))) neg <- regexpr(negControls[ch], wellAnno, perl=TRUE)>0  else neg <- FALSE
+        if (!(posControls[ch] %in% c(NA, ""))) pos <- regexpr(posControls[ch], wAnno, perl=TRUE)>0  else pos <- FALSE
+        if (!(negControls[ch] %in% c(NA, ""))) neg <- regexpr(negControls[ch], wAnno, perl=TRUE)>0  else neg <- FALSE
         if (method == "POC") {
            if (!sum(pos)) stop(sprintf("No positive controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch)) 
         } else {
@@ -124,14 +124,16 @@ Bscore <- function(object, save.model=FALSE) {
      object@overall.effects <- array(as.numeric(NA), dim=c(1, dim(xdat)[2:4]))
   }
 
-  nrWpP <- dim(object@xraw)[1]
-  nrPlates <- dim(object@xraw)[2]
-  nrReplicates <- dim(object@xraw)[3]
-  nrChannels <- dim(object@xraw)[4]
+
+  d <- dim(rawdata(object))
+  nrWpP <- d[1]
+  nrPlates <- d[2]
+  nrReplicates <- d[3]
+  nrChannels <- d[4]
 
   for(p in 1:nrPlates) {
     # use only sample wells for the fit:
-    samples = (object@wellAnno[(1:nrWpP)+nrWpP*(p-1)]=="sample")
+    samples = (wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)]=="sample")
 
     for(r in 1:nrReplicates)
       for(ch in 1:nrChannels) {
@@ -198,10 +200,12 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
 
   if (model=="locfit") require("locfit")
 
-  nrWpP <- dim(object@xraw)[1]
-  nrPlates <- dim(object@xraw)[2]
-  nrReplicates <- dim(object@xraw)[3]
-  nrChannels <- dim(object@xraw)[4]
+
+  d <- dim(rawdata(object))
+  nrWpP <- d[1]
+  nrPlates <- d[2]
+  nrReplicates <- d[3]
+  nrChannels <- d[4]
 
   rowcol.effects <- array(as.numeric(NA), dim=dim(rawdata(object)))
   position <- 1:prod(object@pdim)
@@ -215,7 +219,7 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
 
   for(p in 1:nrPlates) {
     # use only sample wells for the fit:
-    samples <- (object@wellAnno[(1:nrWpP)+nrWpP*(p-1)]=="sample")
+    samples <- (wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)]=="sample")
 
     for(r in 1:nrReplicates)
       for(ch in 1:nrChannels){

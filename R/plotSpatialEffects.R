@@ -1,4 +1,4 @@
-## Ligia Brás (September 2006)
+## Ligia Bras (September 2006)
 
 ## Function that shows the row and column effects (calculated by the Bscore method or the spatial normalization methods) for a given range of plates ('plates'), and in a given channel ('channel').
 ## The spatial offsets within the selected channel 'channel' are transformed by subtracting their minimum value, and dividing by their amplitude (max - min values), in order to confine them to the range [-1,1].
@@ -8,19 +8,22 @@ plotSpatialEffects = function(object, channel=1, plates) {
 
   if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
 
+
+  rowcol <- plateEffects(object)[["rowcol"]]
+
  ## Check if rowcol.effects are not empty in the 'cellHTS' object
-  if(all(object@rowcol.effects==0))
+  if(length(rowcol)==0)
     stop("No information in slot 'rowcol.effects'! Please normalize 'object' using 'normalizePlates' with parameter 'method' = 'Bscore' or 'loess' or 'locfit', and 'save.model=TRUE'.")
 
-  if(channel > dim(object@rowcol.effects)[4])
+  if(channel > dim(rowcol)[4])
     stop("Choose a correct channel number using 'channel'!")  
 
   if (missing(plates)) {
-    plates = 1:dim(object@xraw)[2]
+    plates = 1:dim(rawdata(object))[2]
   } else  {
-    if(!is(plates, "vector") | !all(plates %in% 1:dim(object@xraw)[2]))
+    if(!is(plates, "vector") | !all(plates %in% 1:dim(rawdata(object))[2]))
      stop(sprintf("\n 'plates' should be a vector of integers between 1 and %s \n
-     giving the ID number of the plates to display", dim(object@xraw)[2]))
+     giving the ID number of the plates to display", dim(rawdata(object))[2]))
   }
 
   myMax = function(x) {
@@ -35,11 +38,11 @@ plotSpatialEffects = function(object, channel=1, plates) {
   nPlates = length(plates)
 
   pushViewport(viewport(layout = grid.layout(dim(object@xraw)[3], nPlates))) 
-  selx = object@rowcol.effects[,,,channel]
+  selx = rowcol[,,,channel]
   # set range of sel to [-1,1]
   selx = (selx-myMin(selx))/(myMax(selx)-myMin(selx))
 
-  for (r in 1:dim(object@xraw)[3]) 
+  for (r in 1:dim(rawdata(object))[3]) 
     for (p in 1:nPlates) {
       wp = plates[p]
   #xrange = range(aux, na.rm=TRUE) 
