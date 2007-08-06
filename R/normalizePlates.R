@@ -97,7 +97,7 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
 ## Modified by LPB, AUG 2007
 ## =============================================================================
 summarizeChannels = function(object,
-    fun = function(r1, r2, thresh) ifelse(r1>thresh, r2/r1, as.numeric(NA)),...) {
+    fun = function(r1, r2, thresh) ifelse(r1>thresh, r2/r1, as.numeric(NA))) {
     #funargs = list(thresh=quantile(r1, probs=0.1, na.rm=TRUE)),
 
   if(!state(object)["normalized"])
