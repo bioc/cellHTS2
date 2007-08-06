@@ -53,7 +53,7 @@ summarizeReplicates=function(object, zscore="+", summary="min") {
 
 
   ## 2) Summarize between replicates:
-  mx <- getReplicatesMatrix(normdata(x), channel=1, na.rm=FALSE)
+  mx <- getReplicatesMatrix(normdata(object), channel=1, na.rm=FALSE)
   scores(object) <- switch(summary,
     mean = rowMeans(mx, na.rm=TRUE),
     max  = apply(mx, 1, myMax),
