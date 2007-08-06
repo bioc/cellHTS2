@@ -29,7 +29,7 @@
   Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}}, 
   \code{\link{readPlateData}}, \code{\link{normalizePlates}}, \code{\link{normalizePlatesAgain}}
 \code{\link{Bscore}}, code{\link{spatialNormalization}}, code{\link{plotSpatialEffects}}, \code{\link{summarizeChannels}},
-\code{\link{summarizeReplicates}}, \code{\link{getReplicatesMatrix}}.  
+\code{\link{summarizeReplicates}}, \code{\link{getReplicatesMatrix}}, \code{\link{imageScreen}}, \code{\link{ROC}}.  
 
   Full listing of documented articles is available in HTML view by
   typing \code{help.start()} and selecting \code{cellHTS} package from the

@@ -79,6 +79,10 @@ and \code{Flag}.}
     \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the \emph{screen configuration file}, the \emph{screen log file} and the \emph{screen description file}.} 
     \item{\code{writeTab}}{Write the data from a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
 %\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
+\item{\code{ROC}}{Construct an object of S4 class \code{\linkS4class{ROC}},
+  which represents a receiver-operator-characteristic curve,
+  from the data of the annotated positive and negative controls in a
+  scored \code{\linkS4class{cellHTS}} object.}
   }
 }
 
@@ -94,13 +98,14 @@ and \code{Flag}.}
   \code{\link[cellHTS2:state]{state}}
   \code{\link[cellHTS2:rawdata]{rawdata}}
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}}
+  \code{\link[cellHTS2:ROC]{ROC}}
+
 }
 
 \examples{
     showClass("cellHTS")
     showMethods(class="cellHTS")
   
-    datadir <- system.file("KcViabSmall", package = "cellHTS")
     data("KcViabSmall")
     show(KcViabSmall)
     obj <- new("cellHTS")

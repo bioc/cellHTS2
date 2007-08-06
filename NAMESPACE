@@ -1,10 +1,11 @@
 importFrom("methods", "show")
 
-exportClasses("cellHTS")
+exportClasses("cellHTS", "ROC")
 
 export("oneRowPerId", 
        "Bscore",
        "getReplicatesMatrix",
+       "imageScreen",
        "normalizePlates",
        "normalizePlatesAgain",
        "readPlateData",
@@ -18,9 +19,11 @@ exportMethods("annotate",
        "configure",
        "description",
        "geneAnno",
+       "lines",
        "normdata",
        "normdata<-",
        "plateEffects",
+       "plot",
        "rawdata",
        "rawdata<-",
        "scores",

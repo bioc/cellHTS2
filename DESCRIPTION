@@ -12,7 +12,8 @@ License: Artistic License 2.0
 URL: http://www.dkfz.de/signaling, http://www.ebi.ac.uk/huber
 biocViews: CellBasedAssays, Preprocessing, Visualization
 Collate: AllClasses.R  AllGeneric.R adjustVariance.R
-	 checkColumns.R  getReplicatesMatrix.R  
-         methods-cellHTS.R normalizePlates.R  
+	 checkColumns.R  getReplicatesMatrix.R  imageScreen.R
+         makePlot.R  methods-cellHTS.R methods-ROC.R normalizePlates.R  
          oneRowPerId.R  perPlateScaling.R plotSpatialEffects.R pos2i.R  
-         readPlateData.R  summarizeReplicates.R  write.tabdel.R  zzz.R
+         readPlateData.R  summarizeReplicates.R   tableOutput.R
+         write.tabdel.R  zzz.R

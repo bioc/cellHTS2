@@ -2,12 +2,6 @@
 # methods related to the class 'cellHTS'
 #------------------------------------------------------------
 
-## TO DO - have to be changed to setMethod("lines", signature("cellHTS"),...
-# 
-# S3method("lines", "ROC")
-# S3method("plot", "ROC")
-
-
 checkDots = function(...) {
   v = list(...)
   if(length(v)>0) {
@@ -211,6 +205,101 @@ setMethod("writeTab", signature("cellHTS"),
   write.table(out, file=file, quote=FALSE, sep="\t", row.names=FALSE, col.names=TRUE)
   return(file)
 })
+
+
+##-------------------------------------------
+## Generate data to plot a ROC curve from the scored data
+##-------------------------------------------
+
+setMethod("ROC", signature("cellHTS"), 
+
+   function(object, positives, negatives){
+##'positives' and 'negatives' is a vector of characters specifying the name of the controls
+    if(!state(object)["scored"])
+    stop("Please score 'object' using the function 'summarizeReplicates') before trying to calculate ROC.")
+
+# default
+assayType = "one-way assay"
+score = scores(object)
+
+  if (!missing(positives)) {
+## checks
+      if(!is(positives, "list")){
+        ## check
+        if (!is(positives, "vector") | length(positives)!=1 | mode(positives)!="character") 
+          stop("'positives' should be a vector of regular expressions with length one.")
+
+    }else{
+        if (length(positives)!=2 ||
+            !identical(sort(names(positives)), c("act", "inh")) ||
+            any(sapply(positives, length)!=1) ||
+            any(sapply(positives, mode)!="character"))#* 
+          stop(cat("'positives' should be a list with 
+             two components: 'act' and 'inh'.\n Or a vector of regular expressions with lenght one.\n"))
+
+        positives = paste(positives, collapse="|")
+        score = abs(scores(object)) # because this is a two way assay
+        assayType = "two-way assay"
+
+}## else is list
+
+    }else{## if !missing
+## assumes the screen is a one-way assay
+      positives = "^pos$"
+    }
+
+
+    if (!missing(negatives)) {
+      ## check
+      if (!is(negatives, "vector") | length(negatives)!=1 | mode(negatives)!="character") 
+        stop("'negatives' should be a vector of regular expressions with length one")
+
+    } else {
+      negatives = "^neg$"
+    }
+
+
+  wAnno = as.character(wellAnno(object))
+  xpos =NULL
+  xneg=NULL
+
+  xpos = regexpr(positives, wAnno, perl=TRUE)>0
+  xneg = regexpr(negatives, wAnno, perl=TRUE)>0
+
+  if(!any(xneg))
+    stop("Negative controls not found")
+    #stop(sprintf("The 'wellAnno' slot does not contain any entries with value '%s'.", negatives))
+  if(!any(xpos))
+    stop("Positive controls not found")
+    #stop(sprintf("The 'wellAnno' slot does not contain any entries with value '%s'.", positives))
+
+
+  br = unique(quantile(score, probs=seq(0, 1, length=1001), na.rm=TRUE))
+  ct  = cut(score, breaks=br)
+  spNeg = split(xneg, ct)
+  spPos = split(xpos, ct)
+  nNeg = sapply(spNeg, sum)
+  nPos = sapply(spPos, sum)
+  stopifnot(all(names(nPos)==names(nNeg)))
+
+  posNames = unique(wAnno[xpos])
+  posNames = object@plateConf$Content[match(posNames, tolower(object@plateConf$Content))]
+  negNames = unique(wAnno[xneg])
+  negNames = object@plateConf$Content[match(negNames, tolower(object@plateConf$Content))]
+
+  x = new("ROC", 
+        name=object@name,
+        assayType = assayType,
+        TP = cumsum(rev(nPos)),
+        FP = cumsum(rev(nNeg)),
+           #positives = positives,
+           #negatives = negatives, 
+        posNames = posNames,
+        negNames = negNames)
+
+  return(x) 
+})
+
 
 ##----------------------------------------
 ## Data accessors and replacement functions

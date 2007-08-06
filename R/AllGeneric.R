@@ -28,6 +28,8 @@ setGeneric("wellAnno", def=function(object) standardGeneric("wellAnno"))
 
 setGeneric("geneAnno", def=function(object) standardGeneric("geneAnno"))
 
+setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
+
 
 #setGeneric("normalizePlates", def=function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) standardGeneric("normalizePlates"))
 

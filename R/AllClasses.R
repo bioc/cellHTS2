@@ -104,6 +104,28 @@ validityCellHTS = function(object){
 }
 
 
+##-----------------------------------------------------------------------------
+
+validityROC <- function(object) {
+
+  if(!equalOrZero(length(object@TP), 1000) | !equalOrZero(length(object@FP), 1000)) return("'TP' and 'FP' should be vectors of integers with length 1000.")
+
+  if(length(object@TP)!=length(object@FP)) return("'FP' and 'TP' should be vectors of integers with length 1000.")
+
+  if(any(is.na(object@TP))) return("'TP' must not contain NA values.")
+
+  if(any(is.na(object@FP))) return("'FP' must not contain NA values.")
+
+  if(is.na(object@posNames)) return("'posNames' must not contain NA values.")
+  if(is.na(object@negNames)) return("'negNames' must not contain NA values.")
+
+  if(!(equalOrZero(length(object@assayType), 1))) return("'assayType' should be a character vector of length 1.")
+  if(length(object@assayType)!=0) {
+     if(!(object@assayType %in% c("two-way assay", "one-way assay"))) return("'assayType' should be one of the two options: 'one-way assay' or 'two-way assay'.") }
+
+  return(TRUE)
+}
+
 ##------------------------------------------------------------------------------
 ## Class cellHTS
 ##------------------------------------------------------------------------------
@@ -147,3 +169,37 @@ prototype = list(
     overall.effects = array(dim=c(1, 0,0,0))
     ),
   validity = validityCellHTS)
+
+
+
+##------------------------------------------------------------------------------
+## Class ROC
+##------------------------------------------------------------------------------
+
+setClass("ROC",
+  representation(
+     name = "character",  
+     assayType = "character",
+     TP = "integer",
+     FP = "integer",
+     #positives = positives,
+     #negatives = negatives, 
+     posNames = "character",
+     negNames = "character"),
+  prototype = list(
+     name = "",
+     assayType = character(),
+     TP = integer(),
+     FP = integer(),
+     posNames = character(),
+     negNames = character()
+  ),
+  validity = validityROC)
+
+
+
+
+
+
+
+
