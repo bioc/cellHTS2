@@ -3,20 +3,22 @@
 \alias{cellHTS-class}
 
 \alias{show,cellHTS-method}
+\alias{name}
+\alias{name<-}
+\alias{name,cellHTS-method}
+\alias{name<-,cellHTS,character-method}
 
 \title{
   Class to contain cell-based high-throughput RNAi data
 }
 
 \description{
-
   Container for cell-based high-throughput RNA interference assays performed in plate format.
 }
 
 \section{Creating Objects}{
   \code{new("cellHTS")}
 }
-
 
 \section{Slots}{
  \describe{
@@ -75,6 +77,11 @@ and \code{Flag}.}
        \code{signature(object = "cellHTS", value = "array")}: Access
        and replace the \code{xnorm} slot of a \code{\linkS4class{cellHTS}} instance. 
        \code{normdata} returns a 4D array of dimension Number of wells per plate x Number of plates x Number of replicates x Number of channels.}
+    \item{\code{description(object)}}{returns a character vector containing the description for the screen 
+  associated with the \code{object}.}
+    \item{\code{name(object), name(object) <- value}:}{\code{signature(object = "cellHTS", value = "character")}: Access
+       and replace the \code{name} slot of a \code{\linkS4class{cellHTS}} instance. 
+       \code{name} returns a character vector of length one corresponding to the name of the experiment.}
     \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}} object using the \emph{screen annotation file}.}
     \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the \emph{screen configuration file}, the \emph{screen log file} and the \emph{screen description file}.} 
     \item{\code{writeTab}}{Write the data from a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
@@ -91,7 +98,7 @@ and \code{Flag}.}
 \seealso{
   \code{\link[cellHTS2:readPlateData]{reaPlateData}}
   \code{\link[cellHTS2:annotate]{annotate}}
-  \code{\link[cellHTS2:annotate]{configure}}
+  \code{\link[cellHTS2:configure]{configure}}
   \code{\link[cellHTS2:writeTab]{writeTab}}
   \code{\link[cellHTS2:description]{description}}
   \code{\link[cellHTS2:scores]{scores}}

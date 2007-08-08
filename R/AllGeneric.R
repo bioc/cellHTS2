@@ -12,6 +12,10 @@ setGeneric("scores<-", def=function(object, value) standardGeneric("scores<-"))
 
 setGeneric("description", def=function(object) standardGeneric("description"))
 
+setGeneric("name", def=function(object) standardGeneric("name"))
+
+setGeneric("name<-", def=function(object, value) standardGeneric("name<-"))
+
 setGeneric("state", def=function(object) standardGeneric("state"))
 
 setGeneric("rawdata", def=function(object) standardGeneric("rawdata"))

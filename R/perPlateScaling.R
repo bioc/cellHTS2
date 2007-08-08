@@ -51,8 +51,8 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
     inds <- (wAnno=="sample")
     for(ch in 1:nrChannels){
         if(stats %in% "negatives"){
-          if (!(negControls[ch] %in% c(NA, ""))) inds = regexpr(negControls[ch], wAnno, perl=TRUE)>0 else inds=FALSE
-          if((stats %in% c("negatives", "NPI")) & !sum(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
+          if(!(emptyOrNA(negControls[ch]))) inds = findControls(negControls[ch], wAnno) else inds=integer(0)
+          if((stats %in% c("negatives", "NPI")) & !length(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
         }
 
         for(r in 1:nrReplicates) normdata(object)[,p,r,ch] = funOperator(rawdata(object)[, p, r, ch], do.call(statFun, c(list(x=rawdata(object)[inds, p, r, ch]), funArgs)), op)
@@ -87,12 +87,12 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
     wAnno <- as.character(wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)])
 
       for(ch in 1:nrChannels) {
-        if (!(posControls[ch] %in% c(NA, ""))) pos <- regexpr(posControls[ch], wAnno, perl=TRUE)>0  else pos <- FALSE
-        if (!(negControls[ch] %in% c(NA, ""))) neg <- regexpr(negControls[ch], wAnno, perl=TRUE)>0  else neg <- FALSE
-        if (method == "POC") {
-           if (!sum(pos)) stop(sprintf("No positive controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch)) 
+        if(!(emptyOrNA(posControls[ch]))) pos <- findControls(posControls[ch], wAnno) else pos <- integer(0)
+        if(!(emptyOrNA(negControls[ch]))) neg <- findControls(negControls[ch], wAnno)  else neg <- integer(0)
+        if(method == "POC") {
+           if(!length(pos)) stop(sprintf("No positive controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch)) 
         } else {
-	   if (sum(pos)==0 | sum(neg)==0) stop(sprintf("No positive or/and negative controls were found in plate %s, channel %d! Please, use a different normalization function.", p, ch))
+	   if (!length(pos) | !length(neg)) stop(sprintf("No positive or/and negative controls were found in plate %s, channel %d! Please, use a different normalization function.", p, ch))
         }
 
 	for(r in 1:nrReplicates)

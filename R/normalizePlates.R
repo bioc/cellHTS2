@@ -42,16 +42,14 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
 
   if(!missing(posControls)) {
     ## check
-    if (!is(posControls, "vector") | length(posControls)!=nrChannel | mode(posControls)!="character") 
-      stop(sprintf("'posControls' should be a vector of regular expressions with length %d", nrChannel))
+    checkControls(posControls, nrChannel, "posControls")
   } else { 
     posControls <- as.vector(rep("^pos$", nrChannel))
   }
 
-  if(!missing(negControls)) {
+  if(!missing(negControls)){
     ## check
-    if (!is(negControls, "vector") | length(negControls)!=nrChannel | mode(negControls)!="character") 
-      stop(sprintf("'negControls' should be a vector of regular expressions with length %d", nrChannel))
+    checkControls(y=negControls, len=nrChannel, name="negControls")
   } else {
     negControls=as.vector(rep("^neg$", nrChannel))
   }

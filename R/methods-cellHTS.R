@@ -224,24 +224,15 @@ score = scores(object)
 
   if (!missing(positives)) {
 ## checks
-      if(!is(positives, "list")){
-        ## check
-        if (!is(positives, "vector") | length(positives)!=1 | mode(positives)!="character") 
-          stop("'positives' should be a vector of regular expressions with length one.")
+      if(!is(positives, "list")){ 
+        checkControls(positives, len=1, name="positives")
+      }else{
 
-    }else{
-        if (length(positives)!=2 ||
-            !identical(sort(names(positives)), c("act", "inh")) ||
-            any(sapply(positives, length)!=1) ||
-            any(sapply(positives, mode)!="character"))#* 
-          stop(cat("'positives' should be a list with 
-             two components: 'act' and 'inh'.\n Or a vector of regular expressions with lenght one.\n"))
-
+        checkControls2W(positives, len=1, name="positives")
         positives = paste(positives, collapse="|")
         score = abs(scores(object)) # because this is a two way assay
         assayType = "two-way assay"
-
-}## else is list
+      }## else is list
 
     }else{## if !missing
 ## assumes the screen is a one-way assay
@@ -251,9 +242,7 @@ score = scores(object)
 
     if (!missing(negatives)) {
       ## check
-      if (!is(negatives, "vector") | length(negatives)!=1 | mode(negatives)!="character") 
-        stop("'negatives' should be a vector of regular expressions with length one")
-
+      checkControls(negatives, len=1, name="negatives")
     } else {
       negatives = "^neg$"
     }
@@ -323,6 +312,21 @@ setMethod("description", signature(object="cellHTS"),
           function(object) {
              print(slot(object, "screenDesc"), quote=FALSE)
           })
+
+setMethod("name", signature(object="cellHTS"),
+          function(object) {
+             slot(object, "name")
+          })
+
+setReplaceMethod("name",
+                 signature=signature(
+                   object="cellHTS",
+                   value="character"),
+                 function(object, value) {
+                     object@name <- value
+                     validObject(object)
+                     return(object)
+                 })
 
 setMethod("state", signature(object="cellHTS"),
           function(object) {
