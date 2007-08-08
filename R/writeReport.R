@@ -131,7 +131,7 @@ writeReport = function(x,
       step4 = 0.1*sum(x@plateList$status=="OK") + 2*nrChannel*nrReplicate,
       step5 = 5*nrChannel*nrReplicate, 
       step6 = 2*nrChannel*nrReplicate,
-      step7 = nrPlate*(2 + ifelse("map" %in% names(imageScreenArgs), imageScreenArgs$map, FALSE))
+      step7 = nrPlate*(2 + 10*ifelse("map" %in% names(imageScreenArgs), imageScreenArgs$map, FALSE))
       )
 
     steps2Do <- names(timePerStep)[c(TRUE, rep(state(x)["configured"],2), TRUE, TRUE, rep(state(x)["scored"],2))]
@@ -183,10 +183,10 @@ writeReport = function(x,
 
 
   if(progressReport){
-   stepNr = 1
-   timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]
+   #stepNr = 1
+   timeCounter <- timeCounter + timePerStep["step1"]
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step1", steps2Do)+1, nsteps)
   }
 
 
@@ -244,10 +244,10 @@ writeReport = function(x,
 
 
   if(progressReport){
-   stepNr = 2
-   timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]
+   #stepNr = 2
+   timeCounter <- timeCounter + timePerStep["step2"]
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1, nsteps)
   }
 
 
@@ -347,9 +347,9 @@ writeReport = function(x,
 
 # update the progress bar each time a plate is completed:
   if(progressReport){
-   stepNr = 3
-   timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]/nrPlate
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do), nsteps)
+   #stepNr = 3
+   timeCounter <- timeCounter + timePerStep["step3"]/nrPlate
+   myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do), nsteps)
   }
 
     }## for p plates
@@ -357,10 +357,10 @@ writeReport = function(x,
 
  # after completing all plates:
  if(progressReport){
-   stepNr = 3
+   #stepNr = 3
    #timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]/nrPlate
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do)+1, nsteps)
   }
 }## if configured
 
@@ -382,9 +382,9 @@ writeReport = function(x,
 
    # update progress bar each time w is updated:
    if(progressReport){
-     stepNr = 4
+     #stepNr = 4
      timeCounter <- timeCounter + 0.1
-     myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do), nsteps)
+     myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do), nsteps)
    }
  
   } # for w
@@ -397,10 +397,10 @@ writeReport = function(x,
 
 # End of step 4 - update progress bar
  if(progressReport){
-   stepNr = 4
+   #stepNr = 4
    timeCounter <- timeCounter + 2*nrChannel*nrReplicate
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do)+1, nsteps)
   }
 
 
@@ -412,10 +412,10 @@ writeReport = function(x,
 
  
  if(progressReport){
-   stepNr = 5
-   timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]
+   #stepNr = 5
+   timeCounter <- timeCounter + timePerStep["step5"]
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step5", steps2Do)+1, nsteps)
   }
 
 
@@ -430,10 +430,10 @@ writeReport = function(x,
 
 
     if(progressReport){
-       stepNr = 6
-       timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]
+       #stepNr = 6
+       timeCounter <- timeCounter + timePerStep["step6"]
        # print cumulative time for last step and print number of next step:
-       myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do)+1, nsteps)
+       myUpdateProgress(timeCounter, totalTime, match("step6", steps2Do)+1, nsteps)
     }
 
   ##   -------  Step 7)  Screen-wide image plot ---------------
@@ -468,10 +468,10 @@ writeReport = function(x,
 
 
  if(progressReport){
-   stepNr = 7
-   timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]
+   #stepNr = 7
+   timeCounter <- timeCounter + timePerStep["step7"]
    # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match(paste("step",stepNr,sep=""), steps2Do), nsteps)
+   myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do), nsteps)
   }
 
   writetail(con)
