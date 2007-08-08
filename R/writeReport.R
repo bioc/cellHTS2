@@ -139,8 +139,10 @@ writeReport = function(x,
     nsteps <- length(steps2Do)
 
     require("prada")
-    progress(title="cellHTS is busy", message = sprintf("\nCreating HTML pages for '%s'.\nState: \n%s", name(x), 
-             paste(paste(names(state(x)), state(x), sep="="), collapse="\n ")), sub=sprintf("step %s of %s", 1, nsteps))
+    progress(title="cellHTS is busy", message = sprintf("\nCreating HTML pages for '%s'. \nState: \n%s \n%s", name(x), 
+             paste(paste(names(state(x))[1:2], state(x)[1:2], sep="="), collapse=", "), 
+             paste(paste(names(state(x))[3:4], state(x)[3:4], sep="="), collapse=", ")), sub=sprintf("step %s of %s", 1, nsteps))
+
 
     on.exit(killProgress(), add=TRUE)
   }
@@ -442,7 +444,7 @@ writeReport = function(x,
       mapx=FALSE  # DO NOT make the mapping by default (changed on 18.06.2007, because this can take lots of time when there are many plates)
     }
 
-    res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=6,
+    res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=8,
                     fun = function(map=mapx)
                       do.call("imageScreen", args=append(list(object=x, map=map), imageScreenArgs)),
                     print=FALSE, isImageScreen=TRUE)
