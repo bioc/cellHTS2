@@ -70,7 +70,7 @@ Generates the file with the hit list and outputs a \code{\link{data.frame}} with
 
 \examples{
     data(KcViabSmall)
-    KcViabSmall <- normalizePlates(KcViabSmall, scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment") 
+    KcViabSmall <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment") 
     KcViabSmall <- summarizeReplicates(KcViabSmall, zscore="-", summary="mean")
     out <- getTopTable(KcViabSmall, file=tempfile())
 }

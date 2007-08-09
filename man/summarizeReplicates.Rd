@@ -57,7 +57,7 @@ summarizeReplicates(object, zscore="+", summary ="min")
 
 \examples{
     data(KcViabSmall)
-    x <- normalizePlates(KcViabSmall, scale="additive", method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", method="median", varianceAdjust="byExperiment")
     x <- summarizeReplicates(x, zscore="-", summary="min")
 }
 \keyword{manip}

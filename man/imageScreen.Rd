@@ -39,7 +39,7 @@ When the annotation mapping is performed, by default, \code{anno} is set to:
 \examples{
     data(KcViabSmall) 
     x <- KcViabSmall   
-    x <- normalizePlates(x, scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
     x <- summarizeReplicates(x, zscore="-", summary="min") 
     imageScreen(x, zrange=c(-5,5))
 }

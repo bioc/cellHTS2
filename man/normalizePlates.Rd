@@ -104,9 +104,12 @@ the \code{\link[cellHTS2:Bscore]{Bscore}} function and \code{\link[cellHTS2:spat
 
 \examples{
     data(KcViabSmall)
-    x1 = normalizePlates(KcViabSmall, scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment")
+    # per-plate median scaling of intensities
+    x1 = normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
+    # per-plate median subtraction of log2 transformed intensities  
+    x2 = normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment")
     \dontrun{
-    x2 = normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="Bscore", varianceAdjust="byExperiment", save.model=TRUE)
+    x3 = normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="Bscore", varianceAdjust="byExperiment", save.model=TRUE)
     }
 }
 \keyword{manip}

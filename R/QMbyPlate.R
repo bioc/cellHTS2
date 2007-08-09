@@ -36,7 +36,6 @@ QMbyPlate <- function(x, wellAnno, pdim, name, basePath, subPath, geneAnno,
   stopifnot(dim(x)[2]==1)
   stopifnot(dim(x)[1]==length(wellAnno))
 
-
   nrWells = prod(pdim)
   nrChannel = dim(x)[4]
   maxRep = dim(x)[3]

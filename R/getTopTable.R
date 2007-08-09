@@ -1,4 +1,20 @@
-## getTopTable.txt
+ ## Correct wellAnno information:
+     ## ... by taking into account the wells that were flagged in the screen log file, 
+     ## or even by the user manually in xraw. Besides the categories in wellAnno(x), it contains the category "flagged".
+## Returns an array with corrected well annotation.
+getArrayCorrectWellAnno <- function(x){
+  wellAnnoCorrected <- array(rep(wellAnno(x), times = prod(dim(rawdata(x))[3:4])), dim=dim(rawdata(x)))
+  ## see which wells are flagged, excluding "empty" wells
+  iflagged = as.logical(is.na(rawdata(x))*(wellAnno(x)!="empty"))
+  wellAnnoCorrected[iflagged]="flagged"
+  return(wellAnnoCorrected)
+ }
+
+
+
+
+## =================================================================================
+## getTopTable function
 ## Function to obtain the topTable data.frame and export it as a txt file.
 
 getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
@@ -22,18 +38,12 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
       wellAnno = wellAnno(x)
     )
 
-  ## array that corrects the wellAnno information by taking into account the wells that were flagged in the screen log file, or even by the user manually in xraw. Besides the categories in wellAnno(x), it contains the category "flagged".
-   xrawWellAnno = array(rep(wellAnno(x), times = prod(dim(rawdata(x))[3:4])), dim=dim(rawdata(x)))
- ## see which wells are flagged, excluding "empty" wells
-   iflagged = as.logical(is.na(rawdata(x))*(wellAnno(x)!="empty"))
-   xrawWellAnno[iflagged]="flagged"
-
+  ## array with corrected wellAnno information (by taking into account the wells that were flagged in the screen log file, or even by the user manually in xraw). Besides the categories in wellAnno(x), it contains the category "flagged".
+   xrawWellAnno = getArrayCorrectWellAnno(x)
 
     ## Include the normalized values
     out[sprintf("normalized_r%d_ch%d", 1:nrReplicate, 1:nrChannel)] = sapply(1:nrChannel, 
           function(i) round(getReplicatesMatrix(normdata(x), channel=i, na.rm=FALSE), 3))
-
-
 
     ## include also the final well annotation (after the screen log file)
     out[sprintf("xrawAnno_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 

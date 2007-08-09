@@ -263,11 +263,7 @@ writeReport = function(x,
    ## Correct wellAnno information:
      ## ... by taking into account the wells that were flagged in the screen log file, 
      ## or even by the user manually in xraw. Besides the categories in wellAnno(x), it contains the category "flagged".
-   xrawWellAnno = array(rep(wellAnno(x), times = prod(dim(rawdata(x))[3:4])), dim=dim(rawdata(x)))
-   ## see which wells are flagged, excluding "empty" wells
-   iflagged = as.logical(is.na(rawdata(x))*(wellAnno(x)!="empty"))
-   xrawWellAnno[iflagged]="flagged"
-
+   xrawWellAnno = getArrayCorrectWellAnno(x)
 
   ## Create geneAnnotation info for the image maps:
   if(state(x)["annotated"]){

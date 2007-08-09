@@ -10,11 +10,16 @@ op = get(op, mode="function")
 op(a,b)
 }
 
-POC = function(a, pos,...){
+POC = function(a, pos, plate, replicate, channel,...){
+
+if(all(is.na(a[pos]))) stop(sprintf("No values for positive controls were found in plate %s, replicate %s, channel %d! Please use a different normalization function.", plate, replicate, channel))
+
 100*a/mean(a[pos], na.rm=TRUE)
 }
 
-NPI = function(a, pos, neg){
+NPI = function(a, pos, neg, plate, replicate, channel){
+if(all(is.na(a[pos])) | all(is.na(a[neg]))) stop(sprintf("No values for positive or/and negative controls were found in plate %s, replicate %s, channel %d! Please use a different normalization function.", plate, replicate, channel))
+
 (mean(a[pos], na.rm=TRUE) - a)/(mean(a[pos], na.rm=TRUE) - mean(a[neg], na.rm=TRUE))
 }
 ## ===========================================================
@@ -55,8 +60,12 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
           if((stats %in% c("negatives", "NPI")) & !length(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
         }
 
-        for(r in 1:nrReplicates) normdata(object)[,p,r,ch] = funOperator(rawdata(object)[, p, r, ch], do.call(statFun, c(list(x=rawdata(object)[inds, p, r, ch]), funArgs)), op)
-        }
+        for(r in 1:nrReplicates) {
+          if(all(is.na(rawdata(object)[inds, p, r, ch]))) {
+             stop(sprintf("No value for negative controls were found in plate %s, replicates %r, channel %d! Please use a different plate normalization method.", p, r, ch))
+          }
+          normdata(object)[,p,r,ch] = funOperator(rawdata(object)[, p, r, ch], do.call(statFun, c(list(x=rawdata(object)[inds, p, r, ch]), funArgs)), op)
+        }}
        }
   return(object)
 }
@@ -96,7 +105,7 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
         }
 
 	for(r in 1:nrReplicates)
-        normdata(object)[, p, r, ch] = fun(rawdata(object)[, p, r, ch], pos, neg)
+        normdata(object)[, p, r, ch] = fun(rawdata(object)[, p, r, ch], pos, neg, plate=p, replicate=r,channel=ch)
      } 
   }
   return(object)

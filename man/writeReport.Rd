@@ -96,7 +96,7 @@ By default, tooltips doing the mapping between the probe annotation and the plat
     ## same as 
     ## writeReport(KcViabSmall)
     \dontrun{
-    x <- normalizePlates(KcViabSmall, scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
     x <- summarizeReplicates(x, zscore="-", summary="min")
     writeReport(x, force=TRUE, plotPlateArgs = list(), imageScreenArgs=list(zrange=c(-4,4)))
     }

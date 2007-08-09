@@ -59,7 +59,7 @@ Container for data that represent a receiver-operator-characteristic curve, and 
   
     \dontrun{
     data(KcViabSmall)
-    x <- normalizePlates(KcViabSmall, scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
     x <- summarizeReplicates(x, zscore="-", summary="mean")
     y <- ROC(x)
     plot(y)
