@@ -30,7 +30,8 @@
   \code{\link{readPlateData}}, \code{\link{normalizePlates}}, \code{\link{normalizePlatesAgain}}
 \code{\link{Bscore}}, code{\link{spatialNormalization}}, code{\link{plotSpatialEffects}}, \code{\link{summarizeChannels}},
 \code{\link{summarizeReplicates}}, \code{\link{getReplicatesMatrix}}, \code{\link{imageScreen}}, \code{\link{ROC}},
-\code{\link{getTopTable}}, \code{\link{writeReport}}.  
+\code{\link{getTopTable}}, \code{\link{writeReport}}, \code{\link{getDynamicRange}}, \code{\link{getZfactor}}
+ and \code{\link{getMeasureRepAgreement}}.  
 
   Full listing of documented articles is available in HTML view by
   typing \code{help.start()} and selecting \code{cellHTS} package from the
@@ -38,5 +39,9 @@
 }
 
 \author{Ligia Bras \email{ligia@ebi.ac.uk}}
+
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
 
 \keyword{package}

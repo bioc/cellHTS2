@@ -34,7 +34,12 @@ When the annotation mapping is performed, by default, \code{anno} is set to:
 %  \code{\link[cellHTS2:writeReport]{writeReport}}
 }
 
-\author{Ligia Braz \email{ligia@ebi.ac.uk}}
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
+
+\author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \examples{
     data(KcViabSmall) 

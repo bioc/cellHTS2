@@ -4,8 +4,11 @@ exportClasses("cellHTS", "ROC")
 
 export("oneRowPerId", 
        "Bscore",
+       "getDynamicRange",
+       "getMeasureRepAgreement",
        "getReplicatesMatrix",
        "getTopTable",
+       "getZfactor",
        "imageScreen",
        "normalizePlates",
        "normalizePlatesAgain",

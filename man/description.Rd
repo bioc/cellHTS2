@@ -25,4 +25,8 @@ description(object)
 \seealso{\code{\linkS4class{cellHTS}}, \code{\link[cellHTS2:configure]{configure}}
 }
 
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
 \keyword{manip}

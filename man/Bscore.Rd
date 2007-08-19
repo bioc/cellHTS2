@@ -79,6 +79,8 @@ in the slot \code{state} to \code{object@state["normalized"]=TRUE}.
 Brideau, C., Gunter, B., Pikounis, B. and Liaw, A. (2003) Improved statistical methods for hit selection in high-throughput screening, \emph{J. Biomol. Screen} \bold{8}, 634--647.
 
 Malo, N., Hanley, J.A., Cerquozzi, S., Pelletier, J. and Nadon, R. (2006) Statistical practice in high-throughput screening data analysis, \emph{Nature Biotechn} \bold{24}(2), 167--175. 
+
+Boutros, M., Br\'as, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
 }
 
 \examples{

@@ -127,8 +127,9 @@ if (!missing(path))
   ## expect prod(x@pdim) * x@nrBatch rows
   nrWpP   = prod(object@pdim)
   nrBatch = max(object@batch)
-  nrPlate = dim(rawdata(object))[2]
-  stopifnot(nrWpP==dim(rawdata(object))[1])
+  d <- dim(rawdata(object))
+  nrPlate = d[2]
+  stopifnot(nrWpP==d[1])
   
   if(!((nrow(conf)==nrWpP*nrBatch) && all(conf$Position==rep(1:nrWpP, nrBatch)) &&
        all(conf$Batch==rep(1:nrBatch, each=nrWpP))))
@@ -147,12 +148,15 @@ if (!missing(path))
   ## and set all 'empty' wells to NA in object
   conf$Content = tolower(conf$Content)  ## ignore case!
   wAnno = factor(rep(NA, nrWpP*nrPlate), levels=unique(conf$Content))
+  xraw <- rawdata(object)
   for(p in seq(along=object@batch)) {
     wa = conf$Content[ conf$Batch==object@batch[p] ]
     wAnno[(1:nrWpP)+nrWpP*(p-1)] = wa
-    rawdata(object)[ wa=="empty", p,,] <- NA
+    xraw[wa=="empty", p,,] <- NA
   }
-  object@wellAnno=wAnno
+
+  object@wellAnno <- wAnno
+
 
   ## Process screenlog
   if (!is.null(slog)) {
@@ -177,9 +181,10 @@ if (!missing(path))
     ich  = object@plateList$Channel[mt]
     ipos = pos2i(slog$Well, object@pdim)
     stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))
-    rawdata(object)[cbind(ipos, ipl, irep, ich)] = NA 
+    xraw[cbind(ipos, ipl, irep, ich)] = NA 
   } 
 
+  rawdata(object) <- xraw
   object@state["configured"] = TRUE
   validObject(object)
   return(object)
@@ -218,9 +223,9 @@ setMethod("ROC", signature("cellHTS"),
     if(!state(object)["scored"])
     stop("Please score 'object' using the function 'summarizeReplicates') before trying to calculate ROC.")
 
-# default
-assayType = "one-way assay"
-score = scores(object)
+ # default
+ assayType = "one-way assay"
+ score = scores(object)
 
   if (!missing(positives)) {
 ## checks
@@ -249,8 +254,6 @@ score = scores(object)
 
 
   wAnno = as.character(wellAnno(object))
-  xpos =NULL
-  xneg=NULL
 
   xpos = regexpr(positives, wAnno, perl=TRUE)>0
   xneg = regexpr(negatives, wAnno, perl=TRUE)>0
@@ -261,7 +264,6 @@ score = scores(object)
   if(!any(xpos))
     stop("Positive controls not found")
     #stop(sprintf("The 'wellAnno' slot does not contain any entries with value '%s'.", positives))
-
 
   br = unique(quantile(score, probs=seq(0, 1, length=1001), na.rm=TRUE))
   ct  = cut(score, breaks=br)
@@ -386,18 +388,4 @@ setMethod("geneAnno", signature(object="cellHTS"),
 
 
 
-## Should we also define a method for subsetting the cellHTS object like in vsn package?
-# setMethod("[", "vsn",
-#   function(x, i, j, ..., drop=FALSE) {
-#     stopifnot(missing(j), length(list(...))==0, !drop)
-# 
-#     x@mu = x@mu[i,drop=FALSE]
-#     
-#     if(length(x@strata)>0)
-#       x@strata = x@strata[i,drop=FALSE]
-#     if(nrow(x@hx)>0) 
-#       x@hx = x@hx[i,,drop=FALSE]
-#     
-#     return(x)
-#   })
 

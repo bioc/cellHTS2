@@ -13,6 +13,7 @@ writetail = function(con)
     cat(sprintf("<BR><HR>%s</HTML></HEAD>\n", date()), file=con)
 
 
+# ------------------------------------------------------------
 writeHTMLtable = function(x, url, con,
   colors = c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0"), center=FALSE, extra=NULL) {
 
@@ -29,13 +30,16 @@ writeHTMLtable = function(x, url, con,
 
 
   if(center) cat("<CENTER>\n", file=con)
-if (!is.null(extra)){
-nn = nc/length(extra)
-cat("<TABLE border=0><TR>", paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn, rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n", sep="", file=con)
-cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)[1:nn]), collapse=""),"</TR>\n", sep="", file=con)
-} else {cat("<TABLE border=0><TR>",
+    if (!is.null(extra)){
+       nn = (nc-1)/length(extra)
+       cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]), paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn, rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n", sep="", file=con)
+
+       cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)), collapse=""),"</TR>\n", sep="", file=con)
+    } else {
+      cat("<TABLE border=0><TR>",
       paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)), collapse=""),
-      "</TR>\n", sep="", file=con) }
+      "</TR>\n", sep="", file=con) 
+    }
 
   for(i in 1:nr)
 #     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>", colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
@@ -46,6 +50,8 @@ cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], col
   cat("</TABLE>\n", file=con)
   if(center) cat("</CENTER>\n", file=con)
 }
+#-----------------------------------------------------------------
+
 
 
 writeHTMLtable4plots = function(x, con,
@@ -76,31 +82,48 @@ writeHTMLtable4plots = function(x, con,
 ##----------------------------------------------------------------------------
 writeReport = function(x,
   outdir=file.path(getwd(), name(x)),
-  force=FALSE,
+  force=FALSE, map=FALSE, 
   plotPlateArgs=FALSE,
-  imageScreenArgs=NULL,
-  progressReport = interactive(),
+  imageScreenArgs=NULL, 
+  progressReport=interactive(),
   posControls,
   negControls) {
 
 
 
   ## consistency checks:
-
   if(!inherits(x, "cellHTS"))
     stop("'x' must be a 'cellHTS' object")
 
   if (!is.logical(progressReport))
     stop("'progressReport' must be a logical value.")
 
+  if (!is.logical(map))
+    stop("'map' must be a logical value.")
+
   if(is.logical(plotPlateArgs)) {
     if(plotPlateArgs)
-      plotPlateArgs=list()
+      plotPlateArgs=list(map=map)
   } else {
-    if(!is.list(plotPlateArgs))
-      stop("'plotPlateArgs' must either be logical or a list.")
+    if(!is.list(plotPlateArgs)) {
+      stop("'plotPlateArgs' must either be logical or a list.") 
+     } else {
+      if(!all(names(plotPlateArgs) %in% c("sdcol", "sdrange", "xcol", "xrange", "map")))
+      stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are allowed for 'plotPlateArgs' list!")
+      plotPlateArgs$map = map
+     }
   }
 
+  if(is.list(imageScreenArgs)) {
+    if(!("map" %in% names(imageScreenArgs)))
+      imageScreenArgs$map = map
+    if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno")))
+      stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for 'imageScreenArgs' list!")
+
+  } else {
+    if(!is.null(imageScreenArgs)) 
+      stop("'imageScreenArgs' must either be a list or NULL.") else imageScreenArgs=list(map=map)
+  }
 
   # dimensions 
   d <- dim(rawdata(x))
@@ -113,25 +136,25 @@ writeReport = function(x,
   ## Progress bar 
   ## Rough estimation of the total computation time that the function will take
   ## 1 = one time unit
-## Steps inside writeReport:
-# Step 1 - creating the output directory
-# Step 2 - Controls annotation (only if state(x)["configured"]=TRUE)
-# Step 3 - QC per plate & channel (only if state(x)["configured"]=TRUE)
-# Step 4 - Add plate result files and write with overall QC results
-# Step 5 - Per experiment QC
-# Step 6 - topTable  (only if scored)
-# Step 7 -  Screen-wide image plot (only if scored)
+  ## Steps inside writeReport:
+  	# Step 1 - creating the output directory
+  	# Step 2 - Controls annotation (only if state(x)["configured"]=TRUE)
+  	# Step 3 - QC per plate & channel (only if state(x)["configured"]=TRUE)
+  	# Step 4 - Add plate result files and write the overall QC results
+  	# Step 5 - Per experiment QC
+  	# Step 6 - topTable  (only if scored)
+  	# Step 7 -  Screen-wide image plot (only if scored)
 
   if (progressReport){
     timeCounter=0
     timePerStep <- c(
-      step1 = 1,
-      step2 = 2,
-      step3 = nrPlate*nrReplicate*nrChannel*(1+2*is.list(plotPlateArgs)),
-      step4 = 0.1*sum(x@plateList$status=="OK") + 2*nrChannel*nrReplicate,
-      step5 = 5*nrChannel*nrReplicate, 
-      step6 = 2*nrChannel*nrReplicate,
-      step7 = nrPlate*(2 + 10*ifelse("map" %in% names(imageScreenArgs), imageScreenArgs$map, FALSE))
+      step1 = 5,
+      step2 = 5,
+      step3 = nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 + plotPlateArgs$map else 0),
+      step4 = 0.2*sum(x@plateList$status=="OK") + 4*nrChannel*nrReplicate,
+      step5 = 10*nrChannel*nrReplicate, 
+      step6 = 20*nrChannel*nrReplicate,
+      step7 = nrPlate*(0.5 + imageScreenArgs$map)
       )
 
     steps2Do <- names(timePerStep)[c(TRUE, rep(state(x)["configured"],2), TRUE, TRUE, rep(state(x)["scored"],2))]
@@ -190,8 +213,9 @@ writeReport = function(x,
   }
 
 
-  ## initializations
-  twoWay=FALSE
+ ## initializations
+ twoWay <- FALSE
+ wAnno = as.character(wellAnno(x))
 
   ## the overview table of the plate result files in the experiment,
   ##   plus the (possible) urls for each table cell
@@ -205,34 +229,25 @@ writeReport = function(x,
 ## -------------------------
  if(state(x)["configured"]) {
 
-
   if(progressReport) {
     timeCounter=timeCounter+2
     updateProgress(100*timeCounter/totalTime, autoKill = !TRUE)
   }
 
 
+
+
   ##   -------  Step 2) Controls annotation ---------------
   if (!missing(posControls)) {
-    ## checks
-    if(!is(posControls, "list")){
-      ## check
-      checkControls(posControls, nrChannel, "posControls")
-      ## see if there are different positive controls (e.g. with different strengths)
-      aux <- unique(posControls)
-      aux <- findControls(aux[!emptyOrNA(aux)], as.character(wellAnno(x)))
-      namePos <- unique(sapply(aux, function(i) unique(as.character(wellAnno(x)[i]))))
-      namePos <- sort(x@plateConf$Content[match(namePos, tolower(x@plateConf$Content))])
-    } else {
-      checkControls2W(posControls, len=nrChannel, name="posControls")
-      twoWay=TRUE
-      namePos = NULL
-    }## else is list
+     ## checks, determine assay type and name of positive controls if assay is one-way
+     namePos <- checkPosControls(x, posControls, nrChannel, wAnno)
+     twoWay <- namePos$twoWay
+     namePos <- namePos$namePos 
 
   }else{## if !missing
     ## assumes the screen is a one-way assay
-    posControls=as.vector(rep("^pos$", nrChannel))
-    namePos = "pos"
+    posControls <- as.vector(rep("^pos$", nrChannel))
+    namePos <- "pos"
   }
 
   if (!missing(negControls)) 
@@ -276,28 +291,108 @@ writeReport = function(x,
   }##else annotated
 
 
-  ##   -------  Step 3)  QC per plate & channel ---------------
-  for(p in 1:nrPlate){
-      nm = p
-      wh = with(x@plateList, which(Plate==p & status=="OK"))
-      if(length(wh)>0) {
-        dir.create(file.path(outdir, nm))
+       ## data
         if(state(x)["normalized"]) {
-          datPlat = normdata(x)[, p,,, drop=FALSE]
-          ## datPlat = normdata(x)[, p,, ch, drop=FALSE]
+          dat <- normdata(x)
           whatDat = "normalized"
         } else {
-          datPlat = rawdata(x)[, p,,, drop=FALSE]
-          whatDat = "unnormalized"
+          dat <- rawdata(x)
+          whatDat <- "unnormalized"
         }
 
-        genAnno <- geneAnnotation[nrWell*(p-1)+(1:nrWell)]
+  ## which of the replicate plates has not just NA values
+  hasData <- apply(dat, 2:4, function(z) !all(is.na(z))) # nrPlates x nrReplicates x nrChannels
 
-        res <- QMbyPlate(datPlat, as.character(wellAnno(x)[nrWell*(p-1)+(1:nrWell)]), x@pdim, 
+  ##   -------  Get controls positions (for all plates) ---------------
+    allControls <- getControlsPositions(x, posControls, negControls, twoWay, namePos, nrChannel, wAnno)
+    actCtrls <- allControls$actCtrls
+    inhCtrls <- allControls$inhCtrls
+    posCtrls <- allControls$posCtrls
+    negCtrls <- allControls$negCtrls
+
+  ## get controls positions for each plate
+     act <- lapply(actCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+     inh <- lapply(inhCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+     neg <- lapply(negCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+     pos <- vector("list", length=nrChannel)
+      for (ch in 1:nrChannel) {
+        notNull <- !sapply(posCtrls[[ch]], is.null)
+        if(any(notNull)) {
+          pp <- posCtrls[[ch]][notNull]
+          pos[[ch]] <- lapply(pp, ctrlsPerPlate, nrWell)
+          } 
+         }
+
+
+  ## -----------  Get per-plate dynamic range ----------
+  dr <- internalGetDynamicRange(x, allControls, twoWay, namePos)
+
+  ## -----------  Get per-plate repeatability standard deviation (plate replicates) ----------
+  repMeasures = getMeasureRepAgreement(x, corr.method="spearman")
+
+  ## Define well colors and comment on them.
+  ## (to avoid having the legend for 'pos' when we have 'inhibitors' and 'activators' or vice-versa)
+  wellTypeColor <- if(twoWay) c(neg="#2040FF", act="#E41A1C", inh="#FFFF00", sample="#000000", controls="#43FF00",
+                   other="#999999", empty="#FA00FF", flagged="#000000") else c(pos="#E41A1C", neg="#2040FF", sample="#000000", controls="#43FF00", other="#999999", empty="#FA00FF", flagged="#000000")
+ 
+  ## assign common arguments for the plate plots
+  if(is.list(plotPlateArgs)) {
+    ## Currently, it does not allows to use different colors for different channels
+    if(is.null(plotPlateArgs$sdcol)) 
+      plotPlateArgs$sdcol = brewer.pal(9, "YlOrRd")
+    if(is.null(plotPlateArgs$xcol))
+      plotPlateArgs$xcol = rev(brewer.pal(9, "RdBu"))
+
+    ## set this argument as a list with the same length as the number of channels
+    if(is.null(plotPlateArgs$xrange)) { 
+      plotPlateArgs$xrange <- vector("list", length=dim(dat)[4])
+    } else {
+        if (!is.list(plotPlateArgs$xrange)) {
+          plotPlateArgs$xrange <- list(plotPlateArgs$xrange)
+	  length(plotPlateArgs$xrange)=dim(dat)[4]} 
+    }
+
+    ## set this argument as a list with the same length as the number of channels
+    if(is.null(plotPlateArgs$sdrange)) {
+      plotPlateArgs$sdrange <- vector("list", length=dim(dat)[4])
+    } else {
+        if (!is.list(plotPlateArgs$sdrange)) {
+          plotPlateArgs$sdrange <- list(plotPlateArgs$sdrange)
+          length(plotPlateArgs$sdrange) = dim(dat)[4]
+        } 
+    }
+
+
+  } #is.list(plotPlateArgs)
+
+
+  ## -----------  Get Z'-factor for each replicate and channel ----------
+  allZfac <- internalGetZfactor(x, allControls, twoWay, namePos) 
+  ## needed as input for QMexperiment later on.
+
+
+  ##   -------  Step 3)  QC per plate & channel ---------------
+  allmt <- match(wAnno, names(wellTypeColor))
+
+   for(p in 1:nrPlate){
+      wh = with(x@plateList, which(Plate==p & status=="OK"))
+      if(length(wh)>0) {
+        dir.create(file.path(outdir, p))
+
+        res <- QMbyPlate(platedat=dat[, p,,, drop=FALSE], 
+          pdim=x@pdim, 
           name=sprintf("Plate %d (%s)", p, whatDat),
-          basePath=outdir, subPath=nm, plotPlateArgs=plotPlateArgs, brks = brks,
-          finalWellAnno = xrawWellAnno[,p,,, drop=FALSE], posControls, negControls, 
-          isTwoWay=twoWay, geneAnno=genAnno, namePos=namePos)
+          basePath=outdir, 
+          subPath=p, 
+          genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 
+          mt=allmt[nrWell*(p-1)+(1:nrWell)],
+          plotPlateArgs=plotPlateArgs, 
+          brks = brks,
+          finalWellAnno = xrawWellAnno[,p,,, drop=FALSE], 
+          activators=act, inhibitors=inh, positives=pos, negatives=neg, 
+          isTwoWay=twoWay, namePos=namePos, wellTypeColor=wellTypeColor,
+          plateDynRange=lapply(dr, function(i) i[p,,,drop=FALSE]), 
+          plateWithData=hasData[p,,, drop=FALSE], repMeasures=repMeasures)
 
         url[wh, "status"] = res$url
 
@@ -307,10 +402,11 @@ writeReport = function(x,
           }else{## if twoWay
 
             if(length(namePos)==1 && namePos=="pos") 
-              TableNames = c("Replicate dynamic range", "Average dynamic range", "Spearman rank correlation")
+              TableNames = c("Replicate dynamic range", "Average dynamic range", "Repeatability standard deviation", sprintf("Spearman rank correlation %s", ifelse(nrReplicate==2, "", "(min - max)")))
             else
               TableNames = c(sprintf("Replicate dynamic range (%s)", namePos), 
-              sprintf("Average dynamic range (%s)", namePos), "Spearman rank correlation")
+              sprintf("Average dynamic range (%s)", namePos), "Repeatability standard deviation", 
+              sprintf("Spearman rank correlation %s", ifelse(nrReplicate==2, "", "(min - max)")))
           }## else twoWay
           url = cbind(url,  matrix(as.character(NA), nrow=nrow(url), ncol=length(TableNames)))
 
@@ -318,7 +414,7 @@ writeReport = function(x,
           qmHaveBeenAdded = TRUE
         }## if !qmHaveBeenAdded
         whh = split(wh, exptab$Channel[wh])
- 
+       
         for(ch in 1:length(res$qmsummary)) { # Channels
           resCh = res$qmsummary[[ch]]
           whCh = whh[[ch]]
@@ -330,25 +426,28 @@ writeReport = function(x,
                 #"Replicate dynamic range (Inhibitors)"
                 #TableNames[3] "Average dynamic range (Activators)"
                 #TableNames[4] "Average dynamic range (Inhibitors)"
-                #TableNames[5] "Spearman rank correlation"
+                #TableNames[5] "Repeatability standard deviation"
+                #TableNames[6] "Spearman rank correlation"
 
           }else{ #oneway
 
-            for (jj in 1:(length(TableNames)-1))
+            for (jj in 1:(length(TableNames)-2)) #exclude "Repeatability standard deviation" and "Spearman rank correlation"
               exptab[whCh, TableNames[jj]] = resCh[unique((jj<(length(namePos)+1))*(selrep + (nrReplicate+1)*(jj-1))) + (jj>length(namePos))*(nrReplicate + 1)*(jj-length(namePos))]
-              exptab[whCh, TableNames[length(TableNames)]] = resCh[length(resCh)]
+
+            exptab[whCh, TableNames[length(TableNames)-1]] = resCh[length(resCh)-1]
+            exptab[whCh, TableNames[length(TableNames)]] = resCh[length(resCh)]
           }## else twoWay
         }## for channel
       }## if length w
 
-# update the progress bar each time a plate is completed:
-  if(progressReport){
-   #stepNr = 3
-   timeCounter <- timeCounter + timePerStep["step3"]/nrPlate
-   myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do), nsteps)
-  }
+    # update the progress bar each time a plate is completed:
+    if(progressReport){
+      #stepNr = 3
+      timeCounter <- timeCounter + timePerStep["step3"]/nrPlate
+      myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do), nsteps)
+    }
 
-    }## for p plates
+   }## for p plates
 
 
  # after completing all plates:
@@ -373,13 +472,12 @@ writeReport = function(x,
     writeLines(txt, file.path(outdir, nm[w]))
     url[w, "Filename"] = nm[w]
 
-
-   ### time for step4 : 0.1*sum(x@plateList$status=="OK") + 2*nrChannel*nrReplicate
+   ### time for step4 : 0.2*sum(x@plateList$status=="OK") + 4*nrChannel*nrReplicate
 
    # update progress bar each time w is updated:
    if(progressReport){
      #stepNr = 4
-     timeCounter <- timeCounter + 0.1
+     timeCounter <- timeCounter + 0.2
      myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do), nsteps)
    }
  
@@ -394,7 +492,7 @@ writeReport = function(x,
 # End of step 4 - update progress bar
  if(progressReport){
    #stepNr = 4
-   timeCounter <- timeCounter + 2*nrChannel*nrReplicate
+   timeCounter <- timeCounter + 4*nrChannel*nrReplicate
    # print cumulative time for last step and print number of next step:
    myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do)+1, nsteps)
   }
@@ -404,7 +502,7 @@ writeReport = function(x,
 
 
   ##   -------  Step 5)  Per experiment QC ---------------
-  plotTable = QMexperiment(x, outdir, con, posControls, negControls, isTwoWay=twoWay, namePos=namePos)
+  plotTable = QMexperiment(x, outdir, con, allControls, allZfac)
 
  
  if(progressReport){
@@ -419,9 +517,9 @@ writeReport = function(x,
 
   if(state(x)["scored"]) {
 
-   if(state(x)["annotated"]) ttInfo = "Table of scored <BR> and annotated probes" else ttInfo = "Table of scored probes"
+    if(state(x)["annotated"]) ttInfo = "Table of scored <BR> and annotated probes" else ttInfo = "Table of scored probes"
 
-  ##   -------  Step 6)  topTable ---------------
+    ##   -------  Step 6)  topTable ---------------
     out <- getTopTable(x, file=file.path(outdir, "topTable.txt"), verbose=FALSE)
 
 
@@ -433,16 +531,9 @@ writeReport = function(x,
     }
 
   ##   -------  Step 7)  Screen-wide image plot ---------------
-    if ("map" %in% names(imageScreenArgs)) {
-      mapx = imageScreenArgs$map 
-      imageScreenArgs = imageScreenArgs[!names(imageScreenArgs) %in% "map"] 
-    } else {
-      mapx=FALSE  # DO NOT make the mapping by default (changed on 18.06.2007, because this can take lots of time when there are many plates)
-    }
-
     res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=8,
-                    fun = function(map=mapx)
-                      do.call("imageScreen", args=append(list(object=x, map=map), imageScreenArgs)),
+                    fun = function(map=imageScreenArgs$map)
+                      do.call("imageScreen", args=append(list(object=x, map=map), imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
                     print=FALSE, isImageScreen=TRUE)
 
     count = nrow(plotTable)
@@ -451,8 +542,18 @@ writeReport = function(x,
     plotTable[count + 2, 1] = sprintf("<CENTER><A HREF=\"topTable.txt\"><em>%s</em></A></CENTER><BR>\n", ttInfo)
 
     if (is.null(res)) {
+
       plotTable[count + 2, 2] = sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER><BR>\n", "imageScreen.pdf", "imageScreen.png")
     }else{
+
+      # Update with first part of step 7 - update progress bar
+      if(progressReport){
+        #stepNr = 7
+        timeCounter <- timeCounter + nrPlate*0.5
+        # print cumulative time for last step and print number of next step:
+        myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do), nsteps)
+      }
+
       res <- myImageMap(object=res$obj, tags=res$tag, "imageScreen.png")
       plotTable[count + 2, 2] = paste("<BR><CENTER>", res, "</CENTER><BR><CENTER>",
               "<A HREF=\"imageScreen.pdf\">enlarged version</A></CENTER>\n", sep="")
@@ -465,7 +566,7 @@ writeReport = function(x,
 
  if(progressReport){
    #stepNr = 7
-   timeCounter <- timeCounter + timePerStep["step7"]
+   timeCounter <- totalTime #timeCounter + timePerStep["step7"]
    # print cumulative time for last step and print number of next step:
    myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do), nsteps)
   }

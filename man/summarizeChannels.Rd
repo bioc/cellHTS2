@@ -46,15 +46,20 @@ except in the last dimension corresponding to the number of channels.
 
 \author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
 
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
+
 \examples{
  \dontrun{
-    datadir <- system.file("DualChannelScreen", package = "cellHTS")
+    datadir <- system.file("DualChannelScreen", package = "cellHTS2")
     x <- readPlateData("Platelist.txt", "TwoColorData", path=datadir)
     x <- configure(x, "Plateconf.txt", "Screenlog.txt", "Description.txt", path=datadir)
     table(wellAnno(x))
 
     ## Define the controls for the different channels:
-    negControls=vector("character", length=rawdata(x)[4])
+    negControls=vector("character", length=dim(rawdata(x))[4])
 
     ## channel 1 - gene A
     ## case-insensitive and match the empty string at the beginning and end of a line (to distinguish between "geneA" and "geneAB", for example, although this is not a problem for the well annotation in this example)
@@ -67,7 +72,7 @@ except in the last dimension corresponding to the number of channels.
     ## channel 2 - geneC and geneD
     posControls[2]="(?i)^geneC$|^geneD$"
 
-    writeReport(x, posControls=posControls, negControls=negControls)
+    writeReport(x, map=TRUE, plotPlateArgs=TRUE, posControls=posControls, negControls=negControls)
     ## In this example, we first normalize each channel separately by 
     ## plate median scaling and variance adjustment.
         x = normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment") 
@@ -86,7 +91,7 @@ except in the last dimension corresponding to the number of channels.
     posControls = vector("character", length=dim(normdata(x))[4])
     ## For the single channel, the negative controls are geneC and geneD 
     posControls[1]="(?i)^geneC$|^geneD$"
-    writeReport(x, force=TRUE, plotPlateArgs=list(xrange=c(-3,3)), 
+    writeReport(x, force=TRUE, map=TRUE, plotPlateArgs=list(xrange=c(-3,3)), 
          posControls=posControls, negControls=negControls)
  }
 }

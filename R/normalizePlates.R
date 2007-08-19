@@ -103,13 +103,16 @@ summarizeChannels = function(object,
 
   if(dim(normdata(object))[4] != 2)
     stop("Currently this function is implemented only for dual-channel data.")
+  
+  xnorm <- normdata(object) 
 
   ## The argument 'fun' allows using different normalizations, and also to define
   ## the numerator/denominator for the ratio (i.e. R1/R2 or R2/R1)
-  normdata(object) <- array(
-     do.call("fun", list(r1=normdata(object)[,,,1], r2=normdata(object)[,,,2])),
+  xnorm <- array(
+     do.call("fun", list(r1=xnorm[,,,1], r2=xnorm[,,,2])),
 #append(list(r1=object@xnorm[,,,1], r2=object@xnorm[,,,2]), funargs)),
-            dim=c(dim(normdata(object))[1:3], 1))
+            dim=c(dim(xnorm)[1:3], 1))
+  normdata(object) <- xnorm
   return(object)
 }
 
@@ -129,7 +132,7 @@ normalizePlatesAgain = function(object, scale="additive", log = FALSE, method="m
 
 oldraw <- rawdata(object)
 # replace xraw by xnorm
-rawdata(object)<-normdata(object)
+rawdata(object) <- normdata(object)
 
 # call 'normalizePlates' on object with 'xraw' replcaed by 'xnorm'
 object <- normalizePlates(object, scale, log, method, varianceAdjust, ...)

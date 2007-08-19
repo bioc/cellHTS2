@@ -66,7 +66,12 @@ Generates the file with the hit list and outputs a \code{\link{data.frame}} with
 
 \seealso{\code{\linkS4class{cellHTS}}}
 
-\author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia Braz \email{ligia@ebi.ac.uk}}
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
+
+\author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \examples{
     data(KcViabSmall)

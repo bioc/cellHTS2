@@ -1,44 +1,26 @@
-QMexperiment = function(x, path, con, posControls, negControls, isTwoWay=FALSE, namePos) {
+QMexperiment = function(x, path, con, allControls, allZfac) {
 
   nrbxp = 1+state(x)["normalized"]
   nrCh = ifelse(state(x)["normalized"], dim(normdata(x))[4], dim(x@xraw)[4])
   nrPlate = dim(rawdata(x))[2]
-  wellAnno = as.character(x@wellAnno)
-
-  actCtrls <- inhCtrls <- posCtrls <- negCtrls <- vector("list", length=nrCh)
+  nrWell = prod(x@pdim)
+  plt = rep(1:nrPlate,each=nrWell)
 
   if(state(x)["configured"]) {
 
+    # get positions for all of the controls
+    actCtrls <- allControls$actCtrls
+    inhCtrls <- allControls$inhCtrls
+    posCtrls <- allControls$posCtrls
+    negCtrls <- allControls$negCtrls
 
-    if(isTwoWay){
-      aux <- c(1:nrCh)[!emptyOrNA(posControls$act)]
-      if(any(aux)) actCtrls[aux] <- lapply(aux, function(i)  as.numeric(findControls(posControls$act[i], wellAnno)))
-      aux <- c(1:nrCh)[!emptyOrNA(posControls$inh)]
-      if(any(aux)) inhCtrls[aux] <- lapply(aux, function(i) as.numeric(findControls(posControls$inh[i], wellAnno)))
-
-    }else{## OneWay
-
-      aux <- c(1:nrCh)[!emptyOrNA(posControls)]
-      if(length(aux)) {
-        posCtrls[aux]<- lapply(aux, function(i) {
-        wa <- findControls(posControls[i], wellAnno)
-        posCtrls[[i]] <- split(wa, wellAnno[wa])
-        if(!all(names(posCtrls[[i]]) == namePos)) posCtrls[[i]] = posCtrls[[i]][order(names(posCtrls[[i]]))]
-        posCtrls[[i]]
-      })
-      } #posControls
-  }## else if isTwoWay
-
-  #negative controls
-  aux <- c(1:nrCh)[(!emptyOrNA(negControls))]
-  if(length(aux)) negCtrls[aux] <- lapply(aux, 
-        function(i) as.numeric(findControls(negControls[i], wellAnno)) )
-
- }## if configured 
+    nrPos = sapply(actCtrls, length) + sapply(inhCtrls, length) + sapply(posCtrls, function(w) length(unlist(w)))
+    nrNeg = sapply(negCtrls, length) 
 
 
-  nrPos = sapply(actCtrls, length) + sapply(inhCtrls, length) + sapply(posCtrls, function(w) length(unlist(w)))
-  nrNeg = sapply(negCtrls, length)
+  } else {
+    nrPos <- nrNeg <- 0
+  }
 
   ## Checks whether the number of channels has changed (e.g. normalized data)
   hasLessCh=FALSE
@@ -56,75 +38,51 @@ QMexperiment = function(x, path, con, posControls, negControls, isTwoWay=FALSE, 
                  par(mfrow=c(1, (nrbxp-hasLessCh)), mai=c(1, 1, 0.01, 0.02))
                  if (!hasLessCh) {
                    ## to deal with cases where nrPlate=1
-                   if (nrPlate==1)
-                     xbp = matrix(rawdata(x)[,,r,ch])
-                   else
-                     xbp = rawdata(x)[,,r,ch]
-                   boxplotwithNA(xbp, col(xbp), col="pink", outline=FALSE, main="", xlab="plate",
+                   xbp <- rawdata(x)[,,r,ch]
+                   if (nrPlate==1) xbp <- matrix(xbp) 
+                   boxplotwithNA(xbp, col="pink", outline=FALSE, main="", xlab="plate",
                                  ylab="raw intensity", batch=x@batch)
                  }
                  if(state(x)["normalized"]) {
                    ## to deal with cases where nrPlate=1
-                   if (nrPlate==1)
-                     xbp = matrix(normdata(x)[,,r,ch])
-                   else
-                     xbp = normdata(x)[,,r,ch]
-                   boxplotwithNA(xbp, col(xbp), col="lightblue", outline=FALSE, main="", xlab="plate",
+                   xbp <- normdata(x)[,,r,ch]
+                   if (nrPlate==1) xbp <- matrix(xbp)
+                   boxplotwithNA(xbp, col="lightblue", outline=FALSE, main="", xlab="plate",
                                  ylab="normalized intensity", batch=x@batch)
                  }
                }, print=FALSE)
 
       if(ch ==1) {
-        if(state(x)["normalized"] & !hasLessCh) 
+        if(state(x)[["normalized"]] & !hasLessCh) 
           plotTable[count + 1, 1] = sprintf("<H3 align=left>Replicate %d </H3><em>%s</em><br>\n",
                      r, "Left: raw, right: normalized")
         else
-          plotTable[count + 1, 1] = sprintf("<H3 align=left>Replicate %d</H3>", r)}
+          plotTable[count + 1, 1] = sprintf("<H3 align=left>Replicate %d</H3>", r)
+      }
 
       plotTable[count + 1, ch+1] = sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER><BR>\n",
                  sprintf("boxplot_%d_%d.pdf", r, ch), sprintf("boxplot_%d_%d.png", r, ch)) 
       count = count + 1 
 
-      if( ( nrPos[ch]>0) & (nrNeg[ch]>0) & (state(x)["normalized"]) ) {
-        if (nrPlate==1)
-          xbp = matrix(normdata(x)[,,r,ch])
-        else
-          xbp = normdata(x)[,,r,ch]
+      if( nrPos[ch] & nrNeg[ch] & state(x)[["normalized"]] ) {
+        xbp <- normdata(x)[,,r,ch]
+        if(nrPlate==1) xbp <- matrix(xbp)
 
-        xact= xbp[actCtrls[[ch]]]
-        xinh= xbp[inhCtrls[[ch]]]
-        #xpos = xbp[unlist(posCtrls[[ch]])]
-        xpos = lapply(posCtrls[[ch]], function(d) xbp[d])
-        xneg = xbp[negCtrls[[ch]]]
-        if (!all(is.na(c(xact, xinh, unlist(xpos), xneg)))) {
+
+        yvals = lapply(posCtrls[[ch]], function(d) xbp[d])
+        yvals$neg = xbp[negCtrls[[ch]]]
+        yvals$inh= xbp[inhCtrls[[ch]]]
+        yvals$act=xbp[actCtrls[[ch]]]
+
+        if (!all(is.na(unlist(yvals)))) {
 
           makePlot(path, con=con,
                    name=sprintf("Controls_%d_%d", r, ch), w=5*nrbxp, h=5, fun = function() {
                      par(mfrow=c(1, nrbxp), mai=c(par("mai")[1:2], 0.01, 0.02))
-                     nrWell = prod(x@pdim)
-                     plt = rep(1:nrPlate,each=nrWell)
-                     #ppos = plt[unlist(posCtrls[[ch]])]
-                     ppos = lapply(posCtrls[[ch]], function(d) plt[d]) 
-                     pneg = plt[negCtrls[[ch]]]
-                     pact = plt[actCtrls[[ch]]]
-                     pinh = plt[inhCtrls[[ch]]]
-                     ## Note: the Z'-factor will be determined considering the median and mad,
-                     ## instead of the mean and standard deviation
-                     drAct = abs(median(xact, na.rm=TRUE) - median(xneg, na.rm=TRUE))
-                     drInh = abs(median(xinh, na.rm=TRUE) - median(xneg, na.rm=TRUE))
-                     ssdAct = mad(xact, na.rm=TRUE) + mad(xneg, na.rm=TRUE)
-                     ssdInh = mad(xinh, na.rm=TRUE) + mad(xneg, na.rm=TRUE)
-                     zfacAct = 1-3*ssdAct/drAct
-                     zfacInh = 1-3*ssdInh/drInh
-                     zfacPos = lapply(xpos, function(d) 1-3*(mad(d, na.rm=TRUE) + mad(xneg, na.rm=TRUE))/(abs(median(d, na.rm=TRUE) - median(xneg, na.rm=TRUE))))
-                     xvals = ppos
-                     xvals$neg = pneg
-                     xvals$inh = pinh
-                     xvals$act = pact
-                     yvals = xpos
-                     yvals$neg = xneg
-                     yvals$inh=xinh
-                     yvals$act=xact
+                     xvals = lapply(posCtrls[[ch]], function(d) plt[d]) 
+                     xvals$neg = plt[negCtrls[[ch]]]
+                     xvals$inh = plt[inhCtrls[[ch]]]
+                     xvals$act = plt[actCtrls[[ch]]]
                      controlsplot(xvals, yvals, main="", batch=x@batch)
 
                      ## density function needs at least 2 points
@@ -132,18 +90,11 @@ QMexperiment = function(x, path, con, posControls, negControls, isTwoWay=FALSE, 
                      ## control well, and a single plate, so that a single measurement
                      ## is available in either xpos or xneg or both.
 
-                     #xpos = xpos[!is.na(xpos)]
-                     #xneg=xneg[!is.na(xneg)]
-                     #xact=xact[!is.na(xact)]
-                     #xinh=xinh[!is.na(xinh)]
                      yvals=lapply(yvals, function(d) d[!is.na(d)])
-                     yvals.len = lapply(yvals, function(d) length(unlist(d))>1)
-                     if (yvals.len$neg & any(yvals.len[names(yvals)!="neg"])) {
-                       zfacs = zfacPos
-                       zfacs$act = zfacAct
-                       zfacs$inh = zfacInh
+                     yvals.len = sapply(yvals, length)>1
+                     if (yvals.len[["neg"]] & sum(yvals.len)>1) {
                        densityplot(values=yvals,
-                                   zfacs, main="")
+                                   zfacs= sapply(names(allZfac), function(i) allZfac[[i]][r,ch]), main="")
                      }
                    }, print=FALSE)
 
@@ -156,9 +107,9 @@ QMexperiment = function(x, path, con, posControls, negControls, isTwoWay=FALSE, 
           plotTable[count + 1, 1] = "<CENTER></CENTER>"
           plotTable[count + 1, ch+1] = "<CENTER><i>Values for 'pos' and 'neg' controls are missing.</i></CENTER>\n"
         }## else !allNA
-      } else {## if nrPos nrNeg
+      } else {## if nrPos & nrNeg
         plotTable[count + 1, 1] = "<CENTER></CENTER>"
-        plotTable[count + 1, ch+1] = "<CENTER><i>No controls ('pos' and 'neg') were found and/or 'x' is not normalized yet.</i></CENTER>\n"
+        plotTable[count + 1, ch+1] = "<CENTER><i>No controls ('pos' and 'neg') were found and/or the 'cellHTS' object is not normalized yet.</i></CENTER>\n"
       }## else nrPos nrNeg
 
       count = count + 1
@@ -171,11 +122,11 @@ QMexperiment = function(x, path, con, posControls, negControls, isTwoWay=FALSE, 
 
 
 ## --------------------------------------------------
-boxplotwithNA <- function(x, fac, batch,...) {
+boxplotwithNA <- function(x, batch,...) {
   sel = apply(x,2,function(x) all(is.na(x)))
   bc <- rep(1, ncol(x))
   bc[sel] <- NA
-  xsp = split(x, fac)
+  xsp = split(x, col(x))
   bp <- boxplot(xsp, plot=FALSE)
   border <- IQR(x, na.rm=TRUE)/10
   lowerLim <- min(bp$stats[1,], na.rm=TRUE)-border
@@ -188,8 +139,22 @@ boxplotwithNA <- function(x, fac, batch,...) {
     ind = 1:length(batch)
     abline(v=ind[as.logical(bdiff)]+0.5, lty=1)
   } 
-
 }
+
+
+## --------------------------------------------------
+colors4Controls <- function(vals){
+  len.x = length(vals)
+  cols <- c(neg="#2040FF", act="#E41A1C", inh="#FFFF00")  
+  if (len.x>3) {
+    Lab.pal = colorRampPalette(c("darkred",  "red", "orange"), space="Lab")(len.x-3)
+    names(Lab.pal) = names(vals)[! (names(vals) %in% names(cols))] 
+    cols <- append(cols, Lab.pal)
+    if ("pos" %in% names(cols) & len.x==4) cols["pos"]="#E41A1C"
+  }
+return(cols)
+}
+## --------------------------------------------------
 
 
 ## --------------------------------------------------
@@ -197,16 +162,10 @@ densityplot <- function(values, zfacs, ...) {
   dens <- list()
   ymax <- xmax <- xmin <- numeric(0)
 
-  len.x = length(values)
-  cols <- c(neg="#2040FF", act="#E41A1C", inh="#FFFF00")  
-  if (len.x>3) {
-    Lab.pal = colorRampPalette(c("darkred",  "red", "orange"), space="Lab")(len.x-3)
-    names(Lab.pal) = names(values)[! (names(values) %in% names(cols))] 
-    cols <- append(cols, Lab.pal)
-    if ("pos" %in% names(cols) & len.x==4) cols["pos"]="#E41A1C"
-  }
+  cols <- colors4Controls(values)
   sel <- sapply(values, length)
   values <- values[sel>1]
+
   zfacs <- zfacs[!is.na(zfacs)]
   for(i in 1:length(values)){
     theDens <- density(values[[i]], na.rm=TRUE, adjust=4)
@@ -222,9 +181,10 @@ densityplot <- function(values, zfacs, ...) {
   for(i in 2:length(dens))
     lines(dens[[i]], col=cols[names(dens)[i]])
   legend("top", legend=paste("'", names(dens), "' controls", sep=""), pch=16, col=cols[names(dens)],
-         bg="white", cex=0.7, title = paste(sprintf("Z'-factor (%s) = %g", names(zfacs), round(unlist(zfacs),2)),
+         bg="white", cex=0.7, title = paste(sprintf("Z'-factor (%s) = %g", names(zfacs), round(zfacs,2)),
                                 collapse=" "), horiz=TRUE, pt.cex=0.5, bty="n") 
 }
+
 
 
 ## --------------------------------------------------
@@ -239,15 +199,7 @@ controlsplot <- function(xvals, yvals, batch, ...) {
 #  ylim = c(1-sign(ylim[1])*0.25, 1+sign(ylim[2])*0.25)*ylim 
   inc = 0.2*diff(ylim)
   ylim = ylim+c(-inc, inc)
-  cols <- c(neg="#2040FF", act="#E41A1C", inh="#FFFF00") 
-  len.x = length(xvals)
-  if (len.x > 3) {
-    Lab.pal = colorRampPalette(c("darkred",  "red", "orange"), space="Lab")(len.x-3)
-    names(Lab.pal) = names(xvals)[! (names(xvals) %in% names(cols))] 
-    cols <- append(cols, Lab.pal)
-    if ("pos" %in% names(cols) & len.x==4) cols["pos"]="#E41A1C"
-  }
-
+  cols <- colors4Controls(xvals)
   sel <- sapply(xvals, length)
   xvals <- xvals[sel!=0]
   yvals <- yvals[sel!=0]

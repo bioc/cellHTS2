@@ -15,9 +15,11 @@ adjustVariance <- function(object, type="byBatch") {
 #  if(!(type %in% c("byPlate", "byBatch", "byExperiment"))) stop(sprintf("Undefined value %s for 'type'.", type))
 
   ## use the array stored in slot 'xnorm'
-   nrWpP <- dim(normdata(object))[1]
-   nrPlates <- dim(normdata(object))[2]
-   nrReplicates <- dim(normdata(object))[3]
+   xnorm <- normdata(object) 
+   d <- dim(xnorm)
+   nrWpP <- d[1]
+   nrPlates <- d[2]
+   nrReplicates <- d[3]
 
    samps <- (wellAnno(object)=="sample")
 
@@ -32,22 +34,23 @@ adjustVariance <- function(object, type="byBatch") {
    for(b in 1:nrBatches){
        pb <- platesPerBatch[[b]]
        spp <- samps[(1+nrWpP*(min(pb)-1)):(nrWpP*max(pb))]
-       normdata(object)[,pb,,] <- apply(normdata(object)[,pb,,, drop=FALSE], 3:4, function(z) z/mad(z[spp], na.rm=TRUE))
+       xnorm[,pb,,] <- apply(xnorm[,pb,,, drop=FALSE], 3:4, function(z) z/mad(z[spp], na.rm=TRUE))
    }
 
   } else {
     if(type=="byExperiment") {
       # adjust by the experiment-wide mad
-      normdata(object)[] <- apply(normdata(object), 3:4, function(z) z/mad(z[samps], na.rm=TRUE)) 
+      xnorm[] <- apply(xnorm, 3:4, function(z) z/mad(z[samps], na.rm=TRUE)) 
     } else {
   ## type="byPlate"
   ## adjust by the plate-wide mad
   for (p in 1:nrPlates) {
     spp <- samps[(1:nrWpP)+nrWpP*(p-1)]
-    normdata(object)[,p,,] <- apply(normdata(object)[,p,,,drop=FALSE], 3:4, function(z) z/mad(z[spp], na.rm=TRUE))
+    xnorm[,p,,] <- apply(xnorm[,p,,,drop=FALSE], 3:4, function(z) z/mad(z[spp], na.rm=TRUE))
   }
 }
 }
 
+normdata(object) <- xnorm
 return(object)
 }

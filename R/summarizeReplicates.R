@@ -20,7 +20,8 @@ summarizeReplicates=function(object, zscore="+", summary="min") {
     stop(sprintf("Invalid value '%s' for argument 'zscore'", zscore)))
 
   samps <- (wellAnno(object)=="sample")
-  normdata(object)[] = apply(normdata(object), 3:4, function(v) sg*(v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
+  xnorm <- normdata(object)
+  xnorm[] = apply(xnorm, 3:4, function(v) sg*(v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
 
   ## 2) Summarize between scored replicates:
 
@@ -53,8 +54,8 @@ summarizeReplicates=function(object, zscore="+", summary="min") {
 
 
   ## 2) Summarize between replicates:
-  mx <- getReplicatesMatrix(normdata(object), channel=1, na.rm=FALSE)
-  scores(object) <- switch(summary,
+  mx <- getReplicatesMatrix(xnorm, channel=1, na.rm=FALSE)
+  score <- switch(summary,
     mean = rowMeans(mx, na.rm=TRUE),
     max  = apply(mx, 1, myMax),
     min  = apply(mx, 1, myMin),
@@ -62,6 +63,9 @@ summarizeReplicates=function(object, zscore="+", summary="min") {
     closestToZero = apply(mx, 1, myClosestToZero),
     furthestFromZero = apply(mx, 1, myFurthestFromZero),
     stop(sprintf("Invalid value '%s' for argument 'summary'", summary)))
+
+  normdata(object) <- xnorm
+  scores(object) <- score
 
   object@state["scored"] = TRUE
   validObject(object)

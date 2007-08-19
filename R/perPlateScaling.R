@@ -44,15 +44,18 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
 
   if(stats=="negatives") statFun <- median else statFun <- get(stats, mode="function")
 
-  normdata(object) <- rawdata(object)
+  xnorm <- rawdata(object)
 
-  nrWpP <- dim(rawdata(object))[1]
-  nrPlates <- dim(rawdata(object))[2]
-  nrReplicates <- dim(rawdata(object))[3]
-  nrChannels <- dim(rawdata(object))[4]
+  d <- dim(xnorm)
+  nrWpP <- d[1]
+  nrPlates <- d[2]
+  nrReplicates <- d[3]
+  nrChannels <- d[4]
+  
+  wellAnnotation <- as.character(wellAnno(object))
 
   for(p in 1:nrPlates) {
-    wAnno = as.character(wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)])
+    wAnno = wellAnnotation[(1:nrWpP)+nrWpP*(p-1)]
     inds <- (wAnno=="sample")
     for(ch in 1:nrChannels){
         if(stats %in% "negatives"){
@@ -61,12 +64,13 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
         }
 
         for(r in 1:nrReplicates) {
-          if(all(is.na(rawdata(object)[inds, p, r, ch]))) {
+          if(all(is.na(xnorm[inds, p, r, ch]))) {
              stop(sprintf("No value for negative controls were found in plate %s, replicates %r, channel %d! Please use a different plate normalization method.", p, r, ch))
           }
-          normdata(object)[,p,r,ch] = funOperator(rawdata(object)[, p, r, ch], do.call(statFun, c(list(x=rawdata(object)[inds, p, r, ch]), funArgs)), op)
+          xnorm[,p,r,ch] <- funOperator(xnorm[, p, r, ch], do.call(statFun, c(list(x=xnorm[inds, p, r, ch]), funArgs)), op)
         }}
        }
+  normdata(object) <- xnorm
   return(object)
 }
 
@@ -82,18 +86,19 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
 
 controlsBasedNormalization <- function(object, method, posControls, negControls){
 
-  normdata(object) <- rawdata(object)
+  xnorm <- rawdata(object)
 
-  d <- dim(rawdata(object))
+  d <- dim(xnorm)
   nrWpP <- d[1]
   nrPlates <- d[2]
   nrReplicates <- d[3]
   nrChannels <- d[4]
 
+  wellAnnotation <- as.character(wellAnno(object))
   fun <- get(method, mode="function")
 
   for(p in 1:nrPlates) {
-    wAnno <- as.character(wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)])
+    wAnno <- wellAnnotation[(1:nrWpP)+nrWpP*(p-1)]
 
       for(ch in 1:nrChannels) {
         if(!(emptyOrNA(posControls[ch]))) pos <- findControls(posControls[ch], wAnno) else pos <- integer(0)
@@ -105,9 +110,10 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
         }
 
 	for(r in 1:nrReplicates)
-        normdata(object)[, p, r, ch] = fun(rawdata(object)[, p, r, ch], pos, neg, plate=p, replicate=r,channel=ch)
+        xnorm[, p, r, ch] = fun(xnorm[, p, r, ch], pos, neg, plate=p, replicate=r,channel=ch)
      } 
   }
+  normdata(object) <- xnorm
   return(object)
 }
 
@@ -123,26 +129,29 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
 
 
 Bscore <- function(object, save.model=FALSE) {
+
   if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
-## acts on slot 'xraw'
-  normdata(object) <- rawdata(object)
-  xdat <- normdata(object)
+  
+  ## acts on slot 'xraw'
+  xdat <- rawdata(object)
 
-  if(save.model) {
-     object@rowcol.effects <- array(as.numeric(NA), dim=dim(xdat))
-     object@overall.effects <- array(as.numeric(NA), dim=c(1, dim(xdat)[2:4]))
-  }
-
-
-  d <- dim(rawdata(object))
+  d <- dim(xdat)
   nrWpP <- d[1]
   nrPlates <- d[2]
   nrReplicates <- d[3]
   nrChannels <- d[4]
 
+  if(save.model) {
+     rowcol.effects <- array(as.numeric(NA), dim=d)
+     overall.effects <- array(as.numeric(NA), dim=c(1, d[2:4]))
+  }
+
+
+  isSample <- (wellAnno(object)=="sample")
+
   for(p in 1:nrPlates) {
     # use only sample wells for the fit:
-    samples = (wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)]=="sample")
+    samples = isSample[(1:nrWpP)+nrWpP*(p-1)]
 
     for(r in 1:nrReplicates)
       for(ch in 1:nrChannels) {
@@ -170,20 +179,26 @@ Bscore <- function(object, save.model=FALSE) {
 # if the effect is NA in both column and row elements, restore the NA value:
   if (sum(isNA)) rowcol[as.logical(isNA)] = NA
     #res is a matrix plate row * plate column
-  normdata(object)[, p, r, ch] <- as.vector(t(res))
+    xdat[, p, r, ch] <- as.vector(t(res))
 
   if (save.model) {
-      object@rowcol.effects[,p,r,ch] <- as.vector(t(rowcol))
+      rowcol.effects[,p,r,ch] <- as.vector(t(rowcol))
       #residuals[,p,r,ch] = as.vector(t(m$residuals)) ## DON'T USE m$residuals, otherwise we'll have more NA 
-      object@overall.effects[,p,r,ch]<-m$overall
+      overall.effects[,p,r,ch]<-m$overall
    }
   } 
-} 
-}
+} # ch
+}# p
 
-object@state["normalized"] = TRUE
-validObject(object)
-return(object)
+ if(save.model) {
+   object@rowcol.effects <- rowcol.effects
+   object@overall.effects <- overall.effects
+ }
+
+   normdata(object) <- xdat
+   object@state["normalized"] = TRUE
+   validObject(object)
+   return(object)
 }
 
 
@@ -205,18 +220,17 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
 
 
   ## acts on slot 'xraw'
-  normdata(object) <- rawdata(object)
+  xnorm <- rawdata(object)
 
   if (model=="locfit") require("locfit")
 
-
-  d <- dim(rawdata(object))
+  d <- dim(xnorm)
   nrWpP <- d[1]
   nrPlates <- d[2]
   nrReplicates <- d[3]
   nrChannels <- d[4]
 
-  rowcol.effects <- array(as.numeric(NA), dim=dim(rawdata(object)))
+  rowcol.effects <- array(as.numeric(NA), dim=d)
   position <- 1:prod(object@pdim)
 
 ## Map the position in the plates into a (x,y) coordinates of a cartesian system having its origin at the centre of the plate
@@ -226,13 +240,15 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
   xpos <- col - centre[1]
   ypos <- centre[2] - row
 
+  wAnno <- wellAnno(object)
+
   for(p in 1:nrPlates) {
     # use only sample wells for the fit:
-    samples <- (wellAnno(object)[(1:nrWpP)+nrWpP*(p-1)]=="sample")
+    samples <- (wAnno[(1:nrWpP)+nrWpP*(p-1)]=="sample")
 
     for(r in 1:nrReplicates)
       for(ch in 1:nrChannels){
-        y <- ysamp <- rawdata(object)[, p, r, ch]
+        y <- ysamp <- xnorm[, p, r, ch]
         if(!all(is.na(y))) {
           ysamp[!samples] <- NA
           y <- yf <- data.frame(y=y, xpos=xpos, ypos=ypos)
@@ -262,7 +278,7 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
         #replace predicted NA by 0 to avoid having extra NA entries in xn:
         isNA <- is.na(predx)
         predx[isNA] <- 0  # safe, because we are going to perform a subtraction
-        normdata(object)[,p,r,ch] <- y$y - predx
+        xnorm[,p,r,ch] <- y$y - predx
         # put back to NAs
         predx[isNA] <- NA  
 
@@ -279,6 +295,7 @@ spatialNormalization <- function(object, model="locfit", smoothPar=0.6, save.mod
    }
 
   object@state["normalized"] = TRUE
+  normdata(object) <- xnorm
   validObject(object)
   return(object)
 } #end function

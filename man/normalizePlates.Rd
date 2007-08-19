@@ -94,7 +94,12 @@ Additional outputs may be given if
 the \code{\link[cellHTS2:Bscore]{Bscore}} function and \code{\link[cellHTS2:spatialNormalization]{spatialNormalization}} function.
 }
 
-\author{Ligia Braz \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
+\author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
+
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
 
 \seealso{
   \code{\link[cellHTS2:Bscore]{Bscore}},

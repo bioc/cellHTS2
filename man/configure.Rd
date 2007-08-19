@@ -62,13 +62,15 @@ There are methods \code{show}, \code{configure}, \code{annotate}, \code{writeTab
 
 \author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia Braz \email{ligia@ebi.ac.uk}}
 
-\references{..}
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
 
 \examples{
-\dontrun{
-    datadir <- system.file("KcViabSmall", package = "cellHTS")
+
+    datadir <- system.file("KcViabSmall", package = "cellHTS2")
     x <- readPlateData("Platelist.txt", "KcViabSmall", path=datadir)
     x <- configure(x, "Plateconf.txt", "Screenlog.txt", "Description.txt", path=datadir)
 }
-}
+
 \keyword{methods}

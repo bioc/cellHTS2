@@ -10,6 +10,9 @@ plotSpatialEffects = function(object, channel=1, plates) {
 
 
   rowcol <- plateEffects(object)[["rowcol"]]
+  d <- dim(rawdata(object))
+  nrReplicates <- d[3]
+  nrPlates <- d[2]
 
  ## Check if rowcol.effects are not empty in the 'cellHTS' object
   if(length(rowcol)==0)
@@ -19,9 +22,9 @@ plotSpatialEffects = function(object, channel=1, plates) {
     stop("Choose a correct channel number using 'channel'!")  
 
   if (missing(plates)) {
-    plates = 1:dim(rawdata(object))[2]
+    plates = 1:nrPlates
   } else  {
-    if(!is(plates, "vector") | !all(plates %in% 1:dim(rawdata(object))[2]))
+    if(!is(plates, "vector") | !all(plates %in% 1:nrPlates))
      stop(sprintf("\n 'plates' should be a vector of integers between 1 and %s \n
      giving the ID number of the plates to display", dim(rawdata(object))[2]))
   }
@@ -37,12 +40,12 @@ plotSpatialEffects = function(object, channel=1, plates) {
 
   nPlates = length(plates)
 
-  pushViewport(viewport(layout = grid.layout(dim(object@xraw)[3], nPlates))) 
+  pushViewport(viewport(layout = grid.layout(nrReplicates, nPlates))) 
   selx = rowcol[,,,channel]
   # set range of sel to [-1,1]
   selx = (selx-myMin(selx))/(myMax(selx)-myMin(selx))
 
-  for (r in 1:dim(rawdata(object))[3]) 
+  for (r in 1:nrReplicates) 
     for (p in 1:nPlates) {
       wp = plates[p]
   #xrange = range(aux, na.rm=TRUE) 

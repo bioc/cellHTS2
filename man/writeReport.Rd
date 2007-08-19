@@ -9,6 +9,7 @@
 writeReport(x,
   outdir=file.path(getwd(), name(x)),
   force=FALSE,
+  map=FALSE,
   plotPlateArgs=FALSE,
   imageScreenArgs=NULL,
   progressReport = interactive(),
@@ -26,6 +27,7 @@ writeReport(x,
     if \code{outdir} exists and is not empty.
     If \code{force} is \code{TRUE}, the function overwrites (removes and recreates)
     \code{outdir}, otherwise it casts an error.}
+  \item{map}{a logical value indicating whether tooltips with the annotation should be added to the plate plots and image   screen. Default value is FALSE.}
   \item{plotPlateArgs}{either a list with parameters for the plate plots
     of the per plate quality report pages, or a logical scalar with values
     \code{FALSE} or \code{TRUE}.
@@ -52,8 +54,7 @@ writeReport(x,
    passed on to \code{\link[cellhts2]{imageScreen}}:
    \code{ar}, aspect ratio,
    \code{zrange}, range,
-   \code{map}, logical value indicating whether tooltips with the annotation should be added to the plot (default value is FALSE),
-   \code{anno}, gene annotation for the image map.
+   \code{anno}, gene annotation for the image map (if \code{map=TRUE}).
 
   \code{posControls} and \code{negControls} should be given as a vector of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file 
 (and stored in \code{x@wellAnno}). The length of these vectors should be equal to the number of reporters used in the screen (\code{dim(x@xraw)[4]} or to \code{dim(x@xnorm)[4]}, in case \code{x} contains multi-channel data that has been normalized by combining the values from two or more channels).
@@ -68,13 +69,13 @@ writeReport(x,
 
   The arguments \code{posControls} and \code{negControls} are particularly useful in multi-channel data since the controls might be reporter-specific, or after normalizing multi-channel data.
 
-In case of a two-way assay, where two types of "positive" controls are used in the screen ("activators" and "inhibitors"), \code{posControls} should be defined as a list with two components (called \code{act} and \code{inh}), each of which should be vectors of regular expressions of the same length as the current number of reporters (as explained above).  
+In the case of a two-way assay, where two types of "positive" controls are used in the screen ("activators" and "inhibitors"), \code{posControls} should be defined as a list with two components (called \code{act} and \code{inh}), each of which should be vectors of regular expressions of the same length as the current number of reporters (as explained above).  
 
 By default, tooltips doing the mapping between the probe annotation and the plate wells are not added to the plate plots and to the overall screen plot. If the cellHTS object \code{x} is annotated, the probe annotation used the information contained whether in \code{x@geneAnno$GeneSymbol}, or \code{x@geneAnno$GeneID}, if the former is missing. Otherwise, the mapping simply uses the well identifiers.
 }
 \seealso{
   \code{\link[prada:plotPlate]{plotPlate}},
-  \code{\link[cellhts2:imageScreen]{imageScreen}}
+  \code{\link[cellHTS2:imageScreen]{imageScreen}}
 }
 
 \value{
@@ -84,6 +85,11 @@ By default, tooltips doing the mapping between the probe annotation and the plat
 }
 
 \author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
+
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
 
 \examples{
     data(KcViabSmall)
@@ -98,10 +104,9 @@ By default, tooltips doing the mapping between the probe annotation and the plat
     \dontrun{
     x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
     x <- summarizeReplicates(x, zscore="-", summary="min")
-    writeReport(x, force=TRUE, plotPlateArgs = list(), imageScreenArgs=list(zrange=c(-4,4)))
+    ## to turn on the tooltips in the plate plots and in the image screen plot:
+    writeReport(x, force=TRUE, map=TRUE, plotPlateArgs = TRUE, imageScreenArgs=list(zrange=c(-4,4)))
     }
-    ## to turn on the tooltips in the overall screen image plot:
-    ## writeReport(x, force=TRUE, plotPlateArgs = list(), imageScreenArgs = list(zrange=c(-4,4), map=TRUE))
 }
 
 \keyword{manip}

@@ -47,7 +47,7 @@ readPlateData(filename, path=dirname(filename), name, importFun, verbose=interac
 }
 
 \value{
-  An object of class \code{"cellHTS"}, which is currently implemented as
+  An object of class \code{\linkS4class{cellHTS}}, which is currently implemented as
   a list with elements
   \item{name}{copy of the input argument \code{name}}
   \item{xraw}{an array of dimension plateSize x number of plates x
@@ -73,10 +73,15 @@ format used in the screen, and it is automatically determined from the plate res
     the object.}
 }
 
-\author{W. Huber \email{huber@ebi.ac.uk}, Ligia Braz \email{ligia@ebi.ac.uk}}
+\author{W. Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}
+
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
 
 \examples{
-    datadir <- system.file("KcViabSmall", package = "cellHTS")
+    datadir <- system.file("KcViabSmall", package = "cellHTS2")
     x <- readPlateData("Platelist.txt", "KcViabSmall", path=datadir)
 }
 \keyword{manip}

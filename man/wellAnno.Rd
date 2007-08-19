@@ -26,6 +26,11 @@ See \code{\linkS4class{cellHTS}} class for details.
 }
 \author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+}
+
+
 \seealso{
 \code{\linkS4class{cellHTS}}
 }

@@ -13,7 +13,7 @@ summarizeReplicates(object, zscore="+", summary ="min")
 }
 \arguments{
   \item{object}{a object of class \code{\linkS4class{cellHTS}} that has already been normalized (see details).}
-  \item{zscore}{a character string, either "+" (default) or "-", whi  \code{\link[cellHTS:summarizeChannels]{summarizeChannels}}ch will be used to set the sign to calculate the \emph{z}-scores before summarization. See details.}
+  \item{zscore}{a character string, either "+" (default) or "-", whi  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}ch will be used to set the sign to calculate the \emph{z}-scores before summarization. See details.}
   \item{summary}{a character string indicating how to summarize between replicate measurements. 
     One of "min" (default), "mean", "max", "rms", "closestToZero", or "FurthestFromZero" can be used (see details).}
 }
@@ -50,6 +50,10 @@ summarizeReplicates(object, zscore="+", summary ="min")
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}},
   \code{\link[cellHTS2:scores]{scores}}
+}
+
+\references{
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
 }
 
 

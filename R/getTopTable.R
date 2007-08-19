@@ -3,9 +3,12 @@
      ## or even by the user manually in xraw. Besides the categories in wellAnno(x), it contains the category "flagged".
 ## Returns an array with corrected well annotation.
 getArrayCorrectWellAnno <- function(x){
-  wellAnnoCorrected <- array(rep(wellAnno(x), times = prod(dim(rawdata(x))[3:4])), dim=dim(rawdata(x)))
+  wAnno <- wellAnno(x)
+  xraw <- rawdata(x)
+  d <- dim(xraw)
+  wellAnnoCorrected <- array(rep(wAnno, times = prod(d[3:4])), dim=d)
   ## see which wells are flagged, excluding "empty" wells
-  iflagged = as.logical(is.na(rawdata(x))*(wellAnno(x)!="empty"))
+  iflagged = as.logical(is.na(xraw)*(wAnno!="empty"))
   wellAnnoCorrected[iflagged]="flagged"
   return(wellAnnoCorrected)
  }
@@ -22,20 +25,24 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
   if(!state(x)["scored"])
     stop("Please score 'object' (using the function 'summarizeReplicates').")
 
-    d <- dim(normdata(x))
+    xraw <- rawdata(x)
+    xnorm <- normdata(x)
+    d <- dim(xnorm)
     nrWell <- d[1]
     nrPlate <- d[2]
     nrReplicate <- d[3]
     nrChannel <- d[4]
 
+    wAnno <- wellAnno(x)
+
     ## Checks whether the number of channels has changed after normalization
-    originalNrCh <- dim(rawdata(x))[4]
+    originalNrCh <- dim(xraw)[4]
     w <- 1:length(scores(x))
     out <- data.frame(
       plate=1 + (w-1)%/%nrWell,
       position=1+(w-1)%%nrWell,
       score=scores(x), 
-      wellAnno = wellAnno(x)
+      wellAnno = wAnno
     )
 
   ## array with corrected wellAnno information (by taking into account the wells that were flagged in the screen log file, or even by the user manually in xraw). Besides the categories in wellAnno(x), it contains the category "flagged".
@@ -43,7 +50,7 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
 
     ## Include the normalized values
     out[sprintf("normalized_r%d_ch%d", 1:nrReplicate, 1:nrChannel)] = sapply(1:nrChannel, 
-          function(i) round(getReplicatesMatrix(normdata(x), channel=i, na.rm=FALSE), 3))
+          function(i) round(getReplicatesMatrix(xnorm, channel=i, na.rm=FALSE), 3))
 
     ## include also the final well annotation (after the screen log file)
     out[sprintf("xrawAnno_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 
@@ -51,7 +58,7 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
 
     ## include also the raw values for each replicate and channel	 
     out[sprintf("raw_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 
-           function(i) getReplicatesMatrix(rawdata(x), channel=i, na.rm=FALSE))
+           function(i) getReplicatesMatrix(xraw, channel=i, na.rm=FALSE))
 
 
     ## median between replicates (raw data) 
@@ -68,10 +75,11 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
     }
 
     ## raw/plateMedian
-    xn <- array(as.numeric(NA), dim=dim(rawdata(x)))
+    xn <- array(as.numeric(NA), dim=dim(xraw))
+    isSample <- (as.character(wAnno) == "sample")
     for(p in 1:nrPlate) {
-      samples <- (wellAnno(x)[(1:nrWell)+nrWell*(p-1)]=="sample")
-      xn[,p,,] <- apply(rawdata(x)[,p,,,drop=FALSE], 3:4, function(j) j/median(j[samples], na.rm=TRUE))
+      samples <- isSample[(1:nrWell)+nrWell*(p-1)]
+      xn[,p,,] <- apply(xraw[,p,,,drop=FALSE], 3:4, function(j) j/median(j[samples], na.rm=TRUE))
     }
 
       out[sprintf("raw/PlateMedian_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 
@@ -79,8 +87,8 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
            signif(getReplicatesMatrix(xn, channel=i, na.rm=FALSE), 3)  })
 
     if(state(x)["annotated"]) {
-      out = cbind(out, geneAnno(x))
-      out = out[,!duplicated(tolower(names(out)))] 
+      n <- tolower(names(geneAnno(x)))
+      out <- cbind(out, geneAnno(x)[!(n %in% tolower(names(out)))])
     }
 
     ## Export everything to the file
@@ -90,7 +98,7 @@ getTopTable <- function(x, file="topTable.txt", verbose=interactive()){
     ##     out = out[toconsider,]
     out = out[order(out$score, decreasing=TRUE), ]
     out$score = round(out$score, 2)
-    write.tabdel(out, file=file)
     if(verbose) cat(sprintf("Saving 'topTable' list in file '%s'\n", file))
+    write.tabdel(out, file=file)
     return(out)
 }
