@@ -16,23 +16,26 @@ write.tabdel(\dots)
 \details{A trivial function, which we have included for convenience.}
 \value{The name of the file that was written.}
 \seealso{\code{\link[base:write.table]{write.table}}}
-\author{Ligia Braz \email{ligia@ebi.ac.uk}}
+\author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \examples{
     data(KcViabSmall)
     x <- KcViabSmall
     ## determine the ratio between each well and the plate median
-    y <- array(as.numeric(NA), dim=dim(x@xraw))
-    nrWell <- dim(x@xraw)[1]
-    for(p in 1:(dim(x@xraw)[2])) {
-      samples <- (x@wellAnno[(1:nrWell)+nrWell*(p-1)]=="sample")
-      y[, p, , ] <- apply(x@xraw[, p, , , drop=FALSE], 3:4, function(w) w/median(w[samples], na.rm=TRUE))
+    xraw <- Data(x)
+    y <- array(as.numeric(NA), dim=dim(xraw))
+    nrWell <- prod(pdim(x))
+
+    for(p in 1:max(plate(x))) {
+      ind <- (1:nrWell)+nrWell*(p-1)
+      samples <- (wellAnno(x)[ind]=="sample")
+      y[ind, ,] <- apply(xraw[ind, , ,drop=FALSE], 2:3, function(w) w/median(w[samples], na.rm=TRUE))
     }
     y <- signif(y, 4)
-    out <- matrix(y, nrow=prod(dim(y)[1:2]), ncol=dim(y)[3:4])
-    out <- cbind(x@geneAnno, x@wellAnno, out)
-    colnames(out) <- c(names(x@geneAnno), "wellAnno",
-       sprintf("Well/Median_r\%d_ch\%d", rep(1:dim(y)[3], dim(y)[4]), rep(1:dim(y)[4], each=dim(y)[3])))
+    out <- y[,,1]
+    out <- cbind(geneAnno(x), wellAnno(x), out)
+    colnames(out) <- c("GeneID", "wellAnno",
+       sprintf("Well/Median_r\%d_ch\%d", rep(1:dim(y)[2], dim(y)[3]), rep(1:dim(y)[3], each=dim(y)[2])))
     write.tabdel(out, file = tempfile())
 }
 \keyword{manip}

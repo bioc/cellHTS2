@@ -1,97 +1,10 @@
-Batch	Well	Content	Comment
-1	A01	mock	mock
-1	A02	mock	mock
-1	A03	sample	
-1	A04	sample	
-1	A05	sample	
-1	A06	sample	
-1	A07	sample	
-1	A08	sample	
-1	A09	sample	
-1	A10	sample	
-1	A11	sample	
-1	A12	sample	
-1	B01	GFP	GFP
-1	B02	empty	DDIT3
-1	B03	sample	
-1	B04	sample	
-1	B05	sample	
-1	B06	sample	
-1	B07	sample	
-1	B08	sample	
-1	B09	sample	
-1	B10	sample	
-1	B11	sample	
-1	B12	sample	
-1	C01	AATK	up
-1	C02	MAP2K6	down
-1	C03	sample	
-1	C04	sample	
-1	C05	sample	
-1	C06	sample	
-1	C07	sample	
-1	C08	sample	
-1	C09	sample	
-1	C10	sample	
-1	C11	sample	
-1	C12	sample	
-1	D01	empty	CD14
-1	D02	mock	mock
-1	D03	sample	
-1	D04	sample	
-1	D05	sample	
-1	D06	sample	
-1	D07	sample	
-1	D08	sample	
-1	D09	sample	
-1	D10	sample	
-1	D11	sample	
-1	D12	sample	
-1	E01	mock	mock
-1	E02	empty	CD14
-1	E03	sample	
-1	E04	sample	
-1	E05	sample	
-1	E06	sample	
-1	E07	sample	
-1	E08	sample	
-1	E09	sample	
-1	E10	sample	
-1	E11	sample	
-1	E12	sample	
-1	F01	MAP2K6	down
-1	F02	ATTK	up
-1	F03	sample	
-1	F04	sample	
-1	F05	sample	
-1	F06	sample	
-1	F07	sample	
-1	F08	sample	
-1	F09	sample	
-1	F10	sample	
-1	F11	sample	
-1	F12	sample	
-1	G01	empty	DDIT3
-1	G02	GFP	GFP
-1	G03	sample	
-1	G04	sample	
-1	G05	sample	
-1	G06	sample	
-1	G07	sample	
-1	G08	sample	
-1	G09	sample	
-1	G10	sample	
-1	G11	sample	
-1	G12	sample	
-1	H01	mock	mock
-1	H02	mock	mock
-1	H03	sample	
-1	H04	sample	
-1	H05	sample	
-1	H06	sample	
-1	H07	sample	
-1	H08	sample	
-1	H09	sample	
-1	H10	sample	
-1	H11	sample	
-1	H12	sample	
+Wells: 96
+Plates: 1
+Plate	Well	Content	Comment
+*	*	sample	
+*	[A,H]0[1-2]|D02|E01	mock	mock
+*	B01|G02	GFP	GFP
+*	B02|G01	empty	DDIT3
+*	C01|F02	AATK	up
+*	C02|F01	MAP2K6	down
+*	D01|E02	empty	CD14

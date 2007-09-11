@@ -1,44 +1,42 @@
 importFrom("methods", "show")
+importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 
-exportClasses("cellHTS", "ROC")
+exportClasses("cellHTS")
 
 export("oneRowPerId", 
        "Bscore",
-       "getDynamicRange",
-       "getMeasureRepAgreement",
-       "getReplicatesMatrix",
-       "getTopTable",
-       "getZfactor",
-       "imageScreen",
+       "convertWellCoordinates",
+       "getEnVisionRawData",
+       "getEnVisionCrosstalkCorrectedData",
        "normalizePlates",
-       "normalizePlatesAgain",
-       "readPlateData",
+       "readPlateList",
        "spatialNormalization",
        "summarizeChannels",
        "summarizeReplicates",
-       "plotSpatialEffects",
-       "writeReport",
        "write.tabdel")
 
 exportMethods("annotate",
+       "batch",
+       "batch<-",
        "configure",
-       "description",
+       "Data",
+       "Data<-",
        "geneAnno",
-       "lines",
+       "initialize",
+       "intensityFiles",
+       "pdim",
+       "plate",
+       "plateConf",
+       "plateEffects",
+       "plateList",
+       "position",
        "name",
        "name<-",
-       "normdata",
-       "normdata<-",
-       "plateEffects",
-       "plot",
-       "rawdata",
-       "rawdata<-",
-       "scores",
-       "scores<-",  
-       "show",
+       "nbatch",
+       "screenDesc",
+       "screenLog",
        "state",
+       "well",
        "wellAnno",
        "writeTab")
-
-
 

@@ -14,6 +14,7 @@ x <- scan(fname, what = as.list(rep("", nCol)), skip = pp-1,
 x <- sapply(x[-1], function(y) as.numeric(y[-1]))
 
 nums <- rep(1:ncol(x), nrow(x))
+nums <- sapply(nums, function(i) if(i<10) paste(0, i, sep="") else i) 
 lets <- rep(LETTERS[1:nrow(x)], each=ncol(x))
 wells <- paste(lets, nums, sep="")
 # put as a row-wise vector
