@@ -1,0 +1,248 @@
+\name{cellHTS-class}
+\docType{class}
+\alias{cellHTS-class}
+\alias{cellHTS}
+\alias{class.cellHTS}
+
+\alias{show,cellHTS-method}
+\alias{name}
+\alias{name<-}
+\alias{name,cellHTS-method}
+\alias{name<-,cellHTS,character-method}
+\alias{initialize,cellHTS-method}
+%\alias{pdim,cellHTS-method}
+\alias{nbatch}
+\alias{nbatch,cellHTS-method}
+%% COMPLETE THE CLASS-SPECIFIC METHODS
+
+\title{
+  Class to contain cell-based high-throughput RNAi data and experimental meta-data
+}
+
+\description{
+  Container for cell-based high-throughput RNA interference assays performed in plate format.
+  It extends the \code{\link[Biobase]{NChannelSet}} class.
+  Data are from experiments where the same set of features (probes) where used. 
+  It can contain data from multi-channel assays.
+  Each group of plate results (replicates, conditions) for a given channel is called a \sQuote{sample}.
+}
+
+\section{Objects from the Class}{
+  Objects can be created by calls of the form \code{new("cellHTS",
+    assayData, phenoData, ...)}. See the examples below.
+}
+
+\section{Slots}{
+  \describe{
+
+  \item{\code{plateList}:}{
+    a \code{\link{data.frame}} containing what was read from input measurement data files
+    plus a column \code{status} of type character containing the string "OK" if the data import
+    appeared to have gone well, and the respective error or warning
+    message otherwise.}
+
+  \item{\code{intensityFiles}:}{
+    a list, where each component contains a
+    copy of the imported input data files. Its length corresponds to the
+    number of rows of \code{plateList}.
+   }
+
+
+  \item{\code{state}:}{
+    a logical vector of length 4 representing the processing status of
+    the object. Should have the names "configured", "normalized", "scored" and "annotated".
+    }
+
+
+  \item{\code{plateConf}:}{
+  a \code{\link{data.frame}} containing what was read from the \emph{configuration file} for the experiment (except the first two header rows). It contains at least three columns named \code{Plate}, \code{Well} and \code{Content}. 
+Columns \code{Plate} and \code{Well} are allowed to contain regular expressions.
+    }
+
+  \item{\code{screenLog}:}{
+  a \code{\link{data.frame}} containing what was read from the \emph{screen log file} for the experiment, in case it exists. Contains at least three columns, and column names \code{Plate}, \code{Well},
+and \code{Flag}.
+      }
+
+
+  \item{\code{screenDesc}:}{
+    a character containing what was read from the \emph{description file} of the experiment.
+       }
+
+  \item{\code{batch}:}{
+    a 3D-array with the first two dimensions corresponding to the dimension of 
+    each matrix in \code{assayData} slot and the third dimension corresponding to the number of channels in 
+    \code{assayData} slot (Features x Samples x Channels). 
+    Should contain integer values giving the batch number (1, 2, ...)
+    for each plate, sample and channel. 
+   }
+
+ \item{\code{rowcol.effects}:}{
+   a 3D array of size Features (i.e. plate size x number of plates) x
+    Samples x Channels containing estimated row and column plate spatial offsets.
+   }
+
+ \item{\code{overall.effects}:}{
+    a 3D array of size Features x Samples x Channels containing estimated plate overall offsets.}
+
+    \item{\code{assayData}:}{
+      Object of class \code{\link[Biobase]{AssayData}}, usually
+      an environment containing matrices of identical size. Each matrix
+      represents a single channel. Columns in each matrix correspond to
+      samples (or replicate), rows to features (probes). 
+      Once created, \code{cellHTS} manages
+      coordination of samples and channels.
+    }
+
+    \item{\code{phenoData}:}{
+      Object of class \code{\link[Biobase]{AnnotatedDataFrame}}.
+      Please see \code{phenoData} slot of \code{\link[Biobase]{NChannelSet}} for more details.
+
+      It contains information about the screens, and it must have the following columns in \code{data} component of this slot:
+     \code{replicate} and \code{assay}, where \code{replicate} is expected to be a vector of integers giving the replicate number, while \code{assay} is expected to be a vector of characters gving the name of the biological assay. Both of these vectors should have the same length as the number of Samples.
+
+      Once created, \code{cellHTS} coordinates selection and subsetting
+      of channels in \code{phenoData}.
+}      
+     \item{\code{featureData}:}{
+      Object of class \code{\link[Biobase]{AnnotatedDataFrame}}, used to contain
+      feature data that is unique to this experiment.
+It may contain information about the reagents: plate, well, column, the well annotation (sample, control, etc.), etc.
+
+For a \code{\linkS4class{cellHTS}} object, this slot must contain in the \code{data} component of this slot at least three mandatory columns named \code{plate}, \code{well} and \code{controlStatus}.
+These are vectors with the same size of the number of Features in the experiments.
+Column \code{plate} is expected to be a numeric vector giving the plate number (e.g. 1, 2, ...), \code{well} should be a vector of characters (alphanumeric characters) giving the well ID within the plate (e.g. A01, B01, H12, etc.). 
+Column \code{controlStatus} should be a factor specifying the annotation for each well with possible levels: \emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and \emph{pos}. Other levels may be employed for the positive and negative controls, besides \emph{pos} and \emph{neg}.
+    }
+
+    \item{\code{experimentData}:}{
+      Object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
+      experiment.
+    }
+
+    \item{\code{annotation}:}{
+      Object of class \code{"character"}. Usually a length-1 character
+      string identifying the RNAi technology used during the
+      experiment. The annotation string is used to retrieve information 
+      about features, e.g., using the \code{annotation} package.}
+
+    \item{\code{.__classVersion__}:}{
+      Object of class \code{\link[Biobase]{Versions}}, containing
+      automatically created information about the class definition
+      Biobase package version, and other information about the user
+      system at the time the instance was created. See
+      \code{\link[Biobase]{classVersion}} and \code{\link[Biobase]{updateObject}} for
+      examples of use.
+    }
+  }
+}
+
+
+\section{Extends}{
+  Class \code{"\linkS4class{NChannelSet}"}, directly.
+  Class \code{"\linkS4class{eSet}"}, by class "eSet", distance 2.
+  Class \code{"\linkS4class{VersionedBiobase}"}, by class "eSet", distance 3.
+  Class \code{"\linkS4class{Versioned}"}, by class "eSet", distance 4.
+}
+
+
+\section{Methods}{
+  Methods with class-specific functionality:
+  \describe{
+
+% COMPLETE THE CLASS-SPECIFIC METHODS
+
+    \item{\code{name(object)}}{
+      \code{signature(object="cellHTS")}.
+      Obtains the names of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
+    }
+
+    \item{\code{name(object) <- value}}{
+      \code{signature(object = "cellHTS", value = "character")} assign
+      the character of length one (\code{value}) to the elements in column \code{assay} of the slot \code{phenoData} of
+      \code{object}.
+    }
+
+    \item{\code{pdim(object)}}{
+      \code{signature(object = "cellHTS")}.
+      Obtain the plate dimension for the data stored in \code{object}.
+    }
+
+    \item{\code{nbatch(object)}}{
+      \code{signature(object = "cellHTS")}.
+      Obtain the total number of batches for the data stored in \code{object}.
+    }
+     
+  }% describe
+
+  Methods with functionality derived from class \code{\linkS4class{NChannelSet}}:
+      \code{channel}, 
+      \code{channelNames}, 
+      \code{selectChannels}, 
+      \code{object[features, samples]}, 
+      \code{sampleNames}      
+
+  Methods with functionality derived from \code{\link[Biobase]{eSet}}:
+  \code{annotation}, \code{assayData}, \code{assayData<-},
+  \code{classVersion}, \code{classVersion<-}, \code{dim}, \code{dims},
+  \code{experimentData}, \code{featureData}, \code{phenoData},
+  \code{phenoData<-}, \code{pubMedIds}, \code{sampleNames},
+  \code{sampleNames<-}, \code{storageMode}, \code{varMetadata},
+  \code{isCurrent}, \code{isVersioned}.
+%, \code{updateObject}.
+
+  Additional methods: 
+  \describe{
+%\code{coerce} (\sQuote(as), to convert between
+%  objects, if possible), 
+
+   \item{\code{initialize}}{used internally for
+  creating objects}
+
+   \item{\code{show}}{invoked automatically when the
+  object is displayed to the screen. It prints a summary of the object.}
+
+    \item{\code{state}}{Access the \code{state} slot of a \code{\linkS4class{cellHTS}} instance.}
+
+    \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}} object using the \emph{screen annotation file}.}
+    \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the the \emph{screen description file}, the \emph{screen configuration file} and the \emph{screen log file}.} 
+    \item{\code{writeTab}}{Write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
+%\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
+%\item{\code{ROC}}{Construct an object of S4 class \code{\linkS4class{ROC}},
+%  which represents a receiver-operator-characteristic curve,
+%  from the data of the annotated positive and negative controls in a
+%  scored \code{\linkS4class{cellHTS}} object.}
+%  }
+} %describe
+}
+
+\author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
+
+\seealso{
+  \code{\linkS4class{NChannelSet}}
+  \code{\link[cellHTS2:readPlateList]{reaPlateList}}
+  \code{\link[cellHTS2:annotate]{annotate}}
+  \code{\link[cellHTS2:configure]{configure}}
+  \code{\link[cellHTS2:writeTab]{writeTab}}
+   \code{\link[cellHTS2:state]{state}}
+  \code{\link[cellHTS2:Data]{Data}}
+  \code{\link[cellHTS2:normalizePlates]{normalizePlates}}
+%  \code{\link[cellHTS2:ROC]{ROC}}
+
+}
+
+\examples{
+    showClass("cellHTS")
+    showMethods(class="cellHTS")
+  
+    ## An empty cellHTS
+    obj <- new("cellHTS")
+
+    data("KcViabSmall")
+    KcViabSmall
+    state(KcViabSmall)
+    ## Replicate 1 as a cellHTS object
+    KcViabSmall[,1] 
+}
+
+\keyword{classes}
