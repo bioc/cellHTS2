@@ -25,10 +25,12 @@
   \item{geneIDFile}{This file is expected to be a tab-delimited file with at least three columns, and column names \code{Plate}, \code{Well} and \code{GeneID}. The contents of \code{Plate} are expected to be integer. Further columns are allowed.}
 }
 
-\value{An S4 object of class \code{\linkS4class{cellHTS}}, which inherits from class \code{\link[Biobase]{NChannelSet}}. The following slots are updates after calling this function:
+\value{An S4 object of class \code{\linkS4class{cellHTS}},
+  which inherits from class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}.
+  The following slots are updates after calling this function:
   \item{featureData}{the contents of the annotation file are stored here.}
-  \item{state}{the processing status of the \code{cellHTS} object is updated to \code{state["annotated"]= TRUE}.}
-
+  \item{state}{the processing status of the \code{cellHTS} object is
+    updated to \code{state["annotated"]= TRUE}.}
 }
 
 \seealso{

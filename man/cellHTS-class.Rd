@@ -21,7 +21,7 @@
 
 \description{
   Container for cell-based high-throughput RNA interference assays performed in plate format.
-  It extends the \code{\link[Biobase]{NChannelSet}} class.
+  It extends the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class.
   Data are from experiments where the same set of features (probes) where used. 
   It can contain data from multi-channel assays.
   Each group of plate results (replicates, conditions) for a given channel is called a \sQuote{sample}.
@@ -83,42 +83,51 @@ and \code{Flag}.
    }
 
  \item{\code{overall.effects}:}{
-    a 3D array of size Features x Samples x Channels containing estimated plate overall offsets.}
+   a 3D array of size Features x Samples x Channels containing estimated plate overall offsets.}
 
-    \item{\code{assayData}:}{
-      Object of class \code{\link[Biobase]{AssayData}}, usually
-      an environment containing matrices of identical size. Each matrix
-      represents a single channel. Columns in each matrix correspond to
-      samples (or replicate), rows to features (probes). 
-      Once created, \code{cellHTS} manages
-      coordination of samples and channels.
-    }
+ \item{\code{assayData}:}{
+   Object of class \code{\link[Biobase:class.AssayData]{AssayData}}, usually
+   an environment containing matrices of identical size. Each matrix
+   represents a single channel. Columns in each matrix correspond to
+   samples (or replicate), rows to features (probes). 
+   Once created, \code{cellHTS} manages coordination of samples and channels.
+ }
 
-    \item{\code{phenoData}:}{
-      Object of class \code{\link[Biobase]{AnnotatedDataFrame}}.
-      Please see \code{phenoData} slot of \code{\link[Biobase]{NChannelSet}} for more details.
+ \item{\code{phenoData}:}{
+   Object of class \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}}.
+   Please see the documentation of the \code{phenoData} slot of
+   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} for more details.
 
-      It contains information about the screens, and it must have the following columns in \code{data} component of this slot:
-     \code{replicate} and \code{assay}, where \code{replicate} is expected to be a vector of integers giving the replicate number, while \code{assay} is expected to be a vector of characters gving the name of the biological assay. Both of these vectors should have the same length as the number of Samples.
+   It contains information about the screens, and it must have the
+   following columns in the \code{data} component of this slot:
+   \code{replicate} and \code{assay}, where \code{replicate} is expected
+   to be a vector of integers giving the replicate number, while
+   \code{assay} is expected to be a vector of characters gving the name of
+   the biological assay. Both of these vectors should have the same length
+   as the number of Samples.
 
-      Once created, \code{cellHTS} coordinates selection and subsetting
-      of channels in \code{phenoData}.
-}      
-     \item{\code{featureData}:}{
-      Object of class \code{\link[Biobase]{AnnotatedDataFrame}}, used to contain
-      feature data that is unique to this experiment.
-It may contain information about the reagents: plate, well, column, the well annotation (sample, control, etc.), etc.
+   Once created, \code{cellHTS} coordinates selection and subsetting
+   of channels in \code{phenoData}.
+ }      
 
+ \item{\code{featureData}:}{
+   Object of class
+   \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}},
+   used to contain
+   feature data that is unique to this experiment.
+   It may contain information about the reagents: plate, well, column,
+   the well annotation (sample, control, etc.), etc.
+   
 For a \code{\linkS4class{cellHTS}} object, this slot must contain in the \code{data} component of this slot at least three mandatory columns named \code{plate}, \code{well} and \code{controlStatus}.
 These are vectors with the same size of the number of Features in the experiments.
 Column \code{plate} is expected to be a numeric vector giving the plate number (e.g. 1, 2, ...), \code{well} should be a vector of characters (alphanumeric characters) giving the well ID within the plate (e.g. A01, B01, H12, etc.). 
 Column \code{controlStatus} should be a factor specifying the annotation for each well with possible levels: \emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and \emph{pos}. Other levels may be employed for the positive and negative controls, besides \emph{pos} and \emph{neg}.
     }
 
-    \item{\code{experimentData}:}{
-      Object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
-      experiment.
-    }
+ \item{\code{experimentData}:}{
+   Object of class \code{\link[Biobase:class.MIAME]{MIAME}} containing descriptions of the
+   experiment.
+ }
 
     \item{\code{annotation}:}{
       Object of class \code{"character"}. Usually a length-1 character
@@ -127,7 +136,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
       about features, e.g., using the \code{annotation} package.}
 
     \item{\code{.__classVersion__}:}{
-      Object of class \code{\link[Biobase]{Versions}}, containing
+      Object of class \code{\link[Biobase:class.Versions]{Versions}}, containing
       automatically created information about the class definition
       Biobase package version, and other information about the user
       system at the time the instance was created. See
@@ -139,10 +148,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
 
 
 \section{Extends}{
-  Class \code{"\linkS4class{NChannelSet}"}, directly.
-  Class \code{"\linkS4class{eSet}"}, by class "eSet", distance 2.
-  Class \code{"\linkS4class{VersionedBiobase}"}, by class "eSet", distance 3.
-  Class \code{"\linkS4class{Versioned}"}, by class "eSet", distance 4.
+  Class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}, directly.
 }
 
 
@@ -182,7 +188,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
       \code{object[features, samples]}, 
       \code{sampleNames}      
 
-  Methods with functionality derived from \code{\link[Biobase]{eSet}}:
+  Methods with functionality derived from \code{\link[Biobase:class.eSet]{eSet}}:
   \code{annotation}, \code{assayData}, \code{assayData<-},
   \code{classVersion}, \code{classVersion<-}, \code{dim}, \code{dims},
   \code{experimentData}, \code{featureData}, \code{phenoData},
