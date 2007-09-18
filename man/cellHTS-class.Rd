@@ -13,6 +13,9 @@
 %\alias{pdim,cellHTS-method}
 \alias{nbatch}
 \alias{nbatch,cellHTS-method}
+\alias{compare2cellHTS}
+\alias{compare2cellHTS,cellHTS,cellHTS-method}
+
 %% COMPLETE THE CLASS-SPECIFIC METHODS
 
 \title{
@@ -179,6 +182,11 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
       Obtain the total number of batches for the data stored in \code{object}.
     }
      
+    \item{\code{compare2cellHTS(x, y)}}{
+      \code{signature(x = "cellHTS", y = "cellHTS")}.
+      Compares two \code{\linkS4class{cellHTS}} objects, \code{x} and \code{y}, returning \code{TRUE} if they are from the same experiment (i.e. if they derive from the same initial \code{cellHTS} object), or \code{FALSE} otherwise.
+    }
+
   }% describe
 
   Methods with functionality derived from class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}:
@@ -214,11 +222,11 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
     \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the the \emph{screen description file}, the \emph{screen configuration file} and the \emph{screen log file}.} 
     \item{\code{writeTab}}{Write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
 %\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
-%\item{\code{ROC}}{Construct an object of S4 class \code{\linkS4class{ROC}},
-%  which represents a receiver-operator-characteristic curve,
-%  from the data of the annotated positive and negative controls in a
-%  scored \code{\linkS4class{cellHTS}} object.}
-%  }
+\item{\code{ROC}}{Construct an object of S4 class \code{\linkS4class{ROC}},
+  which represents a receiver-operator-characteristic curve,
+  from the data of the annotated positive and negative controls in a
+  scored \code{\linkS4class{cellHTS}} object.}
+
 } %describe
 }
 
@@ -233,7 +241,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
    \code{\link[cellHTS2:state]{state}}
   \code{\link[cellHTS2:Data]{Data}}
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}}
-%  \code{\link[cellHTS2:ROC]{ROC}}
+  \code{\link{ROC}}
 
 }
 
@@ -248,7 +256,10 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
     KcViabSmall
     state(KcViabSmall)
     ## Replicate 1 as a cellHTS object
-    KcViabSmall[,1] 
+    y <- KcViabSmall[,1] 
+    compare2cellHTS(KcViabSmall, y)
+    data("KcViab")
+    compare2cellHTS(KcViab, KcViabSmall)
 }
 
 \keyword{classes}

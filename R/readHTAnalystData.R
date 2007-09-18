@@ -161,7 +161,7 @@ if(verbose) cat("Reading file", basename(filename), "\n")
                     paste(whichmissing, collapse=", ")))
   whichdup = which(duplicated(bc))
   if(length(whichdup)>0)
-    error(sprintf("Duplicated barcode: %s ***",
+    stop(sprintf("Duplicated barcode: %s ***",
                   paste(whichdup, collapse=", ")))
 
   ## determine the limits of each plate:

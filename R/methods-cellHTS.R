@@ -288,7 +288,7 @@ desc=c("[Lab description]",
 
 setMethod("name", signature(object="cellHTS"),
           function(object) {
-             unique(pData(object)$"assay")
+            unique(as.character(pData(object)$"assay"))
           })
 
 setReplaceMethod("name",
@@ -586,8 +586,6 @@ if (!missing(path))
 ##----------------------------------------
 ## Export the contents of assayData slot of 'object' to a file as .txt
 ##----------------------------------------
-
-
 setMethod("writeTab", signature("cellHTS"), 
    function(object, file=paste(name(object), "txt", sep=".")) {
 
@@ -611,7 +609,48 @@ if(is.null(Data(object))) stop("No available data in 'object'!")
 })
 
 
+##----------------------------------------
+## Compares two cellHTS objects to find out whether they derived from the same initial cellHTS object
+##----------------------------------------
+## Generic method for cellHTS class
+## Function that compares different cellHTS objects to 
+setMethod("compare2cellHTS",
+          signature(x="cellHTS", y="cellHTS"),
+          function(x, y) {
 
+   out <- tryCatch({
+     # slots that should always be defined when a cellHTS object was created by reading input data files
+     stopifnot(identical(name(x), name(y)),
+            identical(plateList(x), plateList(y)),
+            identical(intensityFiles(x), intensityFiles(y)),
+            identical(dim(x)[1], dim(y)[1]),
+            identical(pdim(x), pdim(y)),
+            identical(plate(x), plate(y)),
+            identical(well(x), well(y))
+            )
+    if(state(x)[["configured"]] & state(y)[["configured"]]) {
+        stopifnot(identical(plateConf(x), plateConf(y)),
+                  identical(screenLog(x), screenLog(y)),
+ 		  identical(screenDesc(x), screenDesc(y)),
+                  identical(experimentData(x), experimentData(y)),
+                  identical(wellAnno(x), wellAnno(y)))
+      }
+
+     if(state(x)[["annotated"]] & state(y)[["annotated"]])  stopifnot(identical(geneAnno(x), geneAnno(y)))
+
+     TRUE
+             },
+ #    warning = function(e) {
+ #               paste(class(e)[1], e$message, sep=": ")
+ #             }, 
+     error = function(e) {
+                return(FALSE) #paste(class(e)[1], e$message, sep=": ")
+              }
+   )
+# don't consider classVersion(x) vs classVersion(y)
+return(out)
+}
+)
 
 
 ##-------------------------------------------

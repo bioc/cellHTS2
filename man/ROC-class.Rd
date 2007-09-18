@@ -50,7 +50,6 @@ Container for data that represent a receiver-operator-characteristic curve, and 
 
 \seealso{
   \code{\link[cellHTS2:ROC]{ROC}}
-  \code{\link[cellHTS2:scores]{scores}}
 }
 
 \examples{

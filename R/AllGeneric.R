@@ -47,5 +47,7 @@ setGeneric("batch<-", def=function(object, value) standardGeneric("batch<-"))
 
 setGeneric("nbatch", def=function(object) standardGeneric("nbatch"))
 
+setGeneric("compare2cellHTS", def=function(x,y) standardGeneric("compare2cellHTS"))
+
 setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
 
