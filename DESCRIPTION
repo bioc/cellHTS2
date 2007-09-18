@@ -14,7 +14,7 @@ URL: http://www.dkfz.de/signaling, http://www.ebi.ac.uk/huber
 biocViews: CellBasedAssays, Preprocessing, Visualization
 Collate: AllClasses.R  AllGeneric.R adjustVariance.R
 	 checkColumns.R  checkControls.R  convertWellCoordinates.R
-         envisionPlateReader.R   getTopTable.R
+         envisionPlateReader.R   getMeasureRepAgreement.R  getTopTable.R
          methods-cellHTS.R  methods-ROC.R  normalizePlates.R  
          oneRowPerId.R  perPlateScaling.R 
          readHTAnalystData.R    readPlateList.R  
