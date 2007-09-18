@@ -34,7 +34,7 @@ Generic functions: \code{\link{show}}, \code{\link{initialize}},
 \code{\link{validObject}}.
 
 Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}}, 
-\code{\link{readPlateList}}, \code{\link{normalizePlates}}, 
+\code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, %\code{\link{plotSpatialEffects}}, 
 \code{\link{summarizeChannels}},
 \code{\link{summarizeReplicates}}. 
@@ -56,6 +56,7 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
 %  \code{\link{readPlateList}} read a collection of plate reader data files.
 
+%  \code{\link{readHTanalystData}} read input files from a HTanalyser plate reader containing data for a set of plate replicates.
 
 %  \bold{Accessors:}  
 
@@ -71,7 +72,10 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
    
 %  \bold{Miscellaneous:}
 
+%  \code{\link{ROC}} creates an object of class \code{\linkS4class{ROC}} from a scored \code{\linkS4class{cellHTS}} object which can be plotted as a ROC curve. 
+
 %  \code{\link{...}} 
+
 
 %}
 

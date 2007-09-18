@@ -64,6 +64,10 @@ After calling this function, the content of the following slots is as follows:
     number of rows of \code{plateList}.}
 }
 
+\seealso{
+To read input files obtained in a HTanalyser plate reader see \code{\link{readHTAnalystData}}.
+}
+
 \author{W. Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \references{

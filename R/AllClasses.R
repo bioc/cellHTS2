@@ -1,15 +1,8 @@
 ## Validity functions and class definitions.
 
 ##------------------------------------------------------------------------------
-## Validity function
+## Validity functions
 ##------------------------------------------------------------------------------
-## Dimension consistency
-## length(pdim) = 2
-## length(state) = 4
-## xraw - dim 4
-## xnorm - dim 4
-## dim(xraw)[1] = prod(pdim)
-## length(score) = prod(dim(xraw)[1:2]) or 0 (in case, the data are not scored yet)
 
 equalOrZero = function(i, j) ((i==j)||(i==0))
 
@@ -73,9 +66,32 @@ validityCellHTS = function(object){
     if(is.null(msg)) msg <- TRUE 
     return(msg)
   }
+##-----------------------------------------------------------------------------
 
 
 ##-----------------------------------------------------------------------------
+## Validy tests for class "ROC"
+##-----------------------------------------------------------------------------
+validityROC <- function(object) {
+
+  if(!equalOrZero(length(object@TP), 1000) | !equalOrZero(length(object@FP), 1000)) return("'TP' and 'FP' should be vectors of integers with length 1000.")
+
+  if(length(object@TP)!=length(object@FP)) return("'FP' and 'TP' should be vectors of integers with length 1000.")
+
+  if(any(is.na(object@TP))) return("'TP' must not contain NA values.")
+
+  if(any(is.na(object@FP))) return("'FP' must not contain NA values.")
+
+  if(is.na(object@posNames)) return("'posNames' must not contain NA values.")
+  if(is.na(object@negNames)) return("'negNames' must not contain NA values.")
+
+  if(!(equalOrZero(length(object@assayType), 1))) return("'assayType' should be a character vector of length 1.")
+  if(length(object@assayType)!=0) {
+     if(!(object@assayType %in% c("two-way assay", "one-way assay"))) return("'assayType' should be one of the two options: 'one-way assay' or 'two-way assay'.") }
+
+  return(TRUE)
+}
+##------------------------------------------------------------------------------
 
 
 
@@ -116,6 +132,29 @@ setClass("cellHTS",  contains = "NChannelSet",
 
 
 
+##------------------------------------------------------------------------------
+## Class ROC
+##------------------------------------------------------------------------------
+
+setClass("ROC",
+  representation(
+     name = "character",  
+     assayType = "character",
+     TP = "integer",
+     FP = "integer",
+     #positives = positives,
+     #negatives = negatives, 
+     posNames = "character",
+     negNames = "character"),
+  prototype = list(
+     name = "",
+     assayType = character(),
+     TP = integer(),
+     FP = integer(),
+     posNames = character(),
+     negNames = character()
+  ),
+  validity = validityROC)
 
 
 

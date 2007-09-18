@@ -47,5 +47,5 @@ setGeneric("batch<-", def=function(object, value) standardGeneric("batch<-"))
 
 setGeneric("nbatch", def=function(object) standardGeneric("nbatch"))
 
-#setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
+setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
 

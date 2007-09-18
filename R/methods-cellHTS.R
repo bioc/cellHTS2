@@ -611,3 +611,84 @@ if(is.null(Data(object))) stop("No available data in 'object'!")
 })
 
 
+
+
+
+##-------------------------------------------
+## Generate data to plot a ROC curve from the scored data
+##-------------------------------------------
+setMethod("ROC", signature("cellHTS"), 
+
+   function(object, positives, negatives){
+##'positives' and 'negatives' is a vector of characters specifying the name of the controls
+    if(!state(object)["scored"])
+    stop("Please score 'object' using the function 'summarizeReplicates' before creating the ROC object.")
+
+ # default
+ assayType <- "one-way assay"
+ score <- as.vector(Data(object))
+
+  if (!missing(positives)) {
+## checks
+      if(!is(positives, "list")){ 
+        checkControls(positives, len=1, name="positives")
+      }else{
+
+        checkControls2W(positives, len=1, name="positives")
+        positives <- paste(positives, collapse="|")
+        score <- abs(score) # because this is a two way assay
+        assayType <- "two-way assay"
+      }## else is list
+
+    }else{## if !missing
+## assumes the screen is a one-way assay
+      positives = "^pos$"
+    }
+
+
+    if (!missing(negatives)) {
+      ## check
+      checkControls(negatives, len=1, name="negatives")
+    } else {
+      negatives = "^neg$"
+    }
+
+
+  wAnno <- as.character(wellAnno(object))
+
+  xpos <- regexpr(positives, wAnno, perl=TRUE)>0
+  xneg <- regexpr(negatives, wAnno, perl=TRUE)>0
+
+  if(!any(xneg))
+    stop("Negative controls not found")
+    #stop(sprintf("The 'wellAnno' slot does not contain any entries with value '%s'.", negatives))
+  if(!any(xpos))
+    stop("Positive controls not found")
+    #stop(sprintf("The 'wellAnno' slot does not contain any entries with value '%s'.", positives))
+
+  br <- unique(quantile(score, probs=seq(0, 1, length=1001), na.rm=TRUE))
+  ct  <- cut(score, breaks=br)
+  spNeg <- split(xneg, ct)
+  spPos <- split(xpos, ct)
+  nNeg <- sapply(spNeg, sum)
+  nPos <- sapply(spPos, sum)
+  stopifnot(all(names(nPos)==names(nNeg)))
+
+  posNames <- unique(wAnno[xpos])
+  posNames <- plateConf(object)$Content[match(posNames, tolower(plateConf(object)$Content))]
+  negNames <- unique(wAnno[xneg])
+  negNames <- plateConf(object)$Content[match(negNames, tolower(plateConf(object)$Content))]
+
+  x <- new("ROC", 
+        name=name(object),
+        assayType = assayType,
+        TP = cumsum(rev(nPos)),
+        FP = cumsum(rev(nNeg)),
+           #positives = positives,
+           #negatives = negatives, 
+        posNames = posNames,
+        negNames = negNames)
+
+  return(x) 
+})
+
