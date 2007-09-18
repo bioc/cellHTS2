@@ -181,7 +181,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
      
   }% describe
 
-  Methods with functionality derived from class \code{\linkS4class{NChannelSet}}:
+  Methods with functionality derived from class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}:
       \code{channel}, 
       \code{channelNames}, 
       \code{selectChannels}, 
@@ -225,7 +225,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
 \author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
 
 \seealso{
-  \code{\linkS4class{NChannelSet}}
+  \code{\link[Biobase:class.NChannelSet]{NChannelSet}}
   \code{\link[cellHTS2:readPlateList]{reaPlateList}}
   \code{\link[cellHTS2:annotate]{annotate}}
   \code{\link[cellHTS2:configure]{configure}}

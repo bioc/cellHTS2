@@ -38,7 +38,7 @@ This function expects that the next line after the meta field "Display format" f
 }
 
 \value{
-  An object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase]{NChannelSet}}. 
+  An object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}. 
 After calling this function, the content of the following slots is as follows:
 	\item{assayData}{an object of class \code{\link[Biobase]{AssayData}} containing the imported measurement data. Each matrix represents a single channel, and each sample (replicate) corresponds to a column. Thus, the total number of rows in each matrix corresponds to the product between the number of wells per plate and the number of assay plates.}
 

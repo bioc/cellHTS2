@@ -45,7 +45,7 @@ Data from wells that are annotated as \emph{empty} are ignored and are set to NA
 }
 
 \value{
- An S4 object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase]{NChannelSet}}. The followings slots of \code{object} are updated:
+ An S4 object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}. The followings slots of \code{object} are updated:
  \item{plateConf}{a \code{\link{data.frame}} containing what was read from input file \code{confFile} (except the first two header rows.}
  \item{screenLog}{a data.frame containing what was read from input file \code{logFile}.}
  \item{screenDesc}{object of class \code{character} containing what was read from input file \code{descripFile}.}
