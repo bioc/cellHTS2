@@ -36,12 +36,12 @@ Generic functions: \code{\link{show}}, \code{\link{initialize}},
 Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}}, 
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, %\code{\link{plotSpatialEffects}}, 
-\code{\link{summarizeChannels}},
-\code{\link{summarizeReplicates}}. 
+\code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
 %\code{\link{imageScreen}}, 
-\code{\link{ROC}}, \code{\link{getTopTable}}, 
-%\code{\link{writeReport}}, \code{\link{getDynamicRange}}, \code{\link{getZfactor}}
-% and \code{\link{getMeasureRepAgreement}}.  
+\code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
+\code{\link{getDynamicRange}}, \code{\link{getZfactor}},
+%\code{\link{writeReport}}, 
+and \code{\link{ROC}}.
 
 A full listing of documented topics is available in HTML view by
 typing \code{help.start()} and selecting the \code{cellHTS2} package from the
@@ -68,7 +68,7 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \bold{Data preprocessing:}
 
-  \code{\link{normalizePlates}} ...
+  \code{\link{normalizePlates}} --- complete ----
   
    
   \bold{Miscellaneous:}
@@ -77,10 +77,23 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \code{\link{ROC}} creates an object of class \code{\linkS4class{ROC}} from a scored \code{\linkS4class{cellHTS}} object which can be plotted as a ROC curve. 
 
-  \code{\link{getTopTable}} --- complete ---
+  \code{\link{getTopTable}} generates the hit list from a scored {\linkS4class{cellHTS}} object and write it to a tab-delimited file.
 
-%  \code{\link{...}} 
+  \code{\link{getMeasureRepAgreement}} calculates the agreement between plate replicates using raw data or normalized data stored in a 
+  \code{\linkS4class{cellHTS}} object.
 
+  \code{\link{getDynamicRange}} calculates per-plate dynamic range of data stored in a \code{\linkS4class{cellHTS}} object.
+
+  \code{\link{getZfactor}} calculates per-experiment Z'-factor of data stored in a \code{\linkS4class{cellHTS}} object.
+  The Z'-factor is a measure that quantifies the separation between the distribution of positive and negative controls.
+
+%  \code{\link{imageScreen}}  --- complete ----
+
+%  \code{\link{...}}  --- complete ----
+
+%  \code{\link{...}}  --- complete ----
+
+%  \code{\link{...}}  --- complete ----
 
 }
 

@@ -16,13 +16,10 @@ checkControls2W <- function(y, len, name="posControls"){
              should be vectors of regular expressions with length %d \n", name, len)))
 }
 ## --------------------------------------------------------------------------------
-## function to check is a character is empty
+## Function to check if a character is empty
 emptyOrNA <- function(y) {
 y %in% c(NA, "")
 }
-## ---------------------------------------------------------------------------------
-
-
 ## ----------------------------------------------------------------------------------
 ## Function to find the indexes of a given control (identified by the regular expression y) in the well annotation character vector.
 findControls <- function(y, anno){
@@ -33,6 +30,91 @@ findControls <- function(y, anno){
   }
 }
 ## --------------------------------------------------------------------------------
+## Auxiliary function that:
+## 1) Check controls annotation
+## 2) Determine if the assay is one-way or two-way 
+## 3) If the assay is one-way, determines the name of the positive controls.
+checkPosControls <- function(x, posControls, nrChan, wellAnnotation) {
+    twoWay=FALSE
+    namePos = NULL
+
+    if(!is(posControls, "list")){
+      ## check
+      checkControls(posControls, nrChan, "posControls")
+      ## see if there are different positive controls (e.g. with different strengths)
+      aux <- unique(posControls)
+      aux <- findControls(aux[!emptyOrNA(aux)], wellAnnotation)
+      if(length(aux)) {
+          namePos <- unique(sapply(aux, function(i) unique(wellAnnotation[i])))
+          namePos <- sort(plateConf(x)$Content[match(namePos, tolower(plateConf(x)$Content))]) 
+      }
+    } else {
+      checkControls2W(posControls, len=nrChan, name="posControls")
+      twoWay=TRUE
+    }## else is list
+
+return(list(namePos=namePos, twoWay=twoWay)) 
+}
+## --------------------------------------------------------------------------------
+## Function  to get the indexes for the different controls
+getControlsPositions <- function(x, posControls, negControls, isTwoWay, namePos, nrChannels, wAnno) {
+
+  actCtrls <- inhCtrls <- posCtrls <- negCtrls <- vector("list", length=nrChannels)
+
+
+  if(isTwoWay) {
+     aux <- c(1:nrChannels)[!emptyOrNA(posControls$act)]
+     if(any(aux)) actCtrls[aux] <- lapply(aux, function(i) as.numeric(findControls(posControls$act[i], wAnno))) #needs to be like this because of the case of length(aux)=1
+     aux <- c(1:nrChannels)[!emptyOrNA(posControls$inh)]
+     if(any(aux)) inhCtrls[aux] <- lapply(aux, function(i) as.numeric(findControls(posControls$inh[i], wAnno)))
+
+  } else {  #oneWay
+     posCtrls <- lapply(posCtrls, function(z) { 
+       z = vector("list", length=length(namePos)) 
+       names(z) = namePos
+       return(z) })
+     aux <- c(1:nrChannels)[!emptyOrNA(posControls)]
+     if(any(aux)) posCtrls[aux] <- lapply(aux, function(i) {
+        wa <- findControls(posControls[i], wAnno)
+        if(length(wa)) {
+          wa <- split(wa, wAnno[wa])
+          posCtrls[[i]][match(names(wa), tolower(namePos))] <- wa
+        } 
+        posCtrls[[i]]
+      }
+     )
+    } # oneWay
+
+  # negative controls:
+  aux <- c(1:nrChannels)[!emptyOrNA(negControls)]
+  if(any(aux)) negCtrls[aux] <- lapply(aux, function(i) as.numeric(findControls(negControls[i], wAnno)))
+
+   AllControls <- list(posCtrls = posCtrls,
+		negCtrls = negCtrls,
+                actCtrls = actCtrls,
+                inhCtrls = inhCtrls)
+return(AllControls)
+}
+## --------------------------------------------------------------------------------
+## Auxiliary function to split the controls according to the assay plate
+    ctrlsPerPlate <- function(controls, nrWells){
+
+      plate <- ((nrWells - 1) + controls)%/%nrWells 
+      cpP <- split(controls, plate) 
+      return(cpP)
+    }
+## --------------------------------------------------------------------------------
+## Auxiliary function to calculate the dynamic range - called by 'getDynamicRange' function
+dynRange <- function(z, p1, p2) {
+abs(mean(as.matrix(z)[p1,] , na.rm=TRUE) - mean(as.matrix(z)[p2,], na.rm=TRUE))
+}
+## --------------------------------------------------------------------------------
+## Auxiliary function to calculate the Z'-factor - called by 'getZfactor' function
+zfacFun <- function(z, zneg, locationFun, spreadFun) {
+1-3*(spreadFun(z, na.rm=TRUE) + spreadFun(zneg, na.rm=TRUE))/(abs(locationFun(z, na.rm=TRUE) - locationFun(zneg, na.rm=TRUE)))
+}
+## --------------------------------------------------------------------------------
+
 
 
 
