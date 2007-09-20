@@ -9,8 +9,7 @@ getDynamicRange(x,
 verbose=interactive(), 
 definition, 
 posControls, 
-negControls,
-\dots)
+negControls)
 }
 
 \arguments{
@@ -19,7 +18,6 @@ negControls,
   \item{definition}{a character string with possible values "ratio" or "difference". See details.}
   \item{posControls}{(optional) a list or vector of regular expressions specifying the name of the positive controls. See details.}
   \item{negControls}{(optional) a vector of regular expressions specifying the name of the negative controls. See details.}
-  \item{\dots}{additional arguments (ignored). Only required when the function is called from \code{writeRepor} function.}
 }
 
 \details{
@@ -56,9 +54,8 @@ In the case of a two-way assay, where two types of "positive" controls are used 
 
 }
 \seealso{
-  \code{\link[cellHTS2:configure]{configure}}
-% ,
-%  \code{\link[cellHTS2]{writeReport}}
+  \code{\link[cellHTS2:configure]{configure}},
+  \code{\link[cellHTS2]{writeReport}}
 }
 
 \value{

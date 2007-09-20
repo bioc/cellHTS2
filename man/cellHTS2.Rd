@@ -37,10 +37,10 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, %\code{\link{plotSpatialEffects}}, 
 \code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
-%\code{\link{imageScreen}}, 
+\code{\link{imageScreen}}, 
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
-%\code{\link{writeReport}}, 
+\code{\link{writeReport}} 
 and \code{\link{ROC}}.
 
 A full listing of documented topics is available in HTML view by
@@ -61,9 +61,13 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \bold{Accessors:}  
 
- \code{\link{plate}} plate identifier for each feature (well).
+   \code{\link{plate}} plate identifier for each feature (well).
 
-  \code{\link{plateEffects}} accesses the slots \code{rowcol.effects} and \code{overall.effects}.
+    \code{\link{position}} gives the well number for each feature (well) within each plate.
+
+    \code{\link{plateEffects}} accesses the slots \code{rowcol.effects} and \code{overall.effects}.
+
+    \code{\link{well}} gives the alphanumeric identifier (e.g. A01, A02, ...) for each well and plate.
 
 
   \bold{Data preprocessing:}
@@ -75,19 +79,26 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \code{\link{compare2cellHTS}} compares 2 \code{\linkS4class{cellHTS}} objects to see whether they derive from the same initial \code{\linkS4class{cellHTS}} object.
 
+
+  \code{\link{convertWellCoordinates}} converts between different ways of specifying well coordinates within a plate.
+For example, wells can be identified by an alphanumeric character (e.g. "B02" or c("B", "02")) or by an integer value (e.g. 26).
+
   \code{\link{ROC}} creates an object of class \code{\linkS4class{ROC}} from a scored \code{\linkS4class{cellHTS}} object which can be plotted as a ROC curve. 
 
   \code{\link{getTopTable}} generates the hit list from a scored {\linkS4class{cellHTS}} object and write it to a tab-delimited file.
 
-  \code{\link{getMeasureRepAgreement}} calculates the agreement between plate replicates using raw data or normalized data stored in a 
-  \code{\linkS4class{cellHTS}} object.
+  \code{\link{getMeasureRepAgreement}} calculates the agreement between plate replicates using raw data or normalized data stored in a \code{\linkS4class{cellHTS}} object.
 
   \code{\link{getDynamicRange}} calculates per-plate dynamic range of data stored in a \code{\linkS4class{cellHTS}} object.
 
   \code{\link{getZfactor}} calculates per-experiment Z'-factor of data stored in a \code{\linkS4class{cellHTS}} object.
   The Z'-factor is a measure that quantifies the separation between the distribution of positive and negative controls.
 
-%  \code{\link{imageScreen}}  --- complete ----
+  \code{\link{imageScreen}} creates an image plot that gives an overview of the whole set of score values stored 
+   in a scored \code{cellHTS} object.
+
+  \code{\link{writeReport}} creates a directory with HTML pages of linked tables and plots
+  documenting the contents of the preprocessing of a \code{\linkS4class{cellHTS}} object.
 
 %  \code{\link{...}}  --- complete ----
 

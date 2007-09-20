@@ -9,14 +9,7 @@
 #		negControls - optional (vector of regular expressions)
 #
 ## ---------------------------------------------------------------------------
-getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negControls, ...) {
-
-
-   calledFromWriteReport <- all(sapply(c("allControls", "twoWay", "namePos"), exists))
-
-# '...' are for additional arguments ('allControls', 'twoWay' and 'namePos') necessary when this function is called from 'writeReport'. In that case, the arguments 'posControls', 'negControls' are not needed.
-
-if(!calledFromWriteReport) {
+getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negControls) {
 
   ## consistency checks:
   if(!inherits(x, "cellHTS"))
@@ -33,7 +26,6 @@ if(!calledFromWriteReport) {
     stop("'robust' must be a logical value.")
 
   twoWay <- FALSE
-}
 
   ## Get data
   y <- Data(x)
@@ -56,12 +48,11 @@ if(!calledFromWriteReport) {
   wAnno <- as.character(wellAnno(x))
 
 
-if(!calledFromWriteReport) {
   ##   -------  Controls annotation ---------------
   if (!missing(posControls)) {
 
      ## checks, determine assay type and name of positive controls if assay is one-way
-     namePos <- checkPosControls(x, posControls, nrChannels, wAnno)
+     namePos <- checkPosControls(posControls, nrChannels, wAnno, plateConf(x)$Content)
      twoWay <- namePos$twoWay
      namePos <- namePos$namePos 
 
@@ -78,10 +69,8 @@ if(!calledFromWriteReport) {
   #---------------------------------------------------------------------------------------------
 
   ##   -------  Get controls positions ---------------
-    allControls <- getControlsPositions(x, posControls, negControls, twoWay, namePos, nrChannels, wAnno)
+    allControls <- getControlsPositions(posControls, negControls, twoWay, namePos, nrChannels, wAnno)
 
-}
- ##   -------  Get controls positions ---------------
     actCtrls <- allControls$actCtrls
     inhCtrls <- allControls$inhCtrls
     posCtrls <- allControls$posCtrls

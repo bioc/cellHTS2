@@ -70,29 +70,29 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     ## channel 2 - geneC and geneD
     posControls[2]="(?i)^geneC$|^geneD$"
  \dontrun{
-    #writeReport(x, map=TRUE, plotPlateArgs=TRUE, posControls=posControls, negControls=negControls)
+    writeReport(cellHTSlist=list("raw"=x), map=TRUE, plotPlateArgs=TRUE, posControls=posControls, negControls=negControls)
  }
     ## In this example, we first normalize each channel separately by 
     ## plate median scaling and variance adjustment.
-        x = normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment") 
+        xn = normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment") 
     ## Then, we define a low intensity threshold for the measurements in the constitutive channel R1, 
     ## which will be set to the 5% quantile of the overall plate median corrected intensities in R1, 
     ## and take the ratio R2/R1.
-    x = summarizeChannels(x, fun = function(r1, r2, 
+    xn = summarizeChannels(xn, fun = function(r1, r2, 
              thresh=quantile(r1, probs=0.05, na.rm=TRUE)) ifelse(r1>thresh, r2/r1, as.numeric(NA))) 
     ## After channel summarization, we take the log2 and re-apply plate median scaling, 
     ## and readjust the variance of each replicate experiment.
-    x = normalizePlates(x, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment") 
+    xn = normalizePlates(xn, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment") 
     ## Define the controls for the normalized and summarized intensities (only one channel):
-    negControls = vector("character", length=dim(Data(x))[3])
+    negControls = vector("character", length=dim(Data(xn))[3])
     ## For the single channel, the negative controls are geneA and geneB 
     negControls[1]= "(?i)^geneA$|^geneB$" 
-    posControls = vector("character", length=dim(Data(x))[3])
+    posControls = vector("character", length=dim(Data(xn))[3])
     ## For the single channel, the negative controls are geneC and geneD 
     posControls[1]="(?i)^geneC$|^geneD$"
  \dontrun{
-   # writeReport(x, force=TRUE, map=TRUE, plotPlateArgs=list(xrange=c(-3,3)), 
-   #      posControls=posControls, negControls=negControls)
+    writeReport(cellHTSlist=list("raw"=x, "normalized"=xn), force=TRUE, map=TRUE, plotPlateArgs=list(xrange=c(-3,3)), 
+         posControls=posControls, negControls=negControls)
  }
 }
 

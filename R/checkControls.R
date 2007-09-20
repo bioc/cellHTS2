@@ -34,7 +34,8 @@ findControls <- function(y, anno){
 ## 1) Check controls annotation
 ## 2) Determine if the assay is one-way or two-way 
 ## 3) If the assay is one-way, determines the name of the positive controls.
-checkPosControls <- function(x, posControls, nrChan, wellAnnotation) {
+checkPosControls <- function(posControls, nrChan, wellAnnotation, plateConfContent) {
+## note plateConfContent corresponds to plateConf(x)$Content where x is a cellHTS object
     twoWay=FALSE
     namePos = NULL
 
@@ -46,7 +47,7 @@ checkPosControls <- function(x, posControls, nrChan, wellAnnotation) {
       aux <- findControls(aux[!emptyOrNA(aux)], wellAnnotation)
       if(length(aux)) {
           namePos <- unique(sapply(aux, function(i) unique(wellAnnotation[i])))
-          namePos <- sort(plateConf(x)$Content[match(namePos, tolower(plateConf(x)$Content))]) 
+          namePos <- sort(plateConfContent[match(namePos, tolower(plateConfContent))]) 
       }
     } else {
       checkControls2W(posControls, len=nrChan, name="posControls")
@@ -57,7 +58,7 @@ return(list(namePos=namePos, twoWay=twoWay))
 }
 ## --------------------------------------------------------------------------------
 ## Function  to get the indexes for the different controls
-getControlsPositions <- function(x, posControls, negControls, isTwoWay, namePos, nrChannels, wAnno) {
+getControlsPositions <- function(posControls, negControls, isTwoWay, namePos, nrChannels, wAnno) {
 
   actCtrls <- inhCtrls <- posCtrls <- negCtrls <- vector("list", length=nrChannels)
 
@@ -90,9 +91,9 @@ getControlsPositions <- function(x, posControls, negControls, isTwoWay, namePos,
   if(any(aux)) negCtrls[aux] <- lapply(aux, function(i) as.numeric(findControls(negControls[i], wAnno)))
 
    AllControls <- list(posCtrls = posCtrls,
-		negCtrls = negCtrls,
-                actCtrls = actCtrls,
-                inhCtrls = inhCtrls)
+           negCtrls = negCtrls,
+           actCtrls = actCtrls,
+           inhCtrls = inhCtrls)
 return(AllControls)
 }
 ## --------------------------------------------------------------------------------

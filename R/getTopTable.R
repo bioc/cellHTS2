@@ -20,53 +20,53 @@ getArrayCorrectWellAnno <- function(x){
 ## getTopTable function
 ## Function to obtain the topTable data.frame and export it as a txt file.
 
-getTopTable <- function(dat, file="topTable.txt", verbose=interactive()){
+getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive()){
 
 ## arguments:
-## 'dat' should be a list of cellHTS object(s) obtained from the same experimental data. Allowed components are:
+## 'cellHTSlist' should be a list of cellHTS object(s) obtained from the same experimental data. Allowed components are:
 	## 'scored' - (mandatory) cellHTS object comprising scored data.
         ## 'raw' - (optional) cellHTS object containing raw experiment data.
         ## 'normalized' - (optional) cellHTS object containing normalized data.
-## dat=list("scored"=xsc, "raw"=xr, "normalized"=xn)
+## cellHTSlist=list("scored"=xsc, "raw"=xr, "normalized"=xn)
 
 mandatoryComps <- c("scored")
 optionalComps <- c("raw", "normalized") 
 
-if(!is.list(dat)) {
-   stop("Argument 'dat' should be a list containing one or a maximum of 3 'cellHTS' objects.") 
+if(!is.list(cellHTSlist)) {
+   stop("Argument 'cellHTSlist' should be a list containing one or a maximum of 3 'cellHTS' objects.") 
 } else {
 
 
- if(!all(sapply(dat, class)=="cellHTS")) stop("Argument 'dat' should be a list of cellHTS objects!")
+ if(!all(sapply(cellHTSlist, class)=="cellHTS")) stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
 
- nm <- names(dat)
- if(!(mandatoryComps %in% nm)) stop("Argument 'dat' should be a list containing at least one component named 'scored' that corresponds to a scored 'cellHTS' object.")
+ nm <- names(cellHTSlist)
+ if(!(mandatoryComps %in% nm)) stop("Argument 'cellHTSlist' should be a list containing at least one component named 'scored' that corresponds to a scored 'cellHTS' object.")
 
- if(length(dat)>3) stop("Argument 'dat' can only have a maximum of 3 components named 'raw', 'normalized' and 'scored'!")
+ if( length(cellHTSlist)>3 | any(duplicated(nm)) ) stop("Argument 'cellHTSlist' can only have a maximum of 3 components named 'raw', 'normalized' and 'scored'!")
 
  if(!all(nm %in% c(optionalComps, mandatoryComps))) 
-     stop(sprintf("Invalid named component%s in argument 'dat': %s", 
+     stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
          ifelse(sum(!(nm %in% c(optionalComps, mandatoryComps)))>1, "s", ""), 
                        nm[!(nm %in% c(optionalComps, mandatoryComps))])) 
 }
 
-xr <- dat[["raw"]]
-xn <- dat[["normalized"]]
-xsc <- dat[["scored"]]
+xr <- cellHTSlist[["raw"]]
+xn <- cellHTSlist[["normalized"]]
+xsc <- cellHTSlist[["scored"]]
 
-# now check whether the given components of 'dat' are valid cellHTS objects:
-  if(!(state(xsc)[["scored"]])) stop(sprintf("The component 'scored' of argument list 'dat' should be a 'cellHTS' object containing scored data!\nPlease check its preprocessing state: %s", paste(names(state(xsc)), "=", state(xsc), collapse=", ")))
+# now check whether the given components of 'cellHTSlist' are valid cellHTS objects:
+  if(!(state(xsc)[["scored"]])) stop(sprintf("The component 'scored' of argument list 'cellHTSlist' should be a 'cellHTS' object containing scored data!\nPlease check its preprocessing state: %s", paste(names(state(xsc)), "=", state(xsc), collapse=", ")))
 
 
   if(!is.null(xr)) {
-   if(any(state(xr)[c("normalized", "scored")])) stop(sprintf("The component 'raw' of argument list 'dat' should be a 'cellHTS' object containing raw data!\nPlease check its preprocessing state: %s", paste(names(state(xr)), "=", state(xr), collapse=", ")))
-   if(!compare2cellHTS(xsc, xr)) stop("Difference across 'cellHTS' objects! The scored 'cellHTS' object given in dat[['score']] was not calculated from the data stored in 'cellHTS' object indicated in 'dat[['raw']]'!")
+   if(any(state(xr)[c("normalized", "scored")])) stop(sprintf("The component 'raw' of argument list 'cellHTSlist' should be a 'cellHTS' object containing raw data!\nPlease check its preprocessing state: %s", paste(names(state(xr)), "=", state(xr), collapse=", ")))
+   if(!compare2cellHTS(xsc, xr)) stop("Difference across 'cellHTS' objects! The scored 'cellHTS' object given in cellHTSlist[['scored']] was not calculated from the data stored in 'cellHTS' object indicated in 'cellHTSlist[['raw']]'!")
   }
 
    if(!is.null(xn)) {
-     if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]])) stop(sprintf("The component 'normalized' of argument list 'dat' should be a 'cellHTS' object containing normalized data!\nPlease check its preprocessing state: %s", paste(names(state(xn)), "=", state(xn), collapse=", ")))
+     if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]])) stop(sprintf("The component 'normalized' of argument list 'cellHTSlist' should be a 'cellHTS' object containing normalized data!\nPlease check its preprocessing state: %s", paste(names(state(xn)), "=", state(xn), collapse=", ")))
 
-   if(!compare2cellHTS(xsc, xn)) stop("'cellHTS' objects contained in dat[['score']] and dat[['normalized']] are not from the same experiment!")
+   if(!compare2cellHTS(xsc, xn)) stop("'cellHTS' objects contained in cellHTSlist[['scored']] and cellHTSlist[['normalized']] are not from the same experiment!")
   }
 
 ## --------------------------------------
@@ -101,22 +101,23 @@ xsc <- dat[["scored"]]
     originalNrCh <- dim(xraw)[3]
 
     ## include also the raw values for each replicate and channel	 
-    out[sprintf("raw_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 
+    out[sprintf("raw_r%d_ch%d", rep(1:nrReplicate, originalNrCh), rep(1:originalNrCh, each=nrReplicate))] <- sapply(1:originalNrCh, 
            function(i) xraw[,,i])
 
 
+  for(ch in 1:originalNrCh) {
     ## median between replicates (raw data) 
     if(nrReplicate>1) {
-      out[sprintf("median_ch%d", 1:originalNrCh)] <- apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)], 1, 
-                median, na.rm=TRUE)
+      out[sprintf("median_ch%d", ch)] <- apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, rep(ch, nrReplicate))], 1, median, na.rm=TRUE)
       if(nrReplicate==2) { 
           ## Difference between replicates (raw data)
-          out[sprintf("diff_ch%d", 1:originalNrCh)] = apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)], 1, diff)
+          out[sprintf("diff_ch%d", ch)] = apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, rep(ch, nrReplicate))], 1, diff)
         } else {
           ## average between replicates (raw data)
-          out[sprintf("average_ch%d", 1:originalNrCh)] = apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)], 1, mean, na.rm=TRUE)
+          out[sprintf("average_ch%d", ch)] = apply(out[sprintf("raw_r%d_ch%d", 1:nrReplicate, rep(ch, nrReplicate))], 1, mean, na.rm=TRUE)
         } 
     }
+}# for ch
 
     ## raw/plateMedian
     xrp <- array(as.numeric(NA), dim=dim(xraw))
@@ -127,7 +128,7 @@ xsc <- dat[["scored"]]
       xrp[indp,,] <- apply(xraw[indp,,,drop=FALSE], 2:3, function(j) j/median(j[samples], na.rm=TRUE))
     }
 
-     out[sprintf("raw/PlateMedian_r%d_ch%d", 1:nrReplicate, 1:originalNrCh)] <- sapply(1:originalNrCh, 
+     out[sprintf("raw/PlateMedian_r%d_ch%d", rep(1:nrReplicate, originalNrCh), rep(1:originalNrCh, each=nrReplicate))] <- sapply(1:originalNrCh, 
           function(i) {
            signif(xrp[,,i], 3)  })
 
@@ -136,7 +137,7 @@ xsc <- dat[["scored"]]
 
   if(!is.null(xnorm)){
     ## Include the normalized values
-    out[sprintf("normalized_r%d_ch%d", 1:nrReplicate, 1:nrChannel)] = sapply(1:nrChannel, 
+    out[sprintf("normalized_r%d_ch%d", rep(1:nrReplicate, nrChannel), rep(1:nrChannel, each=nrReplicate))] = sapply(1:nrChannel, 
           function(i) round(xnorm[,,i], 3))
   }
 

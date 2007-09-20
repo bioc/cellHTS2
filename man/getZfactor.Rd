@@ -10,8 +10,7 @@ getZfactor(x,
 robust=TRUE,
 verbose=interactive(), 
 posControls, 
-negControls,
-\dots)
+negControls)
 }
 
 \arguments{
@@ -20,7 +19,6 @@ negControls,
   \item{verbose}{a logical, if \code{TRUE} the function reports some of its intermediate progress. The default is the state of \code{\link[base:interactive]{interactive()}}.}
   \item{posControls}{(optional) a list or vector of regular expressions specifying the name of the positive controls. See details.}
   \item{negControls}{(optional) a vector of regular expressions specifying the name of the negative controls. See details.}
-  \item{\dots}{additional arguments (ignored). Only required when the function is called from \code{writeRepor} function.}
 }
 
 \details{
@@ -51,9 +49,8 @@ The Z'-factor values are calculated between each type of positive control (\code
 
 }
 \seealso{
-  \code{\link[cellHTS2:configure]{configure}}
-%, 
-%  \code{\link[cellhts2:writeReport]{writeReport}}
+  \code{\link[cellHTS2:configure]{configure}}, 
+  \code{\link[cellhts2:writeReport]{writeReport}}
 }
 
 \value{

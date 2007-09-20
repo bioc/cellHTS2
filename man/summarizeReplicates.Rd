@@ -45,7 +45,8 @@ summarizeReplicates(object, zscore="+", summary ="min")
 
 \seealso{
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
-  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}.
+  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}},
+  \code{\link[cellHTS2:imageScreen]{imageScreen}}.
 }
 
 \references{

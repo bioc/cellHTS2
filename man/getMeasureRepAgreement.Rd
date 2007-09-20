@@ -35,7 +35,7 @@ where \eqn{n_{k}} is the total number of sample probes for plate \eqn{p}.
 
 \seealso{
   \code{\link[cellHTS2:configure]{configure}}, 
-%  \code{\link[cellHTS2:writeReport]{writeReport}}
+  \code{\link[cellHTS2:writeReport]{writeReport}}
 }
 
 \value{

@@ -10,13 +10,7 @@
 #		negControls - optional (vector of regular expressions)
 #
 ## ---------------------------------------------------------------------------
-getDynamicRange <- function(x, verbose=interactive(), definition, posControls, negControls, ...) {
-
-calledFromWriteReport <- all(sapply(c("allControls", "twoWay", "namePos"), exists))
-
-# '...' are for additional arguments ('allControls', 'twoWay' and 'namePos') necessary when this function is called from 'writeReport'. In that case, the arguments 'definition', 'posControls', 'negControls' are not needed.
-
-if(!calledFromWriteReport) {
+getDynamicRange <- function(x, verbose=interactive(), definition, posControls, negControls) {
 
   ## consistency checks:
   if(!inherits(x, "cellHTS"))
@@ -30,7 +24,6 @@ if(!calledFromWriteReport) {
     stop("'verbose' must be a logical value.")
 
   twoWay <- FALSE
-  }
 
 
   ## Get data and see how should the dynamic range be defined 
@@ -58,12 +51,10 @@ if(!calledFromWriteReport) {
   wAnno <- as.character(wellAnno(x))
 
   ##   -------  Controls annotation ---------------
-if(!calledFromWriteReport) {
-
   if (!missing(posControls)) {
 
      ## checks, determine assay type and name of positive controls if assay is one-way
-     namePos <- checkPosControls(x, posControls, nrChannels, wAnno)
+     namePos <- checkPosControls(posControls, nrChannels, wAnno, plateConf(x)$Content)
      twoWay <- namePos$twoWay
      namePos <- namePos$namePos 
 
@@ -81,11 +72,8 @@ if(!calledFromWriteReport) {
 
 
   ##   -------  Get controls positions ---------------
-  allControls <- getControlsPositions(x, posControls, negControls, twoWay, namePos, nrChannels, wAnno)
-} 
+  allControls <- getControlsPositions(posControls, negControls, twoWay, namePos, nrChannels, wAnno)
 
-
-  ##   -------  Controls positions ---------------
     actCtrls <- allControls$actCtrls
     inhCtrls <- allControls$inhCtrls
     posCtrls <- allControls$posCtrls
