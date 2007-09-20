@@ -66,7 +66,7 @@ in the slot \code{state} to \code{object@state["normalized"]=TRUE}.
   \code{\link[stats:medpolish]{medpolish}},
   \code{\link[stats:loess]{loess}},
   \code{\link[locfit:locfit.robust]{locfit.robust}},
-%  \code{\link[cellHTS2:plotSpatialEffects]{plotSpatialEffects}},
+  \code{\link[cellHTS2:plotSpatialEffects]{plotSpatialEffects}},
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}
   \code{\link[cellHTS2:plateEffects]{plateEffects}}

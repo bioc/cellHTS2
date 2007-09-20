@@ -46,9 +46,9 @@ in the slot \code{state} to \code{object@state[["normalized"]]=TRUE}.
   \code{\link[stats:medpolish]{medpolish}},
   \code{\link[stats:loess]{loess}},
   \code{\link[locfit:locfit]{locfit}},
-%  \code{\link[cellHTS2:plotSpatialEffects]{plotSpatialEffects}},
+  \code{\link[cellHTS2:plotSpatialEffects]{plotSpatialEffects}},
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
-  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}
+  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}},
   \code{\link[cellHTS2:plateEffects]{plateEffects}}
 }
 
@@ -61,6 +61,6 @@ in the slot \code{state} to \code{object@state[["normalized"]]=TRUE}.
     xs <- spatialNormalization(x, model="loess", save.model = TRUE)
     ## Calling spatialNormalization function from "normalizePlates":
     xopt <- normalizePlates(x, method="loess", varianceAdjust="byExperiment", save.model = TRUE)
-    all(xs@rowcol.effects==xopt@rowcol.effects, na.rm=TRUE)
+    all(xs@rowcol.effects == xopt@rowcol.effects, na.rm=TRUE)
 }
 \keyword{manip}

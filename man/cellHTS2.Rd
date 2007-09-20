@@ -35,7 +35,7 @@ Generic functions: \code{\link{show}}, \code{\link{initialize}},
 
 Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}}, 
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
-\code{\link{Bscore}}, \code{\link{spatialNormalization}}, %\code{\link{plotSpatialEffects}}, 
+\code{\link{Bscore}}, \code{\link{spatialNormalization}}, \code{\link{plotSpatialEffects}}, 
 \code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
 \code{\link{imageScreen}}, 
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
@@ -72,12 +72,12 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \bold{Data preprocessing:}
 
-  \code{\link{normalizePlates}} --- complete ----
+  \code{\link{normalizePlates}} Per-plate data transformation, normalization and variance adjustment.
   
    
   \bold{Miscellaneous:}
 
-  \code{\link{compare2cellHTS}} compares 2 \code{\linkS4class{cellHTS}} objects to see whether they derive from the same initial \code{\linkS4class{cellHTS}} object.
+  \code{\link{compare2cellHTS}} compares two \code{\linkS4class{cellHTS}} objects to see whether they derive from the same initial \code{\linkS4class{cellHTS}} object.
 
 
   \code{\link{convertWellCoordinates}} converts between different ways of specifying well coordinates within a plate.
@@ -93,6 +93,8 @@ For example, wells can be identified by an alphanumeric character (e.g. "B02" or
 
   \code{\link{getZfactor}} calculates per-experiment Z'-factor of data stored in a \code{\linkS4class{cellHTS}} object.
   The Z'-factor is a measure that quantifies the separation between the distribution of positive and negative controls.
+
+  \code{\link{plotSpatialEffects}} this function plots the per-plate row and column effects estimated by the B score method or by the spatial normalization.
 
   \code{\link{imageScreen}} creates an image plot that gives an overview of the whole set of score values stored 
    in a scored \code{cellHTS} object.

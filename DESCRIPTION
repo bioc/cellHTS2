@@ -17,8 +17,8 @@ Collate: AllClasses.R  AllGeneric.R adjustVariance.R
          envisionPlateReader.R   getDynamicRange.R  getMeasureRepAgreement.R  
          getTopTable.R  getZfactor.R  imageScreen.R makePlot.R
          methods-cellHTS.R  methods-ROC.R  normalizePlates.R  
-         oneRowPerId.R  perPlateScaling.R  QMbyPlate.R  QMexperiment.R
-         readHTAnalystData.R    readPlateList.R  
-         summarizeReplicates.R   tableOutput.R  writeReport.R
-         write.tabdel.R  zzz.R
+         oneRowPerId.R  perPlateScaling.R  plotSpatialEffects.R  
+         QMbyPlate.R  QMexperiment.R  readHTAnalystData.R  readPlateList.R  
+         summarizeReplicates.R   tableOutput.R  
+         writeReport.R  write.tabdel.R  zzz.R
 

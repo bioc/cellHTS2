@@ -25,7 +25,7 @@
 ##   3. Variance adjustment 
 ## =============================================================================
 
-normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,...) {
+normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byExperiment", posControls, negControls,...) {
 
   if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
   ## Check the status of the 'cellHTS' object

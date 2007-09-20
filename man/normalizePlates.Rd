@@ -9,10 +9,10 @@
 \description{
   Plate-by-plate normalization of the raw data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object.
   Normalization is performed separately for each plate, replicate and channel.
-  \code{Log2} data transformation and variance adjustment can be performed.
+  \code{Log2} data transformation can be performed, and variance adjustment can be performed in different ways (per-plate, per-batch or per-experiment).
 }
 \usage{
-normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceAdjust="byBatch", posControls, negControls,\ldots)
+normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment", posControls, negControls,\ldots)
 }
 \arguments{
   \item{object}{a \code{\linkS4class{cellHTS}} object that has already been configured. See details.}
@@ -22,7 +22,7 @@ normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceA
    The default is \code{log=FALSE}.}
   \item{method}{a character specifying the normalization method to use for performing the per-plate normalization. Allowed   values are \code{"median"} (default), \code{"mean"}, \code{"shorth"}, \code{"POC"}, \code{"NPI"}, \code{"negatives"}, 
   \code{\link{Bscore}}, \code{\link[cellHTS2:spatialNormalization]{loess}} and \code{\link[cellHTS2:spatialNormalization]{locfit}}. See details.}
-  \item{varianceAdjust}{character vector of length one indicating the variance adjustment to perform. Allowed values are "byPlate", "byBatch" (default) and "byExperiment". See details.}
+  \item{varianceAdjust}{character vector of length one indicating the variance adjustment to perform. Allowed values are "byPlate", "byBatch" and "byExperiment" (default). See details.}
   \item{posControls}{a vector of regular expressions giving the name of the positive control(s). See details.}
   \item{negControls}{a vector of regular expressions giving the name of the negative control(s). See details.}
   \item{\ldots}{Further arguments that get passed on to the function implementing the normalization method chosen by \code{method}. Currently, this is only used for \code{\link{Bscore}} and \code{\link[cellHTS2:spatialNormalization]{loess}} and \code{\link[cellHTS2:spatialNormalization]{locfit}}.} 
