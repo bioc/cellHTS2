@@ -37,7 +37,8 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, \code{\link{plotSpatialEffects}}, 
 \code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
-\code{\link{imageScreen}}, 
+\code{\link{imageScreen}}, \code{\link{getEnVisionRawData}},
+\code{\link{getEnVisionCrosstalkCorrectedData}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
 \code{\link{writeReport}} 
@@ -53,27 +54,78 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
   Below, we present a list of \sQuote{high level} functions in the
   celHTS2 package together with a brief description of what they do.
 
+ 
   \bold{Data import:}  
 
-  \code{\link{readPlateList}} read a collection of plate reader data files.
+    \code{\link{readPlateList}} read a collection of plate reader data files.
+ 
+    \code{\link{readHTAnalystData}} read input files from a HTanalyser plate reader containing data for a set of plate replicates.
 
-  \code{\link{readHTAnalystData}} read input files from a HTanalyser plate reader containing data for a set of plate replicates.
+     \code{\link{getEnVisionRawData}} this function can be used as an import function when calling \code{\link[cellHTS2:readPlateList]{readPlateList}} to read plate result files obtained from EnVision Plate Reader. 
+     
+     \code{\link{getEnVisionCrosstalkCorrectedData}} this function can be used as an import function when calling \code{\link[cellHTS2:readPlateList]{readPlateList}} to read plate result files obtained from EnVision Plate Reader. 
+
+  \bold{Screen configuration and annotation:}
+
+     \code{\link{annotate}} annotates the gene IDs of a given \code{\linkS4class{cellHTS}} object.
+
+     \code{\link{configure}} annotates the plates and the plate result files of a given \code{\linkS4class{cellHTS}} object.
+
 
   \bold{Accessors:}  
 
+   \code{\link{batch}} accesses and replaces the \code{batch} slot of a cellHTS object.
+
+   \code{\link{Data}} accesses and replaces the \code{assayData} slot of a cellHTS object. It returns a 3D array with  dimensions number of features (product between the number of wells per plates and the number of plates) x number of samples (or replicates) x number of channels. 
+
+   \code{\link{geneAnno}} returns the gene IDs used in the screen (i.e. the contents of \code{fData(object)[,"GeneID"]}.  
+
+   \code{\link{intensityFiles}} returns a list, where each component contains a
+    copy of the imported input data files.
+
+   \code{\link{name}} obtains the name of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
+
+   \code{\link{pdim}} obtains the plate dimension for the data stored in \code{object}.
+
    \code{\link{plate}} plate identifier for each feature (well).
 
-    \code{\link{position}} gives the well number for each feature (well) within each plate.
+   \code{\link{plateConf}} returns a data.frame that contains what was read from the plate configuration input file (except the first two header rows) during the screen configuration step.
+
+   \code{\link{plateList}}  returns a data.frame containing what was read from the plate list file, 
+    plus a column \code{status} of type character that contains
+    the string "OK" if the data import appeared to have gone well, and the respective error or warning
+    message otherwise.
 
     \code{\link{plateEffects}} accesses the slots \code{rowcol.effects} and \code{overall.effects}.
 
-    \code{\link{well}} gives the alphanumeric identifier (e.g. A01, A02, ...) for each well and plate.
+    \code{\link{position}} gives the well number for each feature (well) within each plate.
+
+    \code{\link{screenDesc}} returns an object of class \code{character} that contains what was read from the screen description input file during the configuration of the \code{\linkS4class{cellHTS}} object.
+
+   \code{\link{screenLog}}  returns a data.frame containing what was read from the screen log input file during the screen configuration step.
+
+   \code{\link{state}}   This generic function accesses the state of an object derived from the
+  \code{\linkS4class{cellHTS}} class.
+
+   \code{\link{well}} gives the alphanumeric identifier (e.g. A01, A02, ...) for each well and plate.
+
+   \code{\link{wellAnno}} accesses the plate annotation stored in \code{fData(object)[,"controlStatus"]}. 
+
 
 
   \bold{Data preprocessing:}
 
   \code{\link{normalizePlates}} Per-plate data transformation, normalization and variance adjustment.
   
+  \code{\link{Bscore}} correction of plate and spatial effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object using the B score method (without variance adjustment of the residuals).
+
+  \code{\link{spatialNormalization}} correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.--- COMPLETE ----
+
+  \code{\link{summarizeChannels}} combines plate-corrected intensities from dual-channel data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}. 
+  
+  \code{\link{summarizeReplicates}} summarizes between normalized replicate values given in a cellHTS object obtaining a single z-score for each probe.
+
+
    
   \bold{Miscellaneous:}
 
@@ -102,11 +154,16 @@ For example, wells can be identified by an alphanumeric character (e.g. "B02" or
   \code{\link{writeReport}} creates a directory with HTML pages of linked tables and plots
   documenting the contents of the preprocessing of a \code{\linkS4class{cellHTS}} object.
 
-%  \code{\link{...}}  --- complete ----
+  \code{\link{oneRowPerId}}  rearranges dataframe entries such that there is exactly one row
+per ID.
 
-%  \code{\link{...}}  --- complete ----
+   \code{\link{nbatch}} gives the total number of batches in a cellHTS object.
 
-%  \code{\link{...}}  --- complete ----
+   \code{\link{writeTab}} this function is a wrapper for function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
+
+   \code{\link{write.tabdel}} wrapper to function 'write.table' used to write data to a tab-delimited file.
+
+%  \code{\link{...}}   --- COMPLETE -----
 
 }
 

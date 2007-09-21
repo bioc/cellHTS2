@@ -120,7 +120,7 @@ getDynamicRange <- function(x, verbose=interactive(), definition, posControls, n
             ## 1.a) Dynamic range for activators and inhibitors (activators / neg or activators - neg) & Dynamic range (neg / inhibitors  or neg - inhibitors)
             platesWithData <- intersect(as.numeric(names(get(nms[[i]][1]))), as.numeric(names(get(nms[[i]][2]))))
 
-            if(p %in% platesWithData) {
+            for(p in platesWithData) {
               # dyn range for each replicate
 	      DR[[names(nms[i])]][p,1:nrReplicates, ch] <- apply(yy, 2, 
                   dynRange, get(nms[[i]][1])[[as.character(p)]], get(nms[[i]][2])[[as.character(p)]])

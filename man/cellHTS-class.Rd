@@ -64,7 +64,7 @@ Columns \code{Plate} and \code{Well} are allowed to contain regular expressions.
 
   \item{\code{screenLog}:}{
   a \code{\link{data.frame}} containing what was read from the \emph{screen log file} for the experiment, in case it exists. Contains at least three columns, and column names \code{Plate}, \code{Well},
-and \code{Flag}.
+and \code{Flag}. Additional columns are \code{Sample} (when there are replicates or more than one sample or condition) and \code{Channel} (when there are multiple channels).
       }
 
 
@@ -163,7 +163,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
 
     \item{\code{name(object)}}{
       \code{signature(object="cellHTS")}.
-      Obtains the names of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
+      Obtains the name of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
     }
 
     \item{\code{name(object) <- value}}{
@@ -230,7 +230,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
 } %describe
 }
 
-\author{Ligia Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
+\author{Ligia P. Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}
 
 \seealso{
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}}

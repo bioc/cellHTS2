@@ -4,7 +4,7 @@
 
 \title{Summarize between normalized replicate values given in a cellHTS object obtaining a single z-score for each probe}
 \description{
-This function Summarizes the normalized replicate values stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object, and calculates a single \emph{z}-score value for each probe. Data are stored in slot \code{assayData}, overridding its current content.
+This function summarizes the normalized replicate values stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object, and calculates a single \emph{z}-score value for each probe. Data are stored in slot \code{assayData}, overridding its current content.
 
 Currently this function is implemented only for single-color data.
 }

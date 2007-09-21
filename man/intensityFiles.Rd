@@ -13,7 +13,7 @@
 \title{Retrieve the contents of the input files used to generate a given cellHTS object.}
 
 \description{
-  These generic functiona access different slots of an object derived from the
+  These generic functions access different slots of an object derived from the
   \code{\linkS4class{cellHTS}} class, which contain the original content of the input files used to create the object.
 }
 

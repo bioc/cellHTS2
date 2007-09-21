@@ -5,7 +5,7 @@
 \description{
 
  Import functions to read a plate file obtained from EnVision Plate Reader.
- These functions should be set as the import function of \code{\link[cellHTS:readPlateData]{readPlateData}} through the argument \code{importFun} when reading plate result files obtained from EnVision plate reader.
+ These functions should be set as the import function of \code{\link[cellHTS2:readPlateList]{readPlateList}} through the argument \code{importFun} when reading plate result files obtained from EnVision plate reader.
  }
 \usage{
 

@@ -46,7 +46,7 @@ The argument \code{scale} defines the scale of the data. If data are in multipli
 In the next step of preprocessing, intensities are corrected in a plate-by-plate basis using the chosen normalization method:
 
  \itemize{
-    \item If \code{method="median"} (median scaling), plates effects are corrected  by dividing each measurement by the median value across wells annotated as \code{sample} in \code{object@wellAnno}, for each plate and replicate.
+    \item If \code{method="median"} (median scaling), plates effects are corrected  by dividing each measurement by the median value across wells annotated as \code{sample} in \code{wellAnno(object)}, for each plate and replicate.
     \item If \code{method="mean"} (mean scaling), the average in the \code{sample} wells is consider instead.
     \item If \code{method="shorth"} (scaling by the midpoint of the shorth), for each plate and replicate, the midpoint of the \code{\link[genefilter:shorth]{shorth}} of the distribution of values in the wells annotated 
            as \code{sample} is calculated. Then, every measurement is divided by this value.
@@ -70,16 +70,16 @@ In the final preprocessing step, variance of plate-corrected intensities can be 
 
 \itemize{
    \item \code{varianceAdjust="byPlate"}: per plate normalized intensities are divided by the per-plate median absolute deviations (MAD) in "sample" wells. This is done separately for each replicate and channel;
-   \item \code{varianceAdjust="byBatch"}: using the content of slot \code{batch}, plates are split according to assay batches and the individual normalized intensities in each group of plates (batch) are divied by the per-batch of plates MAD values (calculated based on "sample" wells). This is done separately for each replicate and channel;
+   \item \code{varianceAdjust="byBatch"}: using the content of slot \code{batch}, plates are split according to assay batches and the individual normalized intensities in each group of plates (batch) are divided by the per-batch of plates MAD values (calculated based on "sample" wells). This is done separately for each replicate and channel;
    \item \code{varianceAdjust="byExperiment"}: each normalized measurement is divided by the overall MAD of normalized values in wells containing "sample". This is done separately for each replicate and channel;
 }
 
   The arguments \code{posControls} and \code{negControls} are required for applying the normalization methods based on the control measurements (that is, when \code{method="POC"}, or \code{method="NPI"}, or \code{method="negatives"}). 
-  \code{posControls} and \code{negControls} should be given as a vector of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file (and stored in \code{object@wellAnno}). The length of these vectors should be equal to the number of reporters used in the screen (\code{dim(object@xraw)[4]}) or to \code{dim(object@xnorm)[4]}, in case \code{object} contains multi-channel data that has been normalized by combining the values from two or more channels.
+  \code{posControls} and \code{negControls} should be given as a vector of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file (and accessed via \code{wellAnno(object)}). The length of these vectors should be equal to the current number of channels in \code{object} (i.e. to the \code{dim(Data(object))[3]}).
   By default, if \code{posControls} is not given, \emph{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negControls} is missing, by default \emph{neg} will be considered as the name used to annotate the negative controls. 
   The content of \code{posControls} and \code{negControls} will be passed to \code{\link[base:regexpr]{regexpr}} for pattern matching within the well annotation given in the featureData slot of \code{object} (which can be accessed via \code{wellAnno(object)}) (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). The arguments \code{posControls} and \code{negControls} are particularly useful in
 multi-channel data since the controls might be reporter-specific, or
-after normalizing multi-channel data. 
+after normalizing multi-channel data.
 }
 
 \value{

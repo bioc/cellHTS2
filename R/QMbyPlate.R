@@ -70,6 +70,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,
   ppos <- pneg <- pact <- pinh <- list()
   if(isTwoWay) {
      for (ch in 1:nrChannel){
+       pneg[[ch]] <- negatives[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) # correct to be in range 1:nrWells
        pact[[ch]] <- activators[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) # correct to be in range 1:nrWells
        pinh[[ch]] <- inhibitors[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) # correct to be in range 1:nrWells 
      }

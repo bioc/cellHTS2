@@ -50,6 +50,9 @@ tableOutputWithHeaderRows = function(fn, nm, dropColumns, selRows=NULL, preName=
     x[[i]]=I(as.character(x[[i]]))
     if(!is.null(selRows)) x[[i]][length(x[[i]])]="..."
   }
+# replace empty entries in the 2 header rows by "":
+nc <- which(rowSums(is.na(t(x[1:2,])))==2)
+x[1:2,nc] <- "" 
 
   dataframeOutput(x, header=FALSE,
     caption=sprintf("Selected lines from the example %s file \\texttt{%s}.", 

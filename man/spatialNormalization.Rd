@@ -7,7 +7,7 @@
 
 \title{Spatial normalization}
 \description{
-  Correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loes}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
+  Correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
 }
 \usage{
 spatialNormalization(object, model="locfit", smoothPar=0.6, save.model=FALSE)
