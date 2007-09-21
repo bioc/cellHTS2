@@ -100,7 +100,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 
 
 \seealso{
-  \code{\link[cellHTS2:Bscore]{Bscore}},
+  \code{\link[cellHTS2:Bscore]{Bscore}}, 
   \code{\link[cellHTS2:spatialNormalization]{spatialNormalization}},
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}
 }
@@ -114,5 +114,23 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     \dontrun{
     x3 <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="Bscore", varianceAdjust="byExperiment", save.model=TRUE)
     }
+
+    ## an example to illustrate the use of slot 'batch':
+   donotrun{
+   try(xnorm <- normalizePlates(KcViabSmall, scale="multiplicative", method="median", varianceAdjust="byBatch"))
+   
+   # It doesn't work because we need to have slot 'batch'!
+   # For example, we will suppose that a different lot of reagents was used for plate 1:
+   pp <- plate(KcViabSmall)
+   fData(KcViabSmall)$"reagent" <- "lot B"
+   fData(KcViabSmall)$"reagent"[pp==1] <- "lot A"
+   fvarMetadata(KcViabSmall)["reagent",] <- "Lot of reagent used"
+
+   bb <- as.factor(fData(KcViabSmall)$"reagent")
+   batch(KcViabSmall) <- array(as.integer(bb), dim=dim(Data(KcViabSmall)))
+   ## check number of batches:
+   nbatch(KcViabSmall)
+   x1 <- normalizePlates(KcViabSmall, scale="multiplicative", log = FALSE, method="median", varianceAdjust="byBatch")
+}
 }
 \keyword{manip}
