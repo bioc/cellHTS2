@@ -116,7 +116,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     }
 
     ## an example to illustrate the use of slot 'batch':
-   \donotrun{
+   \dontrun{
    try(xnorm <- normalizePlates(KcViabSmall, scale="multiplicative", method="median", varianceAdjust="byBatch"))
    
    # It doesn't work because we need to have slot 'batch'!
