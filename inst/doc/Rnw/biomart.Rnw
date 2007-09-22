@@ -1,0 +1,90 @@
+<<biomaRt, results=hide>>=
+library("biomaRt")
+@ 
+%
+By default, the \Rpackage{biomaRt} package will query the webservice at\newline 
+http://www.ebi.ac.uk/biomart/martservice.  Let us check
+which BioMart databases it covers:
+%
+<<listMarts>>=
+listMarts()
+@
+%
+In this example, we use the Ensembl database~\cite{Ensembl2006}, from
+which we select the \textit{D. melanogaster} dataset.
+%
+<<useMart, results=hide>>=
+mart <- useMart("ensembl", dataset="dmelanogaster_gene_ensembl")
+@
+% 
+We can query the available gene attributes and filters for the
+selected dataset using the following functions.
+<<>>=
+attrs <- listAttributes(mart)
+filts <- listFilters(mart)
+@
+%
+In the BioMart system~\cite{Kasprzyk2004}, a \emph{filter} is a
+property that can be used to select a gene or a set of genes (like the
+``where'' clause in an SQL query), and an \emph{attribute} is a
+property that can be queried (like the ``select'' clause in an SQL
+query). We use the \Rfunction{getBM} function of the package
+\Rpackage{biomaRt} to obtain the gene annotation from Ensembl.
+%
+<<myGetBM>>=
+myGetBM = function(att)
+  getBM(attributes=c("ensembl_gene_id", att), 
+        filter="ensembl_gene_id", 
+        values=unique(geneAnno(xsc)), mart=mart)
+@ 
+% 
+For performance reasons, we split up our query in three subqueries,
+which corresponds to different areas in the BioMart schema, and then
+assemble the results together in R.  Alternatively, it would also be
+possible to submit a single query for all of the attributes, but then
+the result table will be enormous due to the 1:many mapping
+especially from gene ID to GO categories~\cite{GO}.
+%
+<<getBM>>=
+bm1 <- myGetBM(c("chromosome_name", "start_position", "end_position", "description"))
+bm2 <- myGetBM(c("flybasename_gene"))
+#bm3 <- getGO(unique(geneAnno(xsc)),type="ensembl_gene_id",mart=mart)[,1:3]
+bm3 = myGetBM(c("go", "go_description"))
+@ 
+%
+There are only a few CG-identifiers for which we were not able to
+obtain chromosomal locations: 
+%
+<<setDiff>>=
+unique(setdiff(geneAnno(xsc), bm1$ensembl_gene_id)) 
+@ 
+%
+Below, we add the results
+to the dataframe \Robject{featureData} of \Robject{xsc}. 
+Since the tables \Robject{bm1},
+\Robject{bm2}, and \Robject{bm3} contain zero, one or several rows for
+each gene ID, but in \Robject{featureData} we want exactly one row per
+gene ID, the function \Rfunction{oneRowPerId} does the somewhat tedious
+task of reformatting the tables: multiple entries are collapsed
+into a single comma-separated string, and empty rows are inserted
+where necessary.
+%
+<<addBMdata>>=
+id <- geneAnno(xsc)
+
+bmAll <- cbind(
+   oneRowPerId(bm1, id),
+   oneRowPerId(bm2, id),
+   oneRowPerId(bm3, id)) 
+
+bdgpbiomart <- cbind(fData(xsc), bmAll)
+fData(xsc) <- bdgpbiomart
+fvarMetadata(xsc)[names(bmAll), "labelDescription"] <- sapply(names(bmAll), 
+function(i) sub("_", " ", i) )
+@ 
+
+%% This is how the object is then saved in the data subdirectory of the package:
+<<saveAndStop, echo=FALSE, eval=FALSE>>=
+save(bdgpbiomart, file="../../../data/bdgpbiomart.rda", compress=TRUE)
+@ 
+

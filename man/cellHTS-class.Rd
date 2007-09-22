@@ -102,10 +102,10 @@ and \code{Flag}. Additional columns are \code{Sample} (when there are replicates
    \code{\link[Biobase:class.NChannelSet]{NChannelSet}} for more details.
 
    It contains information about the screens, and it must have the
-   following columns in the \code{data} component of this slot:
+   following columns in its \code{data} component:
    \code{replicate} and \code{assay}, where \code{replicate} is expected
    to be a vector of integers giving the replicate number, while
-   \code{assay} is expected to be a vector of characters gving the name of
+   \code{assay} is expected to be a vector of characters giving the name of
    the biological assay. Both of these vectors should have the same length
    as the number of Samples.
 
@@ -121,7 +121,7 @@ and \code{Flag}. Additional columns are \code{Sample} (when there are replicates
    It may contain information about the reagents: plate, well, column,
    the well annotation (sample, control, etc.), etc.
    
-For a \code{\linkS4class{cellHTS}} object, this slot must contain in the \code{data} component of this slot at least three mandatory columns named \code{plate}, \code{well} and \code{controlStatus}.
+For a \code{\linkS4class{cellHTS}} object, this slot must contain in its \code{data} component at least three mandatory columns named \code{plate}, \code{well} and \code{controlStatus}.
 These are vectors with the same size of the number of Features in the experiments.
 Column \code{plate} is expected to be a numeric vector giving the plate number (e.g. 1, 2, ...), \code{well} should be a vector of characters (alphanumeric characters) giving the well ID within the plate (e.g. A01, B01, H12, etc.). 
 Column \code{controlStatus} should be a factor specifying the annotation for each well with possible levels: \emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and \emph{pos}. Other levels may be employed for the positive and negative controls, besides \emph{pos} and \emph{neg}.

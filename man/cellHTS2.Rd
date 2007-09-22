@@ -15,7 +15,7 @@ interference assays performed in plate format and it extends the
 Full help on methods and associated functions is available from within
 class help pages.
 
-Data sets: \code{\link{KcViab}}, \code{\link{KcViabSmall}}.
+Data sets: \code{\link{KcViab}}, \code{\link{KcViabSmall}}, \code{\link{bdgpbiomart}}.
 
 Introductory information is available from vignettes, type
 \code{openVignette()}.
