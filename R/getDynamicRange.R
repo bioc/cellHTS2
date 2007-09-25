@@ -81,9 +81,11 @@ getDynamicRange <- function(x, verbose=interactive(), definition, posControls, n
 
 
     nms <- if(twoWay) c("activators", "inhibitors") else namePos
-    DR <- vector("list", length=length(nms))
+
+## the line below is needed to have some feedback in 'writeReport'
+    DR <- vector("list", length=max(1, length(nms)))
     names(DR) <- nms
-    for(i in nms) { 
+    for(i in 1:length(DR)) { 
        DR[[i]] <- array(NA, dim=c(nrPlates, nrReplicates+1,nrChannels))
        colnames(DR[[i]]) <- c(paste("Replicate", 1:nrReplicates, sep=""), "Average")
     } 

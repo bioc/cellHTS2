@@ -30,7 +30,7 @@ When the annotation mapping is performed, by default, \code{anno} is set to:
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}},
   \code{\link[cellHTS2:summarizeReplicates]{summarizeReplicates}},
   \code{\link[cellHTS2:Data]{Data}}
-%  \code{\link[cellHTS2:writeReport]{writeReport}}
+  \code{\link[cellHTS2:writeReport]{writeReport}}
 }
 
 \references{

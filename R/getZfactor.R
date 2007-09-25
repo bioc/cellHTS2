@@ -77,9 +77,11 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
     negCtrls <- allControls$negCtrls
 
      nms <- if(twoWay) c("activators", "inhibitors") else namePos
-     Zfac <- vector("list", length=length(nms))
+
+## the line below is needed to have some feedback in 'writeReport'
+     Zfac <- vector("list", length=max(1, length(nms)))
      names(Zfac) <- nms
-     for(i in nms) { 
+     for(i in 1:length(Zfac)) { 
        Zfac[[i]] <- matrix(NA, nrow=nrReplicates, ncol=nrChannels)
        dimnames(Zfac[[i]]) <- list(paste("Replicate", 1:nrReplicates, sep=""), paste("Channel", 1:nrChannels, sep=""))
      } 

@@ -462,6 +462,17 @@ each well annotation in the example data:
 table(wellAnno(x))
 @ 
 %
+
+We can also use the function \Rfunction{configurationAsScreenPlot} to see 
+the original plate configuration of all of the plates as a screen plot:
+%
+<<configuration plot>>=
+configurationAsScreenPlot(x)
+@ 
+%
+
+
+
 A special case of well annotation is when different types of positive controls are used 
 for the screening, that is \emph{activator} and \emph{inhibitor} compounds. 
 The vignette \textit{Analysis of two-way cell-based assays} 

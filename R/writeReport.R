@@ -425,6 +425,7 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
 #      allZfac <- getZfactor(xr, verbose=FALSE, allControls=allControls, twoWay=twoWay, namePos=namePos) 
  }
 
+if(all(is.null(names(dr)))) names(dr) <- namePos
 
   ## Define well colors and comment on them.
   ## (to avoid having the legend for 'pos' when we have 'inhibitors' and 'activators' or vice-versa)
@@ -588,7 +589,36 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
   }
 
 
+##   ----------------------
+## Add the screen plot with plate configuration 
+## (only based on the content of plate configuration file! No updates based on screen log file.)
+  if(state(xr)[["configured"]]) {
+    ## Create a data.frame for the screen plot with plate configuration
+    res <- makePlot(outdir, con=con, name="configurationAsScreenPlot", w=7, h=7, psz=8,
+                    fun = function() {
+                     do.call("configurationAsScreenPlot", 
+                         args=list(x=xr, verbose=FALSE, posControls=unlist(posControls), negControls=negControls))
+                     },
+                    print=FALSE, isImageScreen=FALSE)
+# do plot with the legend
+makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8, fun=function(){ image(matrix(1:length(res)), axes=FALSE, col=res, add = !TRUE, ylab="", xlab="Color scale"); axis(1, at = seq(0,1,length=length(res)), tick = !TRUE, labels=names(res)) }, print=FALSE, isImageScreen=FALSE)
 
+   confTable = data.frame(matrix(data = NA, nrow = 2, ncol = 1))
+   names(confTable) = "Plate configuration"
+
+#   wellLeg <- paste(sprintf("<FONT COLOR=\"%s\">%s</FONT>", res, names(res)), collapse=", ")
+#   wellLeg <- sprintf("<CENTER><em>Color legend: </em><br> %s</CENTER><BR>\n", wellLeg)
+#   confTable[1, 1] = sprintf("%s<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER>\n",
+#                 wellLeg, "configurationAsScreenPlot.pdf", "configurationAsScreenPlot.png")
+  confTable[1,1] <- sprintf("<CENTER><IMG SRC=\"%s\"/></CENTER>\n", "colLeg.png")
+
+  confTable[2,1] <- sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER>\n", "configurationAsScreenPlot.pdf", "configurationAsScreenPlot.png")
+
+   cat("<CENTER>", file=con)
+   cat("</CENTER><BR><BR>", file=con)
+   writeHTMLtable4plots(confTable, con=con)
+   cat("<BR><BR>", file=con)
+  }
 
 
   ##   -------  Step 5)  Per experiment QC ---------------

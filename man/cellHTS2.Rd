@@ -37,7 +37,7 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, \code{\link{plotSpatialEffects}}, 
 \code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
-\code{\link{imageScreen}}, \code{\link{getEnVisionRawData}},
+\code{\link{imageScreen}}, \code{\link{configurationAsScreenPlot}}, \code{\link{getEnVisionRawData}},
 \code{\link{getEnVisionCrosstalkCorrectedData}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
