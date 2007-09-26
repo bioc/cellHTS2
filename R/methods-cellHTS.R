@@ -375,8 +375,8 @@ if(any(nchar(geneIDs$Well)!=3))
                " an example.\n", sep=""))
 
 
-  ## store the geneIDs data.frame into the geneAnno slot of x
-  ## annotation(object) <- # should be the name of the ...  'annotation(object)' returns a character vector indicating the      annotation package
+  ## store the geneIDs data.frame into the featureData slot
+  ## 'annotation(object)' returns a character vector indicating the annotation package
 
   geneIDs <- geneIDs[, !c(names(geneIDs) %in% c("Plate", "Well"))]
   ## flag 'NA' values in the "GeneID" column:
@@ -411,7 +411,7 @@ if (!missing(path))
   nrSample <- ncol(object)
   chNames <- channelNames(object)
   nrChannel <- length(chNames)
-  # assumes that 'object' contains raw data!
+
   xraw <- Data(object)
 
   ppath = ifelse(missing(path), dirname(confFile), path)
@@ -462,7 +462,7 @@ if (!missing(path))
    descript = readLines(file.path(ppath, descripFile))
 
 
-   ## Store the contents of the description file in the 'dexperimentData' slot which is accessed via description(object):
+   ## Store the contents of the description file in the 'experimentData' slot which is accessed via description(object):
    miameList = list(sepLab=grep("Lab description", descript),
         name = grep("^Experimenter name:", descript),
 	lab  =   grep("^Laboratory:", descript),
@@ -474,7 +474,7 @@ if (!missing(path))
   )
 
   miameInfo = lapply(miameList, function(i) unlist(strsplit(descript[i], split=": "))[2L]) 
-  miameInfo = lapply(miameInfo, function(i) if(is.na(i)) "" else i)
+  miameInfo = lapply(miameInfo, function(i) if(is.null(i)) "" else { if(is.na(i)) "" else i })
   miameInfo = with(miameInfo, new("MIAME", 
     name=name,
     lab = lab,
