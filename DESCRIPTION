@@ -1,6 +1,6 @@
 Package: cellHTS2
-Version: 2.0.18
-Date: 25 September 2007
+Version: 2.0.19
+Date: 26 September 2007
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras <ligia@ebi.ac.uk>, Wolfgang Huber <huber@ebi.ac.uk>, Michael Boutros <m.boutros@dkfz.de>
 Maintainer: Ligia Bras <ligia@ebi.ac.uk>

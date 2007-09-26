@@ -1078,13 +1078,22 @@ stats <- aux
 rm(aux)
 @ 
 %
-we are now ready to call the category summary functions:
+Before calling the category summary functions, we need to order our statistic vector according to the names of the columns of 
+the category matrix.
+%
+<<arrange probes>>=
+m <- match(colnames(categs), names(stats))
+stats <- stats[m]
+stopifnot(colnames(categs)==names(stats))
+@
+% 
+Finally, we are ready to call the category summary functions:
 %
 <<cat6>>=
 acMean <- applyByCategory(stats, categs)
 acTtest <- applyByCategory(stats, categs, FUN=function(v) t.test(v, stats)$p.value)
 acNum <- applyByCategory(stats, categs, FUN=length)
-isEnriched <- (acTtest<=1e-2) & (acMean>0.5)
+isEnriched <- (acTtest<=1e-3) & (acMean>0.5)
 @ 
 %
 A volcano plot of the $-\log_{10}$ of the $p$-value \Robject{acTtest} versus
@@ -1093,7 +1102,7 @@ Figure~\ref{cellhts2Complete-volcano}. For a given category, the $p$-value is ca
 $t$-test against the null hypothesis that there is no difference between the mean
 $z$-score of all probes and the mean $z$-score of the probes in that category. 
 To select the enriched categories (\Robject{isEnriched}), we considered a significance
-level of $1\%$ for the $t$-test, and a per category mean $z$-score greater
+level of $0.1\%$ for the $t$-test, and a per category mean $z$-score greater
 than $0.5$. This led to the \Sexpr{sum(isEnriched)} categories marked in red in
 Figure~\ref{cellhts2Complete-volcano} are listed in Table~\ref{tab:enrichedGoCateg}.
 
