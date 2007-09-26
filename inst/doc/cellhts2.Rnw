@@ -48,10 +48,14 @@ necessary to run an analysis of
 a cell-based high-throughput screen (HTS), from
 raw intensity readings to an annotated hit list, using the 
 \Rpackage{cellHTS2} package. This package is a revised version of 
-the \Rpackage{cellHTS} package, which accompanied
+the \Rpackage{cellHTS} package~\footnote{To convert a S3 class 
+\Rclass{cellHTS} object obtained using \Rpackage{cellHTS} package 
+to an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2}, 
+please see the function \Rfunction{convertOldCellHTS}.}, 
+which accompanied
 the paper \textit{Analysis
 of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
-Wolfgang Huber~\cite{Boutros2006}
+Wolfgang Huber~\cite{Boutros2006}. 
 
 This report has been produced as a reproducible
 document~\cite{Gentleman2004RepRes}. It contains the actual computer

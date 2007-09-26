@@ -15,7 +15,9 @@ interference assays performed in plate format and it extends the
 Full help on methods and associated functions is available from within
 class help pages.
 
-Data sets: \code{\link{KcViab}}, \code{\link{KcViabSmall}}, \code{\link{bdgpbiomart}}.
+Data sets: \code{\link{KcViab}}, \code{\link{KcViabSmall}}, 
+\code{\link{oldKcViabSmall}},
+\code{\link{bdgpbiomart}}.
 
 Introductory information is available from vignettes, type
 \code{openVignette()}.
@@ -41,7 +43,7 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{getEnVisionCrosstalkCorrectedData}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
-\code{\link{writeReport}} 
+\code{\link{writeReport}}, \code{\link{convertOldCellHTS}}, 
 and \code{\link{ROC}}.
 
 A full listing of documented topics is available in HTML view by
@@ -130,6 +132,10 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
   \bold{Miscellaneous:}
 
   \code{\link{compare2cellHTS}} compares two \code{\linkS4class{cellHTS}} objects to see whether they derive from the same initial \code{\linkS4class{cellHTS}} object.
+
+
+  \code{\link{convertOldCellHTS}} converts an old S3 class \code{cellHTS} object obtained using \code{cellHTS} package 
+to new S4 class \code{cellHTS} object(s) to use with package \code{cellHTS2}.
 
 
   \code{\link{convertWellCoordinates}} converts between different ways of specifying well coordinates within a plate.

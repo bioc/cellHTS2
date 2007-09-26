@@ -6,6 +6,7 @@ exportClasses("cellHTS", "ROC")
 export("oneRowPerId", 
        "Bscore",
        "configurationAsScreenPlot",
+       "convertOldCellHTS",
        "convertWellCoordinates",
        "getEnVisionRawData",
        "getEnVisionCrosstalkCorrectedData",

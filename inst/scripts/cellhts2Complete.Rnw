@@ -46,7 +46,7 @@ which accompanies the paper \textit{Analysis
 of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
 Wolfgang Huber~\cite{Boutros2006}.
 For those who are familiar with \Rpackage{cellHTS} package, we advise 
-to change to \Rpackage{cellHTS2} package, since the former package will be discontinued. In \Rpackage{cellHTS2}, we define a \Rclass{cellHTS} object as a S4 class, which inherits from class \Rclass{NChannelSet} of \Rpackage{Biobase}.
+to change to \Rpackage{cellHTS2} package, since the former package will be discontinued. In \Rpackage{cellHTS2}, we define a \Rclass{cellHTS} object as a S4 class, which inherits from class \Rclass{NChannelSet} of \Rpackage{Biobase}~\footnote{To convert a S3 class \Rclass{cellHTS} object obtained using \Rpackage{cellHTS} package to an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2}, please see the function \Rfunction{convertOldCellHTS}.}.
 
 This report describes the structure of the \Rclass{cellHTS} class, 
 while explaining all the steps necessary to run a
