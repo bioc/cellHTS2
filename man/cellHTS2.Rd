@@ -121,7 +121,7 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
   
   \code{\link{Bscore}} correction of plate and spatial effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object using the B score method (without variance adjustment of the residuals).
 
-  \code{\link{spatialNormalization}} correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.--- COMPLETE ----
+  \code{\link{spatialNormalization}} correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
 
   \code{\link{summarizeChannels}} combines plate-corrected intensities from dual-channel data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}. 
   
@@ -143,7 +143,7 @@ For example, wells can be identified by an alphanumeric character (e.g. "B02" or
 
   \code{\link{ROC}} creates an object of class \code{\linkS4class{ROC}} from a scored \code{\linkS4class{cellHTS}} object which can be plotted as a ROC curve. 
 
-  \code{\link{getTopTable}} generates the hit list from a scored {\linkS4class{cellHTS}} object and write it to a tab-delimited file.
+  \code{\link{getTopTable}} generates the hit list from a scored \code{\linkS4class{cellHTS}} object and write it to a tab-delimited file.
 
   \code{\link{getMeasureRepAgreement}} calculates the agreement between plate replicates using raw data or normalized data stored in a \code{\linkS4class{cellHTS}} object.
 
