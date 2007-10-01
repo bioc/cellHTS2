@@ -14,3 +14,10 @@
         save(KcViabSmall, file=sprintf("../../data/%s.rda", f), compress=TRUE)
       }
     }
+
+    fname <- "DualChannelScreen"
+    datadir <- paste("../", fname, sep="")
+    dualCh <- readPlateList("Platelist.txt", name=fname, path=datadir)
+    dualCh <- configure(dualCh, "Description.txt", "Plateconf.txt", "Screenlog.txt",
+      path=datadir) 
+    save(dualCh, file="../../data/dualCh.rda", compress=TRUE)
