@@ -99,3 +99,42 @@ summarizeReplicates = function(object, zscore="+", summary="min") {
   validObject(z)
   return(z)
 }
+
+
+##------------------------------------------------
+## Sigmoidal transformation of the z-score values
+##------------------------------------------------
+
+## Function that applies a sigmoidal transformation with parameters z0 and lambda to the z-score values stored in a cellHTS object. The obtained results are called 'calls'. The transformation is given by:
+##	1/(1+exp(-(z-z0)*lambda))
+## This maps the z-score values to the interval [0,1], and is intended to expand the scale of z-scores with intermediate values and shrink the ones showing extreme values, therefore making the difference between intermediate phenotypes larger.
+
+
+## x - scored cellHTS object
+## z0 - centre of the sigmoidal transformation
+## lambda - parameter that controls the smoothness of the transition from low values 
+## to higher values (the higher this value, more steeper is this transition). Should be > 0 (but usually it makes more sense to use a value >=1)
+
+scores2calls <- function(x, z0, lambda){
+
+ ## check whether 'x' contains scored values:
+   if(!state(x)[["scored"]]) stop(sprintf("'x' should be a 'cellHTS' object containing scored data!\nPlease check its preprocessing state: %s", paste(names(state(x)), "=", state(x), collapse=", ")))
+
+  if(dim(Data(x))[3]!=1)
+    stop("Currently this function is implemented only for single-color data.")
+
+  if(!all(is.numeric(lambda) & is.numeric(z0))) stop("'z0' and 'lambda' should be numeric values.")
+
+  if(!all(length(lambda)==1L & length(z0)==1L)) stop("'z0' and 'lambda' should be numeric values of length one.")
+
+  if(lambda <=0) stop("'lambda' should be a positive value!")
+
+
+  trsf = function(z) 1/(1+exp(-(z-z0)*lambda))
+  z <- trsf(Data(x))
+  assayData(x) <- assayDataNew("call"=matrix(z, dimnames=list(featureNames(x), 1)))
+  return(x)
+}
+
+
+

@@ -15,6 +15,7 @@
 \alias{nbatch,cellHTS-method}
 \alias{compare2cellHTS}
 \alias{compare2cellHTS,cellHTS,cellHTS-method}
+\alias{meanSdPlot,cellHTS-method}
 
 %% COMPLETE THE CLASS-SPECIFIC METHODS
 
@@ -226,6 +227,8 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
   which represents a receiver-operator-characteristic curve,
   from the data of the annotated positive and negative controls in a
   scored \code{\linkS4class{cellHTS}} object.}
+
+    \item{\code{meanSdPlot(x)}}{\code{signature(x = "cellHTS")} plots row standard deviations versus row means of data stored in slot \code{assayData} of a \code{cellHTS} object. If there are multiple channels and samples, the row standard deviations and row means are calculated across samples for each channel separately. Besides, row standard deviations vs row means are calculated across channels, for each sample. See \code{\link[vsn]{meanSdPlot}} for more details about this function.}
 
 } %describe
 }

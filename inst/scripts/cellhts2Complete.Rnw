@@ -689,6 +689,32 @@ boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE, ylim=ylim)
 for the different types of probes.}
 %
 
+
+In the \Rpackage{cellHTS2} package, we provide a further transformation of the $z$-score values to obtain the so-called \emph{calls}. This involves applying a 
+sigmoidal transformation to the $z$-score values, with parameters $z_0$ and 
+$\lambda$ ($>0$), given by:
+
+\begin{equation}
+y_k = \frac{1}{1+e^{-\lambda \,\left(z_k-z_0\right)}} \label{eq:sigtransf}
+\end{equation}
+
+This transformation maps the $z$-score values to the interval 
+$\left[0,\,1\right]$, and is intended to expand the scale of $z$-scores with 
+intermediate values and shrink the ones showing extreme values, therefore making the difference between intermediate phenotypes larger. 
+The parameter $z_0$ defines the centre of the sigmoidal transformation, 
+while $\lambda$ controls the smoothness of the transformation. 
+
+This transformation can be done by calling the function \Rfunction{scores2calls}, as shown below:
+%
+<<call values>>=
+y <- scores2calls(xsc, z0=1.5, lambda=2)
+plot(Data(xsc), Data(y), col="blue", xlab="z-scores", ylab="calls", main=expression(1/(1+e^{-lambda *(z-z[0])})))
+@ 
+%
+However, for the purpose of the present analysis, we will consider the $z$-score values instead of the call values.
+
+
+
 %------------------------------------------------------------
 \section{Probe annotation}
 \label{sec:annotation}

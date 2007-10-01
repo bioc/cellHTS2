@@ -50,10 +50,8 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 
 
 \examples{
-
-    datadir <- system.file("DualChannelScreen", package = "cellHTS2")
-    x <- readPlateList("Platelist.txt", name="TwoColorData", path=datadir)
-    x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt", path=datadir)
+    data(dualCh)
+    x <- dualCh
     table(wellAnno(x))
 
     ## Define the controls for the different channels:

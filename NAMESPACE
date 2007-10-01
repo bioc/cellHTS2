@@ -1,5 +1,6 @@
 importFrom("methods", "show")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
+importFrom("vsn", "meanSdPlot")
 
 exportClasses("cellHTS", "ROC")
 
@@ -19,6 +20,7 @@ export("oneRowPerId",
        "plotSpatialEffects",
        "readPlateList",
        "readHTAnalystData",
+       "scores2calls",
        "spatialNormalization",
        "summarizeChannels",
        "summarizeReplicates",

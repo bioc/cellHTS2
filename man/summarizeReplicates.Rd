@@ -12,8 +12,8 @@ Currently this function is implemented only for single-color data.
 summarizeReplicates(object, zscore="+", summary ="min")
 }
 \arguments{
-  \item{object}{a object of class \code{\linkS4class{cellHTS}} that has already been normalized (see details).}
-  \item{zscore}{a character string, either "+" (default) or "-", whi  \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}} will be used to set the sign to calculate the \emph{z}-scores before summarization. See details.}
+  \item{object}{an object of class \code{\linkS4class{cellHTS}} that has already been normalized (see details).}
+  \item{zscore}{a character string, either "+" (default) or "-", which will be used to set the sign to calculate the \emph{z}-scores before summarization. See details.}
   \item{summary}{a character string indicating how to summarize between replicate measurements. 
     One of "min" (default), "mean", "max", "rms", "closestToZero", or "FurthestFromZero" can be used (see details).}
 }

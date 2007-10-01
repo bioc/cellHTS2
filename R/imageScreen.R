@@ -108,7 +108,7 @@ imageScreen <- function (object, ar=3/5, zrange, map=FALSE, anno) {
 
   ## add the color scale bar (size depends on the plate size and number)
   xbar <- seq(0, 1, length=7)
-  xval <- signif(reverseMap(xbar), 2)
+  xval <- round(reverseMap(xbar), 1)
   nColBar <- 1 + (Ncol>25) + (Ncol>100)
   nRowBar <- 1 + (Nrow>50) + (Nrow>100) + (Nrow>150)
   yBar.start <- ifelse(extraRows==10, 0.4 * extraRows, 0.6 * extraRows)

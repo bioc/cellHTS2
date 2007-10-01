@@ -731,3 +731,30 @@ setMethod("ROC", signature("cellHTS"),
   return(x) 
 })
 
+
+
+## MeanSdPlot from vsn package
+setMethod("meanSdPlot", signature="cellHTS", definition =
+   function(x, ranks=TRUE, xlab = ifelse(ranks, "rank(mean)", "mean"),
+            ylab = "sd", pch  = ".", ...) {
+      xdat <- Data(x)
+      d <- dim(xdat)
+      nCh <- d[3]
+      nRep <- d[2]
+      
+      if ((nCh+nRep)==2) stop("'x' contains data only for 1 sample and 1 channel! Cannot do the 'sd vs mean' plot!")
+
+    par(mfrow=c(max(1, (nRep>1)*nCh), max(1, (nCh>1)*nRep)))
+   if(nCh>1) 
+      for(r in 1:nRep){
+        meanSdPlot(as.matrix(xdat[,r,]), main=sprintf("across channels, sample %d", r),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...)
+      }
+
+   if(nRep>1)
+      for(ch in 1:nCh){
+        meanSdPlot(as.matrix(xdat[,,ch]), main=sprintf("across samples, channel %d", ch),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...) 
+      }
+})
+
+
+
