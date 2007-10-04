@@ -741,20 +741,19 @@ setMethod("meanSdPlot", signature="cellHTS", definition =
       d <- dim(xdat)
       nCh <- d[3]
       nRep <- d[2]
-      
-      if ((nCh+nRep)==2) stop("'x' contains data only for 1 sample and 1 channel! Cannot do the 'sd vs mean' plot!")
 
-    par(mfrow=c(max(1, (nRep>1)*nCh), max(1, (nCh>1)*nRep)))
-   if(nCh>1) 
-      for(r in 1:nRep){
-        meanSdPlot(as.matrix(xdat[,r,]), main=sprintf("across channels, sample %d", r),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...)
-      }
+      if(!state(x)[["configured"]]) stop("Please configure 'x' before calling this function.")
 
-   if(nRep>1)
+      if (nRep<2) stop("'x' contains data only for 1 sample! Cannot do the 'sd vs mean' plot!")
+
+      ## only consider sample wells
+      toconsider <- wellAnno(x)=="sample"
+
+      nc <- ceiling(sqrt(nCh))
+      nr <- ceiling(nCh/nc)
+
+      par(mfrow=c(nr, nc))
       for(ch in 1:nCh){
-        meanSdPlot(as.matrix(xdat[,,ch]), main=sprintf("across samples, channel %d", ch),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...) 
+        meanSdPlot(as.matrix(xdat[toconsider,,ch]), main=sprintf("across samples, channel %d\n(only sample wells)", ch),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...) 
       }
 })
-
-
-

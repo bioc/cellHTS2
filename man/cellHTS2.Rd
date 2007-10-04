@@ -16,7 +16,7 @@ Full help on methods and associated functions is available from within
 class help pages.
 
 Data sets: \code{\link{KcViab}}, \code{\link{KcViabSmall}}, 
-\code{\link{oldKcViabSmall}},
+\code{\link{oldKcViabSmall}}, \code{\link{dualCh}},
 \code{\link{bdgpbiomart}}.
 
 Introductory information is available from vignettes, type
@@ -30,7 +30,8 @@ Class-specific methods: \code{\link{annotate}}, \code{\link{batch}},
 \code{\link{plateConf}}, \code{\link{plateEffects}},
 \code{\link{plateList}}, \code{\link{position}},
 \code{\link{screenDesc}}, \code{\link{screenLog}}, \code{\link{state}},
-\code{\link{well}}, \code{\link{wellAnno}}, \code{\link{writeTab}}.
+\code{\link{well}}, \code{\link{wellAnno}}, \code{\link{writeTab}}, 
+\code{\link{ROC}}.
 
 Generic functions: \code{\link{show}}, \code{\link{initialize}},
 \code{\link{validObject}}.
@@ -44,7 +45,7 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
 \code{\link{writeReport}}, \code{\link{convertOldCellHTS}}, 
-and \code{\link{ROC}}.
+and \code{\link{scores2calls}}.
 
 A full listing of documented topics is available in HTML view by
 typing \code{help.start()} and selecting the \code{cellHTS2} package from the
@@ -127,6 +128,7 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
   
   \code{\link{summarizeReplicates}} summarizes between normalized replicate values given in a cellHTS object obtaining a single z-score for each probe.
 
+  \code{\link{scores2calls}} applies a sigmoidal transformation to the z-score values stored in a \code{cellHTS} object mapping them to the range [0,1].
 
    
   \bold{Miscellaneous:}
@@ -168,6 +170,8 @@ per ID.
    \code{\link{writeTab}} this function is a wrapper for function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
 
    \code{\link{write.tabdel}} wrapper to function 'write.table' used to write data to a tab-delimited file.
+
+\code{\link{meanSdPlot}} wrapper of function \code{\link[vsn]{meanSdPlot}} to construct the standard deviation vs mean plot of data stored in a \code{cellHTS} object.
 
 %  \code{\link{...}}   --- COMPLETE -----
 
