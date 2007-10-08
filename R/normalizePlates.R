@@ -75,7 +75,7 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
    "Bscore" = Bscore(object, ...),
    "loess" = spatialNormalization(object, model="loess", ...), 
    "locfit" = spatialNormalization(object, model="locfit", ...), 
-   stop(sprintf("Invalid value '%s' for argument 'method'.\n Allowed valures are: %s.", 
+   stop(sprintf("Invalid value '%s' for argument 'method'.\n Allowed values are: %s.", 
             method, paste(allowedFunctions, collapse=", ")))
   )
 

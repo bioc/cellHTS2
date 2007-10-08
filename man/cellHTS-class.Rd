@@ -238,7 +238,7 @@ Column \code{controlStatus} should be a factor specifying the annotation for eac
 
 \seealso{
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}}
-  \code{\link[cellHTS2:readPlateList]{reaPlateList}}
+  \code{\link[cellHTS2:readPlateList]{readPlateList}}
   \code{\link[cellHTS2:annotate]{annotate}}
   \code{\link[cellHTS2:configure]{configure}}
   \code{\link[cellHTS2:writeTab]{writeTab}}
