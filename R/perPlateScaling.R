@@ -59,18 +59,24 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
     wAnno = wellAnnotation[plateInds]
     inds <- (wAnno=="sample")
     for(ch in 1:nrChannels){
-        if(stats %in% "negatives"){
-          if(!(emptyOrNA(negControls[ch]))) inds = findControls(negControls[ch], wAnno) else inds=integer(0)
-          if((stats %in% c("negatives", "NPI")) & !length(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
+
+        if(stats=="negatives"){
+          inds <- if(!(emptyOrNA(negControls[ch]))) findControls(negControls[ch], wAnno) else integer(0)
+
+          if(!length(inds)) stop(sprintf("No negative controls were found in plate %s, channel %d! Please, use a different plate normalization method.", p, ch))
         }
 
         for(r in 1:nrSamples) {
-          if(all(is.na(xnorm[plateInds, r, ch][inds]))) {
-             stop(sprintf("No value for negative controls were found in plate %d, replicates %d, channel %d! Please use a different plate normalization method.", p, r, ch))
-          }
+         if(!all(is.na(xnorm[plateInds, r, ch]))) { 
+
+          if(all(is.na(xnorm[plateInds, r, ch][inds])))
+              stop(sprintf("No value for %s were found in plate %d, replicates %d, channel %d! Please %s", ifelse(stats=="negatives","negative controls", "samples"), p, r, ch, ifelse(stats=="negatives", "use a different plate normalization method.", "also flag the values for the controls in this plate!"))) 
+
           xnorm[plateInds,r,ch] <- funOperator(xnorm[plateInds, r, ch], do.call(statFun, c(list(x=xnorm[plateInds, r, ch][inds]), funArgs)), op)
-        }}
-       }
+      }#not all empty
+  }# r
+}# ch
+       }# p
   Data(object) <- xnorm
   return(object)
 }
@@ -111,8 +117,10 @@ controlsBasedNormalization <- function(object, method, posControls, negControls)
 	   if (!length(pos) | !length(neg)) stop(sprintf("No positive or/and negative controls were found in plate %s, channel %d! Please, use a different normalization function.", p, ch))
         }
 
-	for(r in 1:nrSamples)
-        xnorm[plateInds, r, ch] = fun(xnorm[plateInds, r, ch], pos, neg, plate=p, replicate=r,channel=ch)
+	for(r in 1:nrSamples) 
+         if(!all(is.na(xnorm[plateInds, r, ch])) )
+            xnorm[plateInds, r, ch] = fun(xnorm[plateInds, r, ch], pos, neg, plate=p, replicate=r,channel=ch)
+
      } 
   }
   Data(object) <- xnorm
