@@ -80,7 +80,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     ## same as: 
     ## getDynamicRange(KcViabSmall)
     
-    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="median", varianceAdjust="none")
     try(drn <- getDynamicRange(x, definition="ratio"))
     drn <- getDynamicRange(x, definition="difference")
 }

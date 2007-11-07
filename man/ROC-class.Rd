@@ -14,7 +14,7 @@
 \description{
 
 Container for data that represent a receiver-operator-characteristic curve, and that were generated 
-  from the data of the annotated positive and negative controls in a
+  from the data of the annotated positive and negative controls in a 
   scored \code{\linkS4class{cellHTS}} object.
 }
 
@@ -58,8 +58,9 @@ Container for data that represent a receiver-operator-characteristic curve, and 
   
     \dontrun{
     data(KcViabSmall)
-    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
-    x <- summarizeReplicates(x, zscore="-", summary="mean")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
+    x <- scoreReplicates(x, sign="-", method="zscore")
+    x <- summarizeReplicates(x, summary="mean")
     y <- ROC(x)
     plot(y)
     lines(y, col="green")

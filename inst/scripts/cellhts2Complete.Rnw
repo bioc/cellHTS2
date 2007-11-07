@@ -310,12 +310,12 @@ and can be used in further analysis (Section~\ref{sec:additAnno}).
 and within plates, enhancing the biological signal and eventually transforming the data to a scale more suitable 
 for subsequent analyses.
 
-\item[Scoring] involves standardizing the values for each replicate and then summarizing replicate values 
-in order to obtain a single-value per probe ($z$-score).
+\item[Replicates scoring and summarization] involves standardizing the values for each replicate and then summarizing replicate values 
+in order to obtain a single-value per probe (for example, a robust $z$-score).
 
 \end{description}
 
-The steps of normalization and scoring constitute the preprocessing work-flow of the screening data, 
+The steps of data normalization, replicate scoring and summarization constitute the preprocessing work-flow of the screening data, 
 and as mentioned above, alter the contents of \Robject{assayData} slot and even the number of channels 
 of the \Rclass{cellHTS} object. These steps are covered in Section~\ref{sec:norm}. \\
 
@@ -528,15 +528,40 @@ should be discarded and regarded as missing.
 
 
 %------------------------------------------------------------
-\section{Normalization and summarization of replicates}
+\section{Normalization, scoring and summarization of replicates}
 \label{sec:norm}
 %------------------------------------------------------------ 
 
-The data normalization and summarization functions available in \Rpackage{cellHTS2} package 
+The data normalization, replicates scoring and summarization functions available in \Rpackage{cellHTS2} package 
 use the data stored in the \Robject{assayData} slot of the \Rclass{cellHTS} object, 
 saving their output to this slot, overridding its previous content. 
 For a list of the available functions, 
 type \Robject{? cellHTS2}.\\
+
+The preprocessing work-flow of a typical RNAi screen using \Rpackage{cellHTS2} 
+package is the following:
+
+\begin{description}
+\item[(a)] Per-plate normalization to remove plate and/or edge effects.
+\item[(b)] Scoring of replicate measurements (for example, compute $z$-score values).
+\item[(c)] Summarization of replicates (for example, take the median value).
+\end{description}
+
+
+In \Rpackage{cellHTS2} package, step \textbf{(a)} is performed using the 
+function \Rfunction{normalizePlates},
+step \textbf{(b)} is done using the function \Rfunction{scoreReplicates} and 
+step \textbf{(c)} is done using \Rfunction{summarizeReplicates} function.
+In the above preprocessing work-flow, we apply step \textbf{(b)} 
+before step \textbf{(c)} so that 
+the summary selected for replicate summarization has the same meaning
+independently of the type of the assay.
+
+Note that this work-flow is suitable for single-channel data. For dual-channel data, further steps are required, as explained in the 
+vignette \textit{Analysis of multi-channel cell-based screens}, 
+accompanying this package.
+
+Below, we illustrate how these functions can be called using our example data set.\\
 
 The function \Rfunction{normalizePlates} can be called to perform per-plate 
 data transformation, normalization and variance adjustment. The normalization 
@@ -545,7 +570,7 @@ is performed in a plate-by-plate fashion, following this work-flow:
 \item \emph{Data transformation}: log transformation of the data (optional, if data 
 are in multiplicative scale);
 \item \emph{Per-plate normalization}: per-plate normalization using the chosen method;
-\item \emph{Variance adjustment}: variance adjustment of the plate intensity 
+\item \emph{Variance adjustment}: (optional) variance adjustment of the plate intensity 
 corrected data.
 \end{enumerate}
 
@@ -565,7 +590,8 @@ in \Rfunction{normalizePlates}, and can be chosen by setting
 the argument \Robject{method="median"}. 
 In this case, plate effects are corrected by dividing (if the current scale of the data is multiplicative) 
 each measurement by the median value across wells annotated as sample, for each plate and replicate. 
-If data are in additive scale, the per-plate median values are subtracted from each plate measurement instead.
+If data are in additive scale, the per-plate median values are subtracted from each plate measurement instead. 
+All of the available normalization methods are described in Appendix~\ref{sec:normalizationMethods}.
 
 In the final preprocessing step, variance of plate-corrected intensities can be 
 adjusted according to argument \Robject{varianceAdjust}, as follows:
@@ -588,13 +614,15 @@ This is done separately for each replicate and channel.
 
 \end{itemize}
 
+If \Robject{varianceAdjust="none"}, no variance adjustment is performed (default).
+
 As explained above, the parameter \Robject{method} of \Rfunction{normalizePlates} 
 allows to choose between different types of per-plate normalization methods. 
 Returning to our example data set, we choose to apply \emph{plate median scaling}:
 
 \begin{eqnarray} 
 x'_{ki} &=& \frac{x_{ki}}{M_i}\quad\quad\forall k,i \label{eq:normalizePlateMedian}\\
-M_{i}&=&\mathop{\operatorname{median}}_{m\in\,\mbox{\scriptsize samples}} x_{mi}
+M_{i}&=&\mathop{\operatorname{median}}_{m\in\,\mbox{\scriptsize samples}} x_{mi} \label{eq:plateMedian}
 \end{eqnarray}
 
 where $x_{ki}$ is the raw intensity for the $k$-th well in the $i$-th
@@ -605,13 +633,14 @@ This is achieved by calling:
 %
 <<normalizePlateMedian>>=
 xn <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median", 
-        varianceAdjust="byExperiment")
+        varianceAdjust="none")
 @ 
 after which we obtain a \Rclass{cellHTS} object with the normalized 
 intensities stored in the slot
 \Robject{assayData}. 
 In the previous call to \Rfunction{normalizePlates} function, 
-we have chosen to adjust the data variance in a per-experiment basis.
+we have chosen not to adjust the data variance (default behaviour of 
+\Rfunction{normalizePlates}).
 For example, we can use function \Rfunction{compare2cellHTS} provided with the package to check whether these 
 two \Rclass{cellHTS} objects, \Robject{x} and \Robject{xn} belong to the same experiment:
 
@@ -620,8 +649,8 @@ compare2cellHTS(x, xn)
 @ 
 
 After normalizing the data, we standardize the values for each 
-replicate experiment using Equation~\eqref{eq:defz}.  
-Here $\hat{\mu}$ and $\hat{\sigma}$ are estimators of location and
+replicate experiment using Equation~\eqref{eq:defz}. In this equation, 
+$\hat{\mu}$ and $\hat{\sigma}$ are estimators of location and
 scale of the distribution of $x'_{ki}$ taken across all plates and 
 wells of a given replicate experiment. This function uses robust estimators,
 namely, median and median absolute deviation (MAD). 
@@ -634,16 +663,21 @@ The symbol $\pm$ indicates that we allow for either
 plus or minus sign in Equation~\eqref{eq:defz}; the minus sign can be
 useful in the application to an inhibitor assay, where an effect
 results in a decrease of the signal and we may want to see this
-represented by a large $z$-score.
-
+represented by a large score. 
+This is done by calling the \Rfunction{scoreReplicates} function, 
+where arguments \Robject{sign} and \Robject{method} define 
+the sign and the scoring method to apply (robust $z$-scores, in this case), 
+respectively:
+%
+<<score replicates>>=
+xsc <- scoreReplicates(xn, sign="-", method="zscore") 
+@ 
+%
 After data standardization, we summarize the replicates, 
 calculating a single score for each gene. 
-The previous standardization step, and the replicate summarization are both 
-performed using the \Rfunction{summarizeReplicates} function.
-The function has an argument called \Robject{zscore} that defines 
-the sign to employ in Equation~\eqref{eq:defz}. Another argument is 
-called \Robject{summary}, and can be used to select the summary to apply 
-for the replicate values.One of options is \emph{rms}, which corresponds to take the 
+This is performed using the \Rfunction{summarizeReplicates} function, 
+where we use its argument \Robject{summary} to select the summary to apply.
+One option is \emph{rms}, which corresponds to take the 
 root mean square of the replicates values, and is shown in 
 Equation~\eqref{eq:scoresSummary}. The chosen summary is 
 taken over all the $n_{\mbox{\scriptsize rep}_k}$ replicates of probe $k$. 
@@ -656,7 +690,7 @@ z_{k}  &=& \sqrt{\frac{1}{n_{\mbox{\scriptsize rep}_k}} \sum_{r=1}^{n_{\mbox{\sc
 
 Depending on the intended stringency of the analysis, other plausible
 choices of summary function between replicates are the minimum, the
-maximum, and the mean. In the first case, the analysis 
+maximum, the mean or the median. In the first case, the analysis 
 would be particularly conservative: all replicate values have to be 
 high in order for $z_{k}$ to be high. 
 For the cases where both sides of the distribution of $z$-score values are 
@@ -668,8 +702,8 @@ In order to compare our results with those
 obtained in the paper of Boutros \textit{et al.}~\cite{Boutros2004},
 we choose to consider the mean as a summary:
 %
-<<summarizeReplicates>>=
-xsc <- summarizeReplicates(xn, zscore="-", summary="mean") 
+<<summarize replicates>>=
+xsc <- summarizeReplicates(xsc, summary="mean") 
 @ 
 %
 after which we obtain a \Rclass{cellHTS} object with the 
@@ -699,7 +733,7 @@ y_k = \frac{1}{1+e^{-\lambda \,\left(z_k-z_0\right)}} \label{eq:sigtransf}
 \end{equation}
 
 This transformation maps the $z$-score values to the interval 
-$\left[0,\,1\right]$, and is intended to expand the scale of $z$-scores with 
+$\left[0,\,1\right]$ and is intended to expand the scale of $z$-scores with 
 intermediate values and shrink the ones showing extreme values, therefore making the difference between intermediate phenotypes larger. 
 The parameter $z_0$ defines the centre of the sigmoidal transformation, 
 while $\lambda$ controls the smoothness of the transformation. 
@@ -921,9 +955,8 @@ and for the present example data set, it has the following columns:
 \item \verb=plate= plate identifier for each feature;
 \item \verb=position= gives the position of the well in the plate (runs from 1 to the total number of wells in the plate); 
 \item \verb=well= gives the alphanumeric well identifier for each feature;
-\item \verb=score= corresponds to the score calculated for the probe (data stored in the scored object \Robject{xsc});
+\item \verb=score= corresponds to the summarized score calculated for each probe (data stored in the scored and summarized object \Robject{xsc});
 \item \verb=wellAnno= corresponds to the well annotation (as given by the plate configuration file);
-
 \item \verb=finalWellAnno= gives the final well annotation for the scored values. 
 It combines the information given in the plate configuration file with the values in 
 \Robject{assayData} slot of the scored \Rclass{cellHTS} object, in order to have into account the wells 
@@ -1224,6 +1257,165 @@ In fact, Figure~\ref{cellhts2Complete-scoresComparison} evidenciates how the sco
 exactly agree up to an offset (mean versus median) and scale 
 (standard deviation versus MAD).
 %
+
+
+
+%------------------------------------------------------------
+\section{Appendix: Normalization methods implemented in \Rpackage{cellHTS2} package}
+\label{sec:normalizationMethods}
+%------------------------------------------------------------
+
+
+There are two main normalization methods available with \Rpackage{cellHTS2} package: methods based on the use of reference controls, and distribution-based methods.
+These methods can be applied using the function \Rfunction{normalizePlates}.
+
+
+%------------------------------------------------------------
+\subsection{Controls-based normalization}
+%------------------------------------------------------------
+
+% POC
+% NPI
+% negatives
+
+%------------------------------------------------------------
+\subsubsection{Percent of control}
+%------------------------------------------------------------
+
+Percent of control (POC) is a preprocessing method 
+that tries to correct for plate-to-plate variability by 
+normalizing each $k$th compound raw measurements in the $i$th result file, 
+$x_{ki}$, relative to the average of within-plate controls. 
+In an antagonist (or inhibition) type assay, it is defined as:
+
+\begin{equation}
+x_{ki}^{\text{POC}} = \frac{x_{ki}}{\mu_i^{\text{pos}}} \times 100
+\end{equation}
+\noindent
+where $\mu_i^{\text{pos}}$ is the average of the measurements on the positive controls in the $i$th result file (i.\,e.\,, for a given plate and replicate).
+
+In \Rpackage{cellHTS2} package, this method can be applied by setting 
+the argument \Robject{method="POC"} when calling \Rfunction{normalizePlates} function.
+
+We also provide in the package a normalization method for \Rfunction{normalizePlates} 
+(\Robject{method="negatives"}) that consists of scaling
+the plate measurements by 
+the per-plate median of the intensities on the negative controls~\footnote{If the scale of the data is defined as being additive 
+(i.\,e.\,, argument \Robject{scale="additive"}, or arguments \Robject{scale="multiplicate"} and \Robject{log=TRUE}), measurements are subtracted by the median of per-plate negative controls instead.}.
+
+
+%------------------------------------------------------------
+\subsubsection{Normalized percent inhibition}
+%------------------------------------------------------------
+
+If \Rfunction{normalizePlates} is called with \Robject{method="NPI"}, the method known as normalized percent inhibition (NPI) is applied in a per-plate basis to correct for plate effects. 
+For an antagonist assay, this method divides the 
+difference between each measurement in a given result file $i$ ($x_{ki}$) and the average of the positive controls on that plate ($\mu_i^{\text{pos}}$) by the difference between the averages of the measurements on the positive ($\mu_i^{\text{pos}}$) and the negative controls ($\mu_i^{\text{neg}}$):
+
+\begin{equation}
+x_{ki}^{\text{NPI}} = \frac{\mu_i^{\text{pos}}-x_{ki}}{\mu_i^{\text{pos}}-\mu_i^{\text{neg}}}
+\end{equation}
+
+%------------------------------------------------------------
+\subsection{Non-controls-based normalization}
+% or distribution-based normalization
+%------------------------------------------------------------
+
+% Z score
+% plate-median normalization 
+% B score
+% spatial normalization ("loess" or "locfit")
+
+There are several normalization method implemented in \Rpackage{cellHTS2} 
+package that make use of the overall distribution of values, 
+instead of relying exclusively on controls.
+These are described in the following sections.
+
+%------------------------------------------------------------
+\subsubsection{Z score method}
+%------------------------------------------------------------
+
+Z score is a simple and widely known normalizing method that is performed in a per-plate basis as follows:
+
+\begin{equation}
+x_{ki}^{\text{Z}} = \frac{x_{ki} - \mu_i}{\sigma_i},
+\end{equation}
+\noindent
+where $\mu_i$ and $\sigma_i$ are the mean and standard deviation, 
+respectively, of all measurements within the $i$th result file 
+(replicated plate).
+In the Z score method, measurements are re-scaled relative to 
+within-plate variation by subtracting the average of the plate values 
+and dividing this difference by the standard deviation 
+estimated from all measurements of the plate.
+
+In \Rpackage{cellHTS2}, we consider a robust version of this method, 
+where the mean and standard deviation are replaced by the median and the MAD, 
+respectively, calculated at the sample wells. This robust Z score method is performed by calling 
+\Rfunction{normalizePlates} as follows: 
+%
+<<Z score method, eval=FALSE>>=
+ xZ <- normalizePlates(x, scale="additive", log=FALSE, method="median", varianceAdjust="byPlate") 
+@ 
+
+%
+%------------------------------------------------------------
+\subsubsection{Plate median normalization}
+%------------------------------------------------------------
+
+Plate median normalization involves calculating the relative signal of each
+well compared to the median of the sample wells in the plate, as shown in Equation (\ref{eq:normalizePlateMedian}) 
+and Equation (\ref{eq:plateMedian}). 
+The median is
+calculated among the $m$ wells containing \textit{sample} (i.\,e.\,, for wells that contain genes of interest) in result file $i$.
+Plate median normalization can be chosen by setting \Robject{method="median"} in \Rfunction{normalizePlates}. When applied to data on additive scale, the plate median normalization involves subtracting the plate measuments by the per-plate median instead.
+
+We also have two variants of the plate median scaling which consist of using as the per-plate scaling factor $M_i$ the per-plate average intensity on sample wells (\Robject{method="mean"}) or the midpoint of the shorth of the per-plate distribution of values on sample wells (\Robject{method="shorth"}).\\
+
+The next methods are intended to explicitly correct for \emph{spatial effects} within plates, i.\,e.\,, the presence of 
+intensity gradients within the plates. 
+Such signal gradients can be caused by differences in temperature, incubation time or concentration, etc., in different wells across a plate.
+Typically, these gradients produce repeatitive patterns, which make it possible to distinguish them from real actives that should be more or less randomly dispersed for quasi-randomized collections of compounds.
+
+
+%------------------------------------------------------------
+\subsubsection{B score method}
+%------------------------------------------------------------
+
+In the B score method, row and column biases within each plate are explicitly corrected for by fitting a two-way median polish to the raw data in a per-plate fashion~\cite{Brideau2003}: 
+
+\begin{eqnarray}
+e_{rci} = x_{rci} - \hat{x}_{rci} = x_{rci} - \left( \hat{\mu}_i + \hat{R}_{ri} + \hat{C}_{ci}\right) \\ \label{eq:BscoreResiduals}
+x^{\text{B}}_{rci} = \frac{e_{rci}}{MAD_i}	\label{eq:BscoreVarAdj}
+\end{eqnarray} 
+\noindent
+Here, $x_{rci}$ is the measurement value in the $r$th row and $c$th column of the plate corresponding to the $i$th result file, $\hat{x}_{rci}$ is the corresponding fitted value defined as the sum between the estimated average of the replicate plate ($\hat{\mu}_i$), the estimated systematic offset for row $r$ ($\hat{R}_{ri}$) and the systematic offset for column $c$ ($\hat{C}_{ci}$) in that replicated plate.
+In a second step, each of the obtained residual values $e_{rci}$'s of the $i$th result file are divided by their median absolute deviation ($MAD_i$) 
+giving the final B score value -- Equation~(\ref{eq:BscoreVarAdj}).
+
+
+We implemented a method similar to the B score method described in 
+Malo \textit{et al.}~\cite{Malo2006} and Brideau \textit{et al.}~\cite{Brideau2003} using the Tukey's median polish procedure~\cite{Tukey1977} (function \textit{medpolish} of the package \textit{stats}) which fits an 
+additive model to the data according to Equation~(\ref{eq:BscoreResiduals}). 
+The Tukey's median polish algorithm works by alternately removing the row and column medians and continues until the proportional reduction in the sum of absolute residuals is less than $\epsilon$ or until the maximum number of iterations has been reached.
+The B score method can be applied by defining argument 
+\Robject{method="Bscore"} in \Rfunction{normalizePlates}. Alternatively, 
+the method can be applied by calling a separate function 
+called \Rfunction{Bscore} provided in the \Rpackage{cellHTS2} package.\\
+
+
+In \textit{cellHTS2} package, we provide two additional spatial normalization methods 
+that fit a polynomial surface to the intensities within each assay plate using local regression and that can be performed via 
+\Rfunction{normalizePlates} or \Rfunction{spatialNormalization} functions, although we advise to apply these methods using the 
+former function. The fit can be performed either using the \textit{loess} procedure or the 
+\textit{locfit.robust} function of package \textit{locfit}.
+In \Rfunction{normalizePlates}, if \Robject{method="locfit"}, 
+spatial effects are removed by fitting a bivariate local regression to each plate and replicate, 
+while if \Robject{method="loess"}, a loess curve is fitted instead.
+
+
+
+
 
 %------------------------------------------------------------
 \section{Appendix: Data transformation}

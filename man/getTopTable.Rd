@@ -84,8 +84,9 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 
 \examples{
     data(KcViabSmall)
-    xn <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment") 
-    xsc <- summarizeReplicates(xn, zscore="-", summary="mean")
+    xn <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none") 
+    xsc <- scoreReplicates(xn, sign="-", method="zscore")
+    xsc <- summarizeReplicates(xsc, summary="mean")
     out <- getTopTable(cellHTSlist=list("raw"=KcViabSmall, "normalized"=xn, "scored"=xsc), file=tempfile())
 }
 \keyword{manip}

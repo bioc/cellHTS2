@@ -2,17 +2,16 @@
 \alias{normalizePlates}
 \alias{plate effects}
 %\alias{normalizePlates,cellHTS-method}
-
 \concept{normalization}
 
 \title{Per-plate data transformation, normalization and variance adjustment}
 \description{
   Plate-by-plate normalization of the raw data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object.
   Normalization is performed separately for each plate, replicate and channel.
-  \code{Log2} data transformation can be performed, and variance adjustment can be performed in different ways (per-plate, per-batch or per-experiment).
+  \code{Log2} data transformation can be performed and variance adjustment can be performed in different ways (none, per-plate, per-batch or per-experiment).
 }
 \usage{
-normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceAdjust="byExperiment", posControls, negControls,\ldots)
+normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceAdjust="none", posControls, negControls,\ldots)
 }
 \arguments{
   \item{object}{a \code{\linkS4class{cellHTS}} object that has already been configured. See details.}
@@ -22,7 +21,7 @@ normalizePlates(object,  scale="additive", log=FALSE, method="median", varianceA
    The default is \code{log=FALSE}.}
   \item{method}{a character specifying the normalization method to use for performing the per-plate normalization. Allowed   values are \code{"median"} (default), \code{"mean"}, \code{"shorth"}, \code{"POC"}, \code{"NPI"}, \code{"negatives"}, 
   \code{\link{Bscore}}, \code{\link[cellHTS2:spatialNormalization]{loess}} and \code{\link[cellHTS2:spatialNormalization]{locfit}}. See details.}
-  \item{varianceAdjust}{character vector of length one indicating the variance adjustment to perform. Allowed values are "byPlate", "byBatch" and "byExperiment" (default). See details.}
+  \item{varianceAdjust}{character vector of length one indicating the variance adjustment to perform. Allowed values are "none" (default), "byPlate", "byBatch" and "byExperiment". See details.}
   \item{posControls}{a vector of regular expressions giving the name of the positive control(s). See details.}
   \item{negControls}{a vector of regular expressions giving the name of the negative control(s). See details.}
   \item{\ldots}{Further arguments that get passed on to the function implementing the normalization method chosen by \code{method}. Currently, this is only used for \code{\link{Bscore}} and \code{\link[cellHTS2:spatialNormalization]{loess}} and \code{\link[cellHTS2:spatialNormalization]{locfit}}.} 
@@ -37,7 +36,7 @@ In this function, the normalization is performed in a plate-by-plate fashion, fo
 \enumerate{
    \item Log transformation of the data (optional, if data are in multiplicative scale);
    \item Per-plate normalization using the chosen method;
-   \item Variance adjustment of the plate intensity corrected data.
+   \item Variance adjustment of the plate intensity corrected data (optional).
 }
 
 The argument \code{scale} defines the scale of the data. If data are in multiplicative scale 
@@ -74,12 +73,16 @@ In the final preprocessing step, variance of plate-corrected intensities can be 
    \item \code{varianceAdjust="byExperiment"}: each normalized measurement is divided by the overall MAD of normalized values in wells containing "sample". This is done separately for each replicate and channel;
 }
 
+  By default, no variance adjustment is performed (\code{varianceAdjust="none"}).
+
   The arguments \code{posControls} and \code{negControls} are required for applying the normalization methods based on the control measurements (that is, when \code{method="POC"}, or \code{method="NPI"}, or \code{method="negatives"}). 
-  \code{posControls} and \code{negControls} should be given as a vector of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file (and accessed via \code{wellAnno(object)}). The length of these vectors should be equal to the current number of channels in \code{object} (i.e. to the \code{dim(Data(object))[3]}).
+  \code{posControls} and \code{negControls} should be vectors of regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file (and accessed via \code{wellAnno(object)}). The length of these vectors should be equal to the current number of channels in \code{object} (i.e. to the \code{dim(Data(object))[3]}).
   By default, if \code{posControls} is not given, \emph{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negControls} is missing, by default \emph{neg} will be considered as the name used to annotate the negative controls. 
   The content of \code{posControls} and \code{negControls} will be passed to \code{\link[base:regexpr]{regexpr}} for pattern matching within the well annotation given in the featureData slot of \code{object} (which can be accessed via \code{wellAnno(object)}) (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). The arguments \code{posControls} and \code{negControls} are particularly useful in
 multi-channel data since the controls might be reporter-specific, or
 after normalizing multi-channel data.
+
+See the Examples section for an example on how this function can be used to apply a robust version of the Z score method, whereby the measurements of each plate and replicate are substracted by the per-plate median (at sample wells) and then divided by the per-plate MAD (at sample wells).
 }
 
 \value{
@@ -108,12 +111,16 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 \examples{
     data(KcViabSmall)
     # per-plate median scaling of intensities
-    x1 <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x1 <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
     # per-plate median subtraction of log2 transformed intensities  
-    x2 <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment")
+    x2 <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="median", varianceAdjust="none")
     \dontrun{
-    x3 <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="Bscore", varianceAdjust="byExperiment", save.model=TRUE)
+    x3 <- normalizePlates(KcViabSmall, scale="multiplicative", log=TRUE, method="Bscore", varianceAdjust="none", save.model=TRUE)
     }
+
+
+    ## robust Z score method (plate intensities are subtracted by the per-plate median on sample wells and divided by the per-plate MAD on sample wells):
+    xZ <- normalizePlates(KcViabSmall, scale="additive", log=FALSE, method="median", varianceAdjust="byPlate")
 
     ## an example to illustrate the use of slot 'batch':
    \dontrun{

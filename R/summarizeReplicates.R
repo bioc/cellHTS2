@@ -1,27 +1,113 @@
+## NB - since 05.11.2007, replicate scoring and summarization were split into 2 functions: "scoreReplicates" and "summarizeReplicates", in order to make the preprocessing work-flow clearer (these two steps were formely done sequentially by calling "summarizeReplicates").
+## Now, summarizeReplicates **only** does what its name indicates: takes the chosen summary from the replicate data at each well.
+## This function should be called **after** scoring the replicates through calling function "scoreReplicates".
+
+
+## ======================================================================
+## Replicates scoring
+## ======================================================================
+
+## Function that scores the replicate measurements given the specified method.
+## Currently implemented scoring methods are: 
+	## none - don't do anything. Just multiply by "sign".
+	##"zscore" - each replicate measurement is subtracted by the per-experiment median (at sample wells) and then the result is divided by the per-experiment MAD (at sample wells).
+        ## "NPI" - normalized percent inhibition (applied in a per-replicate basis, i.e. using the overall mean of positive and negative controls across all plates from a given replicate). For each replicate, this method consists in subtracting each measurement from the average of the intensities on the positive controls (considering all plate together), and this result is divided by the difference between the averages of the measurements on the positive and the negative controls (overall plates). In this case, we may need to provide further arguments (i.e., "posControls" and "negControls").
+##
+## added by Ligia Bras, 11.05.2007
+
+scoreReplicates = function(object, sign="+", method="zscore", ...) { 
+# "..." - further arguments required by other scoring methods
+# method = c("none", "zscore", "NPI")
+
+  methodArgs <- list(...)
+
+  if(!state(object)[["normalized"]])
+    stop("Please normalize 'object' (using for example the function 'normalizePlates') before calling this function.")
+
+## 1) Score each replicate using the selected method:
+  xnorm <- if(method=="none") Data(object)  else  do.call(paste("scoreReplicates", method, sep="By"), args=c(list(object), methodArgs))
+  ## Store the scores in 'assayData' slot. 
+
+  ## 2) Use "sign" to make the meaning of the replicates summarization 
+  ## independent of the type of the assay
+  sg = switch(sign,
+    "+" = 1,
+    "-" = -1,
+    stop(sprintf("Invalid value '%s' for argument 'sign'", sign)))
+
+  Data(object) <- sg*xnorm
+  validObject(object)
+  return(object)
+}
+##=======================================================================
+
+
+
+##=======================================================================
+scoreReplicatesByzscore <- function(object){
+  xnorm <- Data(object)
+  samps <- (wellAnno(object)=="sample")
+  xnorm[] <- apply(xnorm, 2:3, function(v) (v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
+  return(xnorm)
+}
+## ======================================================================
+
+
+
+scoreReplicatesByNPI <- function(object, posControls, negControls){
+  xnorm <- Data(object)
+  d <- dim(xnorm)
+  nrSamples <- d[2]
+  nrChannels <- d[3]
+
+  wAnno <- as.character(wellAnno(object))
+
+
+ ## Check consistency for posControls and negControls (if provided)
+ if(!missing(posControls)) {
+    ## check
+    checkControls(posControls, nrChannels, "posControls")
+  } else { 
+    posControls <- as.vector(rep("^pos$", nrChannels))
+  }
+
+  if(!missing(negControls)){
+    ## check
+    checkControls(y=negControls, len=nrChannels, name="negControls")
+  } else {
+    negControls=as.vector(rep("^neg$", nrChannels))
+  }
+
+
+      for(ch in 1:nrChannels) {
+        if(!(emptyOrNA(posControls[ch]))) pos <- findControls(posControls[ch], wAnno) else pos <- integer(0)
+        if(!(emptyOrNA(negControls[ch]))) neg <- findControls(negControls[ch], wAnno)  else neg <- integer(0)
+        if (!length(pos) | !length(neg)) stop(sprintf("No positive or/and negative controls were found in channel %d! Please use a different normalization function.", ch))
+
+	for(r in 1:nrSamples) 
+         if(!all(is.na(xnorm[, r, ch])) ) {
+            if(all(is.na(xnorm[pos,r,ch])) | all(is.na(xnorm[neg,r,ch]))) stop(sprintf("No values for positive or/and negative controls were found in replicate %d, channel %d! Please use a different normalization function.", replicate, channel))
+
+            xnorm[,r,ch] <- (mean(xnorm[pos,r,ch], na.rm=TRUE) - xnorm[,r,ch])/(mean(xnorm[pos,r,ch], na.rm=TRUE) - mean(xnorm[neg, r, ch], na.rm=TRUE))
+         }
+       }
+
+  return(xnorm)
+}
+#
+
+
+
 ## ======================================================================
 ## Replicates summarization
 ## ======================================================================
-summarizeReplicates = function(object, zscore="+", summary="min") {
+summarizeReplicates = function(object, summary="min") {
 
   if(!state(object)[["normalized"]])
     stop("Please normalize 'object' (using for example the function 'normalizePlates') before calling this function.")
 
   if(dim(Data(object))[3]!=1)
     stop("Currently this function is implemented only for single-color data.")
-
-  ## 1) Using "zscore" argument, determine the z-score for each
-  ## replicate, so that the selected summary has the same meaning
-  ## independently of the type of the assay:
-
-  sg = switch(zscore,
-    "+" = 1,
-    "-" = -1,
-    stop(sprintf("Invalid value '%s' for argument 'zscore'", zscore)))
-
-  samps <- (wellAnno(object)=="sample")
-  xnorm <- Data(object)
-  xnorm[] = apply(xnorm, 2:3, function(v) sg*(v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
-
 
   ## 2) Summarize between scored replicates:
   ## we need these wrappers because the behavior of max(x, na.rm=TRUE) if all
@@ -51,39 +137,25 @@ summarizeReplicates = function(object, zscore="+", summary="min") {
     ifelse(length(x)>=1, sqrt(sum(x^2)/length(x)), as.numeric(NA))
   }
 
-
   ## 2) Summarize between replicates:
-  mx <- xnorm[,,1] 
-  if(dim(xnorm)[2]==1) mx = matrix(mx)
+  xnorm <- Data(object)
 
-  score <- switch(summary,
-    mean = rowMeans(mx, na.rm=TRUE),
-    max  = apply(mx, 1, myMax),
-    min  = apply(mx, 1, myMin),
-    rms = apply(mx, 1, myRMS),
-    closestToZero = apply(mx, 1, myClosestToZero),
-    furthestFromZero = apply(mx, 1, myFurthestFromZero),
+  if(dim(xnorm)[2]>1) { # we don't need to do anything in case we don't have replicates!
+
+   xnorm <- xnorm[,,1]       # NB - the function is only implemented for one-channel data
+   score <- switch(summary,
+    mean = rowMeans(xnorm, na.rm=TRUE),
+    median = rowMedians(xnorm, na.rm=TRUE),
+    max  = apply(xnorm, 1, myMax),
+    min  = apply(xnorm, 1, myMin),
+    rms = apply(xnorm, 1, myRMS),
+    closestToZero = apply(xnorm, 1, myClosestToZero),
+    furthestFromZero = apply(xnorm, 1, myFurthestFromZero),
     stop(sprintf("Invalid value '%s' for argument 'summary'", summary)))
-
 
   ## Store the scores in 'assayData' slot. Since now there's a single sample (replicate) we need to construct a new cellHTS object.
   z <- object[, 1] # construct a cellHTS object just with the first sample
   assayData(z) <- assayDataNew("score"=matrix(score, dimnames=list(featureNames(object), 1)))
-
-#   z <- new("cellHTS", 
-#     assayData = assayDataNew("score"=matrix(score)),
-#     phenoData = phenoData(object)[1],
-#     featureData = featureData(object),
-#     state = state(object), 
-#     experimentData = object@experimentData,
-#     plateList = object@plateList,
-#     intensityFiles = object@intensityFiles,
-#     plateConf = object@plateConf,
-#     screenLog = object@screenLog,
-#     screenDesc = object@screenDesc,
-#     annotation = object@annotation
-#   )
-
 
   ## batch slot: see if the batch differs across samples. If so, reset it to an empty array since now we only have one sample. Otherwise just keep one sample.
 
@@ -94,11 +166,18 @@ summarizeReplicates = function(object, zscore="+", summary="min") {
     bbt=apply(bb, c(1,3), function(i) length(unique(i)))
     z@batch <- if(any(bbt>1))  new("cellHTS")@batch else bb[,1,1, drop=FALSE]
   }
+} else {
 
+z <- object
+}
+
+# NB - the state "scored" of the cellHTS object is only changed to TRUE after data scoring and replicate summarization.
   z@state[["scored"]] <- TRUE
   validObject(z)
   return(z)
 }
+##------------------------------------------------
+
 
 
 ##------------------------------------------------

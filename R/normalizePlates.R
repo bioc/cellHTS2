@@ -2,30 +2,30 @@
 ## Functions for data normalization and summarization
 ## ----------------------------------------------------------------------------
 
-## All of these functions use the content of "assayData" slot of the NChannelSet-based cellHTS object
+## All of these functions use the content of "assayData" slot of the NChannelSet-derived cellHTS object
 
 ## =============================================================================
 ## 	 	------- Per-plate normalization of raw data ---------
 ## modified by Ligia Bras, AUG 2007
-## 
+## modified by Ligia Bras, NOV 2007
 ## 
 ## object - cellHTS instance
 ## scale - argument to define whether the data are in "additive" or "multiplicative" scale
 ## log - log transform the data? TRUE or FALSE . Note: cannot be TRUE if scale="additive".
 ## method - define the plate adjustment: "median", "mean", "shorth" (subtract or divide, depending on "scale" argument)
-##                                       "POC", "negatives2, "NPI"
+##                                       "POC", "negatives", "NPI"
 ##                                       "Bscore" (but without variance adjustment of the residuals. This can be done in a subsequent step)
 ## varianceAdjust - argument to specify which variance adjustment to perform. Options are: "byExperiment", ""byBatch" or "byPlate". 
 ## posControls- optional. Required if a controls-based normalization method is chosen. Defaults to "pos".
 ## negControls - optional. Required if a controls-based normalization method is chosen. Defaults to "neg"
 ##
 ## Function workflow: 
-##   1. Log transformation (if asked)
+##   1. Log transformation (optional)
 ##   2. Plate adjustment using the chosen method
-##   3. Variance adjustment 
+##   3. Variance adjustment (optional)
 ## =============================================================================
 
-normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="byExperiment", posControls, negControls,...) {
+normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="none", posControls, negControls,...) {
 
   if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
   ## Check the status of the 'cellHTS' object
@@ -35,7 +35,7 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
   ## Check the conformity between the scale of the data and the chosen preprocessing
   if(scale=="additive" & log) stop("Please set 'log' to FALSE, since data are in 'additive' scale!") 
 
-  if(!(varianceAdjust %in% c("byPlate", "byBatch", "byExperiment"))) 
+  if(!(varianceAdjust %in% c("none", "byPlate", "byBatch", "byExperiment"))) 
          stop(sprintf("Undefined value %s for 'varianceAdjust'.", varianceAdjust))
 
  ## Check consistency for posControls and negControls (if provided)
@@ -79,10 +79,8 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
             method, paste(allowedFunctions, collapse=", ")))
   )
 
-## 3. Variance adjustment:
-## use the assayData slot, which already contains the normalized data values
-  object <- adjustVariance(object, type=varianceAdjust)
-## returns the normalized data in slot "assayData"
+## 3. Variance adjustment (optional):
+  if(varianceAdjust!="none") object <- adjustVariance(object, method=varianceAdjust)
 
   object@state[["normalized"]] = TRUE
   validObject(object)
@@ -94,13 +92,15 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
 ## 		-------- Channel summarization  -------
 ## Function that combines plate-corrected intensities from dual-channel screens.
 ## Modified by LPB, AUG 2007
+## Modified by LPB, NOV 2007 - plate normalization before 
 ## =============================================================================
 summarizeChannels = function(object,
     fun = function(r1, r2, thresh) ifelse(r1>thresh, r2/r1, as.numeric(NA))) {
     #funargs = list(thresh=quantile(r1, probs=0.1, na.rm=TRUE)),
 
-  if(!state(object)[["normalized"]])
-    stop("Please normalize the data in each channel in a plate-by-plate basis using 'normalizePlates').")
+# 05.11.2007 - I've commented the next 2 lines, since we no longer require 'object' to contain per-plate corrected channels prior to channels summarization 
+#  if(!state(object)[["normalized"]])
+#    stop("Please normalize the data in each channel in a plate-by-plate basis using 'normalizePlates').")
 
   if(length(channelNames(object))!= 2)
     stop("Currently this function is implemented only for dual-channel data.")
