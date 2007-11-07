@@ -28,6 +28,7 @@ When the annotation mapping is performed, by default, \code{anno} is set to:
 \seealso{
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}},
+  \code{\link[cellHTS2:scoreReplicates]{scoreReplicates}},
   \code{\link[cellHTS2:summarizeReplicates]{summarizeReplicates}},
   \code{\link[cellHTS2:Data]{Data}}
   \code{\link[cellHTS2:writeReport]{writeReport}}
@@ -42,8 +43,9 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 \examples{
     data(KcViabSmall) 
     x <- KcViabSmall   
-    x <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
-    x <- summarizeReplicates(x, zscore="-", summary="min") 
+    x <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
+    x <- scoreReplicates(x, sign="-", method="zscore") 
+    x <- summarizeReplicates(x, summary="min") 
     imageScreen(x, zrange=c(-5,5))
 }
 

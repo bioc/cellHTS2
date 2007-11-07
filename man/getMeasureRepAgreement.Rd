@@ -61,7 +61,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 \examples{
     data(KcViabSmall)
     repAgree <- getMeasureRepAgreement(KcViabSmall)
-    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
     repAgree <- getMeasureRepAgreement(x)
 }
 

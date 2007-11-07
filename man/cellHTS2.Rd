@@ -39,7 +39,7 @@ Generic functions: \code{\link{show}}, \code{\link{initialize}},
 Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}}, 
 \code{\link{readPlateList}}, \code{\link{readHTAnalystData}}, \code{\link{normalizePlates}}, 
 \code{\link{Bscore}}, \code{\link{spatialNormalization}}, \code{\link{plotSpatialEffects}}, 
-\code{\link{summarizeChannels}}, \code{\link{summarizeReplicates}}, 
+\code{\link{summarizeChannels}}, \code{\link{scoreReplicates}}, \code{\link{summarizeReplicates}}, 
 \code{\link{imageScreen}}, \code{\link{configurationAsScreenPlot}}, \code{\link{getEnVisionRawData}},
 \code{\link{getEnVisionCrosstalkCorrectedData}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
@@ -124,9 +124,11 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \code{\link{spatialNormalization}} correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
 
-  \code{\link{summarizeChannels}} combines plate-corrected intensities from dual-channel data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}. 
-  
-  \code{\link{summarizeReplicates}} summarizes between normalized replicate values given in a cellHTS object obtaining a single z-score for each probe.
+  \code{\link{summarizeChannels}} combines plate-corrected intensities from dual-channel data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}.
+
+  \code{\link{scoreReplicates}} scores normalized replicate values given in a cellHTS object.
+   
+  \code{\link{summarizeReplicates}} summarizes between normalized and scored replicate values given in a cellHTS object obtaining a single value for each probe.
 
   \code{\link{scores2calls}} applies a sigmoidal transformation to the z-score values stored in a \code{cellHTS} object mapping them to the range [0,1].
 

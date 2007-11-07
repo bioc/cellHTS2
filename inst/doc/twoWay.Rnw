@@ -213,7 +213,7 @@ For a 2-way assay, the argument \Robject{posControls} of
 \emph{act} and \emph{inh}, which should be defined as vectors of regular 
 expressions with the same length as the number of channels (in this case, length one).
 These arguments will be passed to the \Rfunction{regexpr} function 
-for pattern matching within the well annotation given in \Robject{x\$wellAnno}.\\
+for pattern matching within the well annotation (\Robject{wellAnno(x)}).\\
 
 In the example presented here, in the positive controls, we have 
 \emph{AATK} and \emph{ATTK} as activator effectors, and \emph{MAP2K6} as 
@@ -232,6 +232,7 @@ Finally, we construct the quality report pages for the raw data in a directory c
 <<writeReport1Show, eval=FALSE>>=
 out <- writeReport(cellHTSlist=list("raw"=x), outdir="2Wraw",
      posControls=posCtr, negControls=negCtr, 
+
      plotPlateArgs=list(xrange=c(300, 4000)))
 @ 
 %
@@ -255,16 +256,15 @@ Next, we normalize the data using a simple approach.
 First we $\log_2$ transformed to make the data scale additive. Then, for each replicate, 
 the plate intensity values at the negative control wells are taken 
 as a correction factor, so that each plate measurement is subtracted by it. 
-We further adjust the data variance by dividing the measurements by the per-replicate MAD calculated in the wells containing "sample".
 %
 <<normalization>>=
 xn <- normalizePlates(x, scale="multiplicative", log=TRUE, method ="negatives", 
-   varianceAdjust="byExperiment", negControls = negCtr)
+   varianceAdjust="none", negControls = negCtr)
 @ 
 %
 The normalized intensities are stored in the slot
 \Robject{assayData} of \Robject{xn}. This slot can be assessed as 
-an array with dimensios equal to the total number of features (product between the plate dimension and the total number of plates) x number of samples (or replicates) x number of channels (in this case, 1).
+an array with dimensions equal to the total number of features (product between the plate dimension and the total number of plates) x number of samples (or replicates) x number of channels (in this case, 1).
 %
 <<get the data as an array>>=
 xnorm <- Data(xn)
@@ -272,13 +272,14 @@ dim(xnorm)
 @ 
 %
 
-Below, we call the function \Rfunction{summarizeReplicates} to determine the 
-$z$-score values for each replicate, and then summarize 
-the replicated $z$-score values by taking the average. 
+Below, we call the function \Rfunction{scoreReplicates} to determine the 
+$z$-score values for each replicate, and the function \Rfunction{summarizeReplicates} 
+to summarize the replicate score values by taking the average. 
 A more conservative approach would be to consider the $z$-score value closest to zero between replicates (\Robject{summary}='closestToZero').
 %
-<<summarizeReplicates>>=
-xsc <- summarizeReplicates(xn, zscore="+", summary="mean") 
+<<score and summarize replicates>>=
+xsc <- scoreReplicates(xn, sign="+", method="zscore") 
+xsc <- summarizeReplicates(xsc, summary="mean") 
 @ 
 %
 The resulting single $z$-score value per probe were stored again in the slot 
@@ -297,7 +298,7 @@ axis(1, at=c(1:nlevels(wa)), labels=lab)
 \myincfig{twoWay-boxplotzscore}{0.8\textwidth}{Boxplots of $z$-scores 
 for the different types of probes.}
 %
-Now that the data have been preprocessed and scored, we call again 
+Now that the data have been normalized, scored and summarized between replicates, we call again 
 \Rfunction{writeReport} and use a web browser to view the resulting report:
 %
 
@@ -318,9 +319,9 @@ browseURL(out)
 The quality reports have been created in the folder \Robject{2Wnormalized} 
 in the working directory. Now the report shows also controls-related plots, 
 distinguishing the two types of positive controls (activators and inhibitors).
-Furthermore, the report shows the image plot with the final scored values 
+Furthermore, the report shows the image plot with the final scored and summarized values 
 for the whole data set.
-Finally, we save the scored \Rclass{cellHTS} object to a file. 
+Finally, we save the scored and summarized \Rclass{cellHTS} object to a file. 
 %
 <<savex>>=
 save(xsc, file=paste(experimentName, ".rda", sep=""))

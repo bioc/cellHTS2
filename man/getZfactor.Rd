@@ -69,7 +69,7 @@ The Z'-factor values are calculated between each type of positive control (\code
     nCtrls <- c("^neg$")
     zf <- getZfactor(KcViabSmall, robust=TRUE, posControls=pCtrls, negControls=nCtrls)
     
-    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
+    x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
     zfn <- getZfactor(x)
 }
 

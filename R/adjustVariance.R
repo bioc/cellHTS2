@@ -4,28 +4,37 @@
 ## object - cellHTS object
 ## type - type of variance adjustment. 
 ##        Options are: 
+##		 - "none" (default) - no variance adjustment
 ##               - "byPlate" (per-plate variance scaling)
-##               - "byBatch" (per batch of plates variance scaling) (default)
+##               - "byBatch" (per batch of plates variance scaling)
 ##               - "byExperiment" (per experiment variance scaling) 
 ## Variance adjustment is performed separately to each replicate and channel.
 
 
-adjustVariance <- function(object, type="byBatch") { 
+## wrapper function
+adjustVariance <- function(object, method) { 
 
-#  if(!(type %in% c("byPlate", "byBatch", "byExperiment"))) stop(sprintf("Undefined value %s for 'type'.", type))
+  xnorm = do.call(paste("adjustVariance", method, sep=""), args=list(object))
+
+  Data(object) <- xnorm
+  return(object)
+}
+
+
+
+
+##====================================================================================================
+adjustVariancebyBatch <- function(object) {
+  # adjust by the plate-wide mad
 
   ## use the array stored in slot 'assayData' (which in the workflow of 'normalizeChannels' function corresponds to already plate corrected data).
    xnorm <- Data(object) 
    d <- dim(xnorm)
    nrWpP <- prod(pdim(object))
-   nrPlates <- max(plate(object))
    nrSamples <- d[2]
    nrChannels <- d[3]
    samps <- (wellAnno(object)=="sample")
 
-
-  if(type=="byBatch") {
-  # adjust by the plate-wide mad
 
 ## check if 'batch' slot is available:
 ## (as it is defined, the batch slot allows to have batches changing with plate, replicate and channel.
@@ -60,22 +69,43 @@ adjustVariance <- function(object, type="byBatch") {
        }#batch
      }#channel
    }#sample
+   return(xnorm)
+}
+##====================================================================================================
 
-  } else {
-    if(type=="byExperiment") {
-      # adjust by the experiment-wide mad
-      xnorm[] <- apply(xnorm, 2:3, function(z) z/mad(z[samps], na.rm=TRUE)) 
-    } else {
-  ## type="byPlate"
+
+##====================================================================================================
+adjustVariancebyExperiment <- function(object) {
+
+  ## use the array stored in slot 'assayData' (which in the workflow of 'normalizeChannels' function corresponds to already plate corrected data).
+   xnorm <- Data(object) 
+   samps <- (wellAnno(object)=="sample")
+
+
+   # adjust by the experiment-wide mad
+   xnorm[] <- apply(xnorm, 2:3, function(z) z/mad(z[samps], na.rm=TRUE)) 
+   return(xnorm)
+} 
+##====================================================================================================
+
+
+
+##====================================================================================================
+adjustVariancebyPlate <- function(object){
+
+  ## use the array stored in slot 'assayData' (which in the workflow of 'normalizeChannels' function corresponds to already plate corrected data).
+   xnorm <- Data(object) 
+   d <- dim(xnorm)
+   nrWpP <- prod(pdim(object))
+   nrPlates <- max(plate(object))
+   samps <- (wellAnno(object)=="sample")
+
   ## adjust by the plate-wide mad
   for (p in 1:nrPlates) {
     plateInd <- (1:nrWpP)+nrWpP*(p-1)
     spp <- samps[plateInd]
     xnorm[plateInd,,] <- apply(xnorm[plateInd,,,drop=FALSE], 2:3, function(z) z/mad(z[spp], na.rm=TRUE))
   }
+    return(xnorm)
 }
-}
-
-Data(object) <- xnorm
-return(object)
-}
+##====================================================================================================

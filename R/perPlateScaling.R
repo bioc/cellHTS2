@@ -22,6 +22,8 @@ if(all(is.na(a[pos])) | all(is.na(a[neg]))) stop(sprintf("No values for positive
 
 (mean(a[pos], na.rm=TRUE) - a)/(mean(a[pos], na.rm=TRUE) - mean(a[neg], na.rm=TRUE))
 }
+
+
 ## ===========================================================
 
 ## 		----	perPlateScaling ------
@@ -38,11 +40,14 @@ if(all(is.na(a[pos])) | all(is.na(a[neg]))) stop(sprintf("No values for positive
 
 perPlateScaling <- function(object, scale, stats="median", negControls){
 
-  if(stats %in% c("mean", "median", "negatives")) funArgs = list(na.rm=TRUE) else funArgs = list(na.rm=TRUE, tie.action="min")
+  funArgs <- list(na.rm=TRUE)
 
-  if(scale=="additive") op="-" else op="/"
+  if(stats=="shorth") funArgs$tie.action="min"
 
-  if(stats=="negatives") statFun <- median else statFun <- get(stats, mode="function")
+
+  op <- ifelse(scale=="additive", "-", "/") 
+  statFun <- if(stats=="negatives") median  else get(stats, mode="function")
+
 
   xnorm <- Data(object)
 
@@ -80,6 +85,7 @@ perPlateScaling <- function(object, scale, stats="median", negControls){
   Data(object) <- xnorm
   return(object)
 }
+
 
 
 ## =========================================================================

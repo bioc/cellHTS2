@@ -60,7 +60,7 @@ in the slot \code{state} to \code{object@state[["normalized"]]=TRUE}.
     x <- KcViabSmall
     xs <- spatialNormalization(x, model="loess", save.model = TRUE)
     ## Calling spatialNormalization function from "normalizePlates":
-    xopt <- normalizePlates(x, method="loess", varianceAdjust="byExperiment", save.model = TRUE)
+    xopt <- normalizePlates(x, method="loess", varianceAdjust="none", save.model = TRUE)
     all(xs@rowcol.effects == xopt@rowcol.effects, na.rm=TRUE)
 }
 \keyword{manip}

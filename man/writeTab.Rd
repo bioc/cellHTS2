@@ -28,7 +28,7 @@ This function is a wrapper for function \code{\link{write.table}} to write the c
 
 \seealso{\code{\linkS4class{cellHTS}}}
 
-\author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia Braz \email{ligia@ebi.ac.uk}}
+\author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia P. Bras \email{ligia@ebi.ac.uk}}
 
 \examples{
     data(KcViabSmall)     

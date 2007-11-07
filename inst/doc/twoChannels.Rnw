@@ -197,7 +197,7 @@ table(wellAnno(x))
 
 
 %------------------------------------------------------------
-\section{Data preprocessing and summarization of replicates}
+\section{Data preprocessing}
 %------------------------------------------------------------ 
 
 We can take a first look at the data by constructing the HTML quality reports 
@@ -257,46 +257,86 @@ browseURL(out)
 @ 
 %
 
-For dual-channel data, we propose the following preprocessing work-flow:
-\begin{enumerate} 
-\item \emph{Correction of plate effects}: Plate effects in each individual channel should be corrected using \Rfunction{normalizePlates} function;
 
-\item \emph{Channel summarization}: The per-plate corrected intensities in each channel are combined using \Rfunction{summarizeChannels};
 
-\item \emph{Per-plate normalization of the summarized intensities} If desired, \Rfunction{normalizePlates} can be called again on the single-channel values.
-\end{enumerate}
+%------------------------------------------------------------
+\subsection{Preprocessing work-flow for two-channel screens}
+%------------------------------------------------------------
 
-Below, we follow this procedure. Thus, to make the overall distribution of intensities in the three plates comparable, 
-first we remove the plate-to-plate
-variations.  This will be performed by applying plate median scaling
-to each replicate and channel, followed by variance adjustment:
-%
-<<plateMedianChannels>>=
-xn <- normalizePlates(x, scale="multiplicative", method="median", varianceAdjust="byExperiment")
-@ 
-%
-In order to distinguish between changes 
+
+The preprocessing work-flow for two-channel RNAi screens using \Rpackage{cellHTS2} package is shown below:
+
+\begin{description}
+\item[(a)] (optional) Per-plate normalization of each individual channel to remove plate and/or edge effects using function \Rfunction{normalizePlates}.
+
+\item[(b)] Channel summarization: the per-plate raw or corrected intensities in each channel are combined using \Rfunction{summarizeChannels}.
+
+\item[(c)] (optional) Per-plate normalization of the channel summarized 
+values to remove plate and/or edge effects. This can be done using function 
+\Rfunction{normalizePlates}.
+\item[(d)] Scoring of replicate measurements (for example, compute $z$-score values) using the function \Rfunction{scoreReplicates}.
+\item[(e)] Summarization of replicates (for example, take the median value) using the function \Rfunction{summarizeReplicates}.
+\end{description}
+
+
+The per-plate normalization steps (\textbf{(a)} and \textbf{(c)}) 
+are optional since they depend on the type of the data and on the 
+channels summarization method to apply (step \textbf{(b)}).
+In particular, step \textbf{(a)} is more optional than step \textbf{(c)}, since for the simplest channels summarization case, where we take the ratio 
+$\frac{R_2}{R_1}$ (or $log_2\left(\frac{R_2}{R_1}\right)$) 
+between channels intensities, step \text{(a)} is not required.
+However, this initial step \text{(a) of per-plate correction prior to channels 
+summarization should be performed when we want to 
+apply a more complex summarization function that, 
+for example, makes use of parameters 
+estimated based on overall (i.\,e.\,, across plates) intensities. 
+Such case is illustrated for our data set, 
+where we regard a small intensity measurement 
+in the constitutive channel $R_1$ as a viability defect, excluding it.
+
+For details about the normalization steps performed via 
+the function \Rfunction{normalizePlates} and the available 
+normalization methods, please refer to the main vignette 
+accompanying this package.
+
+In the above preprocessing work-flow, we apply step \textbf{(d)} 
+before step \textbf{(e)} so that 
+the summary selected for replicate summarization has the same meaning
+independently of the type of the assay.\\
+
+Returning to our data set, in order to distinguish between changes 
 in the readout caused by depletion of
 specific pathway components versus changes in the overall cell number, 
-the next step consists in normalizing the pathway-inducible readout ($R_2$) 
-against the constitutive reporter ($R_1$).
-This can be done using the \Rfunction{summarizeChannels} function provided in the 
-\textit{cellHTS2} package. 
-Furthermore, in this experiment, reporter 1 ($R_1$) monitors cell viability. Thus,
+we summarize the channels intensities by 
+normalizing the pathway-inducible readout ($R_2$) 
+against the constitutive reporter ($R_1$) - step \textbf{(b)}.
+Since in this experiment, reporter 1 ($R_1$) monitors cell viability, 
 wells with low intensities in $R_1$ should be masked: these cells are not
 responding to a specific perturbation of the studied signaling pathway, 
 but show a more unspecific cell viability phenotype.
 There is no obvious choice for a threshold for the minimum intensity
-$R_1$ that we consider still viable; here, we have chosen to set this
+$R_1$ that we consider still viable; here, we choose to set this
 cut-off as a low quantile ($5\%$) of the overall distribution of
-plate median corrected intensity values in $R_1$ channel:
+intensity values in $R_1$ channel. 
+To determine such intensity threshold for $R_1$ channel, we first need to
+remove the plate-to-plate variations (step \textbf{(a)}) and therefore 
+make the distribution of intensities 
+in the three plates comparable. 
+This is performed by applying plate median scaling
+to each replicate and channel:
 %
+<<plateMedianChannels>>=
+xn <- normalizePlates(x, scale="multiplicative", method="median", 
+   varianceAdjust="none")
+@ 
+%
+Then, we define the intensity cut-off as follows:
 <<set cut-off for R1, echo=TRUE, results=hide>>=
 ctoff <- quantile(Data(xn)[,,1], probs=0.05, na.rm=TRUE)
 @ 
 %
 
-%
+% Make plot of R2 vs R1 channels
 <<FvsRcorrected, fig=TRUE, results=hide, echo=FALSE, include=FALSE, width=6, height=3>>=
 R <- Data(xn)[,,1]
 F <- Data(xn)[,,2]
@@ -335,13 +375,14 @@ the plate median corrected intensity values in the constitutive channel
 ($R_1$) for replicate 1 (left) and replicate 2 (right). Masked values are shown in grey, while positive and negative controls are shown in red and green, respectively.}
 %
 
-Figure~\ref{twoChannels-FvsRcorrected} shows the plate median corrected intensities in $R_2$ versus $R_1$ channels, together with the calculated threshold and the positive and negative controls of the pathway-inducible reporter $R_2$. The wells with intensity values below the 
+Figure~\ref{twoChannels-FvsRcorrected} shows the plate median corrected intensities in $R_2$ versus $R_1$ channels, together with the calculated threshold and the positive and negative controls of the pathway-inducible reporter $R_2$. 
+The wells with intensity values below the 
 calculated threshold are shown in grey and will be set to "NA". 
 
-This procedure of data masking and channel summarization can be carried out at once using the function \Rfunction{summarizeChannels}:
+The above procedure of data masking and channel summarization can be carried out at once using the function \Rfunction{summarizeChannels}:
 %
 <<summarizeChannels>>=
-xn1 = summarizeChannels(xn, fun = function(r1, r2, 
+xn1 <- summarizeChannels(xn, fun = function(r1, r2, 
              thresh=quantile(r1, probs=0.05, na.rm=TRUE)) ifelse(r1>thresh, r2/r1, as.numeric(NA)))
 @
 %
@@ -353,26 +394,32 @@ The summarized channel intensities are stored in the slot
 dim(Data(xn1))
 @
 %
-After channel summarization, we take the $\log_2$ and re-apply plate median scaling (in this case, the plate median correction consists of subtracting each plate value by the median of values in that plate, 
-since after log2 trasnsformation the data are in an additive scale), 
-and readjust the variance of each replicate experiment:
+After channel summarization, we apply step \textbf{(b)}. 
+In this particular case, we take the $\log_2$ and re-apply plate median scaling 
+(in this case, the plate median correction consists of subtracting each 
+plate value by the median of values in that plate, 
+since after $log_2$ transformation the data are in an additive scale):
 %
 <<redo plate correction>>=
-xn1 <- normalizePlates(xn1, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment") 
+xn1 <- normalizePlates(xn1, scale="multiplicative", log=TRUE, method="median", 
+   varianceAdjust="none") 
 @
 %
-Below, we call the \Rfunction{summarizeReplicates} function to determine the 
-$z$-score values for each replicate, and then summarize 
-the replicated $z$-score values by taking the average.
+Below, we call functions \Rfunction{scoreReplicates} and \Rfunction{summarizeReplicates} to determine the 
+$z$-score values for each replicate (step \textbf{(d)}), and then summarize 
+the replicated $z$-score values by taking the average (step \textbf{(e)}).
 
 %
-<<summarizeReplicates>>=
-xsc <- summarizeReplicates(xn1, zscore="-", summary="mean") 
+<<score and summarize replicates>>=
+xsc <- scoreReplicates(xn1, sign="-", method="zscore") 
+xsc <- summarizeReplicates(xsc, summary="mean") 
 @ 
 %
-The resulting single $z$-score value per probe is stored in the
-slot \Robject{assayData} of \Robject{xsc}. The left side of Figure~\ref{twoChannels-scores} shows the boxplots of 
-the $z$-scores for the different types of probes, while the right side of the figure shows 
+The resulting single $z$-score value per probe are stored in the
+slot \Robject{assayData} of \Robject{xsc}. 
+The left side of Figure~\ref{twoChannels-scores} shows the boxplots of 
+the $z$-scores for the different types of probes, while the right side 
+of the figure shows 
 the $z$-scores for the whole screen as an image plot.
 %
 <<scores, fig=TRUE, include=FALSE, width=7, height=6>>=
@@ -386,7 +433,8 @@ imageScreen(xsc, zrange=c(-2,4))
 Left Panel: Boxplots of $z$-scores for the different types of probes. 
 Right Panel: Screen-wide image plot.}
 %
-Now that the data have been preprocessed and scored, we call again 
+Now that the data have been preprocessed, scored and summarized 
+between replicates, we call again 
 \Rfunction{writeReport} and use a web browser to view the resulting report.
 But first, we have to redefine the positive and negative controls for 
 the normalized data 
@@ -424,7 +472,8 @@ browseURL(out)
 The quality reports have been created in the folder \Robject{logRatio} 
 in the working directory.
 %
-Finally, we will save the scored \Rclass{cellHTS} object to a file. 
+Finally, we will save the scored and summarized \Rclass{cellHTS} object 
+to a file. 
 %
 <<savex>>=
 save(xsc, file=paste(experimentName, ".rda", sep=""))

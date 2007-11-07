@@ -20,7 +20,7 @@
 
 
 \arguments{
-  \item{object}{a \code{\linkS4class{cellHTS}} object that has already been scored (see details).}
+  \item{object}{a \code{\linkS4class{cellHTS}} object which replicate data have already been scored and summarized (see details).}
   \item{positives}{a list or vector of regular expressions specifying the name of the positive control(s). 
    See the details for the argument \code{posControls} of \code{writeReport} function. The default is \code{"^pos$"}.}
   \item{negatives}{a vector of regular expressions specifying the name of the negative control(s). 
@@ -33,7 +33,7 @@
 }
 \details{
   The \code{\linkS4class{cellHTS}} object \code{object} must be already scored (\code{state(object)["scored"]=TRUE}),
-  and selection proceeds from large to small values of this score.
+  and selection proceeds from large to small values of this single per-probe score.
   Furthermore, \code{object} is expected to contain positive and negative
   controls annotated in the column \code{controlStatus} of the \code{featureData} slot - which can be accessed via \code{wellAnno(object)}. The arguments \code{positives} and \code{negatives} should be given as regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey. 
   By default, if \code{positives} is not given, \emph{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negatives} is missing, by default \emph{neg} will be considered as the name used to annotate the negative controls. 
@@ -49,7 +49,8 @@
 \examples{
     data(KcViabSmall)
     x <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
-    x <- summarizeReplicates(x, zscore="-", summary="mean")
+    x <- scoreReplicates(x, sign="-", method="zscore")
+    x <- summarizeReplicates(x, summary="mean")
     y <- ROC(x)
     plot(y)
     lines(y, col="green")

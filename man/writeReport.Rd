@@ -49,7 +49,7 @@ to a unnormalized \code{\linkS4class{cellHTS}} object (i.e. \code{state(cellHTSl
 
 \itemize{
 \item \code{"normalized"}: a \code{cellHTS} object containing normalized data (i.e. \code{state(cellHTSlist[["normalized"]])["normalized"]=TRUE} and \code{state(cellHTSlist[["normalized"]])["scored"]=FALSE}).
-\item \code{"scored"}: a \code{cellHTS} object containing scored data 
+\item \code{"scored"}: a \code{cellHTS} object containing data scored data 
 (i.e. \code{state(cellHTSlist[["scored"]])["scored"]=TRUE}). If this component is available, then \code{cellHTSlist[["normalized"]]} should also be given.
 }
 
@@ -119,8 +119,9 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     writeReport(list("raw"=KcViabSmall), posControls=pCtrls, negControls=nCtrls)
     ## same as 
     ## writeReport(list("raw"=KcViabSmall))
-    xn <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median", varianceAdjust="byExperiment")
-    xsc <- summarizeReplicates(xn, zscore="-", summary="min")
+    xn <- normalizePlates(KcViabSmall, scale="multiplicative", log=FALSE, method="median")
+    xsc <- scoreReplicates(xn, sign="-", method="zscore")
+    xsc <- summarizeReplicates(xsc, summary="min")
     ## to turn on the tooltips in the plate plots and in the image screen plot:
     writeReport(cellHTSlist=list("raw"=KcViabSmall, "normalized"=xn, "scored"=xsc), force=TRUE, map=TRUE, plotPlateArgs = TRUE, imageScreenArgs=list(zrange=c(-4,4)))
     }
