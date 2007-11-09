@@ -21,7 +21,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \newcommand{\Rclass}[1]{\textit{#1}}
 
 \newcommand{\myincfig}[3]{%
-  \begin{figure}[tp]
+  \begin{figure}[h] %[tp]
     \begin{center}
       \includegraphics[width=#2]{#1}
       \caption{\label{#1}#3}
