@@ -284,8 +284,8 @@ are optional since they depend on the type of the data and on the
 channels summarization method to apply (step \textbf{(b)}).
 In particular, step \textbf{(a)} is more optional than step \textbf{(c)}, since for the simplest channels summarization case, where we take the ratio 
 $\frac{R_2}{R_1}$ (or $log_2\left(\frac{R_2}{R_1}\right)$) 
-between channels intensities, step \text{(a)} is not required.
-However, this initial step \text{(a) of per-plate correction prior to channels 
+between channels intensities, step \textbf{(a)} is not required.
+However, this initial step \textbf{(a)} of per-plate correction prior to channels 
 summarization should be performed when we want to 
 apply a more complex summarization function that, 
 for example, makes use of parameters 
