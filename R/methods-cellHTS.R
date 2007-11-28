@@ -378,7 +378,7 @@ if(any(nchar(geneIDs$Well)!=3))
   ## store the geneIDs data.frame into the featureData slot
   ## 'annotation(object)' returns a character vector indicating the annotation package
 
-  geneIDs <- geneIDs[, !c(names(geneIDs) %in% c("Plate", "Well"))]
+  geneIDs <- geneIDs[, !c(names(geneIDs) %in% c("Plate", "Well")), drop=FALSE]
   ## flag 'NA' values in the "GeneID" column:
   #geneIDs$GeneID[geneIDs$GeneID %in% "NA"] = NA
   geneIDs[apply(geneIDs, 2, function(i) i %in% "NA")] <- NA 
