@@ -828,11 +828,11 @@ the three \Rclass{cellHTS} objects: ``raw'', ``normalized'' and ``scored'' \Rcla
 %
 <<writeReport2, results=hide, eval=FALSE>>=
 out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
-  force=TRUE, plotPlateArgs   = list(xrange=c(0.5, 3)),
-  imageScreenArgs = list(zrange=c( -4, 8), ar=1)) 
+  force=TRUE, plotPlateArgs = list(xrange=c(0.5, 3)),
+  imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
 @ 
 %
-and use a web browser to view the resulting report
+and use a web browser to view the resulting report.
 %
 <<browseReport2, eval=FALSE>>=
 browseURL(out)
@@ -858,7 +858,7 @@ the dynamic range is calculated separately for the distinct positive controls, s
 different positive controls might have different potencies.
 
 The experiment-wide HTML report presents, for each replicate, the
-the boxplots with raw and normalized intensities for the different plates, 
+boxplots with raw and normalized intensities for the different plates, 
 and two plots for the controls: one showing the signal 
 from positive and negative controls at each plate, 
 and another plot displaying the distribution of the signal 
@@ -871,10 +871,10 @@ This measure can also be obtained by calling the function \Rfunction{getZfactor}
 
 The experiment-wide report also shows a 
 screen-wide plot with the $z$-scores in every well position of each
-plate. This plot, as well as the plate plots of the per-plate reports
-contain tooltips (information popup boxes) 
+plate. If the argument \Robject{map} of \Rfunction{writeReport} function is set to \Robject{TRUE}, this plot and the plate plots of the per-plate reports
+contain tooltips (information pop-up boxes) 
 dispaying the annotation information at each position within the plates.
-If the scored \Rclass{cellHTS} object provided for \Rfunction{writeReport} is not annotated with gene indetifiers, the annotation information shown by the tooltips is simply the well identifiers.
+If the scored \Rclass{cellHTS} object provided for \Rfunction{writeReport} is not annotated with gene identifiers, the annotation information shown by the tooltips is simply the well identifiers.
 For an annotated \Rclass{cellHTS} object, if an optional column 
 called \textit{GeneSymbol} was included in the 
 \emph{annotation file} (see Section~\ref{sec:annotation}), and therefore 
