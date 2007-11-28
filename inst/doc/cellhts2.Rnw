@@ -170,7 +170,7 @@ automatically determined from the raw intensity files, when calling the
 <<plateFileTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list")
 cellHTS2:::tableOutput(file.path(dataPath, names(intensityFiles(x))[1]), 
-              "signal intensity", header=FALSE, dropColumns=1)
+              "signal intensity", header=FALSE)
 @ 
 
 %------------------------------------------------------------
