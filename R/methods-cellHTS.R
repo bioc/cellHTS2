@@ -735,16 +735,15 @@ setMethod("ROC", signature("cellHTS"),
 
 ## MeanSdPlot from vsn package
 setMethod("meanSdPlot", signature="cellHTS", definition =
-   function(x, ranks=TRUE, xlab = ifelse(ranks, "rank(mean)", "mean"),
-            ylab = "sd", pch  = ".", ...) {
+   function(x, ranks = TRUE, xlab = ifelse(ranks, "rank(mean)", "mean"),
+            ylab = "sd", pch  = ".", plot = TRUE, ...) {
       xdat <- Data(x)
       d <- dim(xdat)
       nCh <- d[3]
       nRep <- d[2]
 
       if(!state(x)[["configured"]]) stop("Please configure 'x' before calling this function.")
-
-      if (nRep<2) stop("'x' contains data only for 1 sample! Cannot do the 'sd vs mean' plot!")
+      if(nRep<2) stop("'x' contains data only for 1 sample! Cannot do the 'sd vs mean' plot!")
 
       ## only consider sample wells
       toconsider <- wellAnno(x)=="sample"
@@ -752,8 +751,12 @@ setMethod("meanSdPlot", signature="cellHTS", definition =
       nc <- ceiling(sqrt(nCh))
       nr <- ceiling(nCh/nc)
 
-      par(mfrow=c(nr, nc))
-      for(ch in 1:nCh){
-        meanSdPlot(as.matrix(xdat[toconsider,,ch]), main=sprintf("across samples, channel %d\n(only sample wells)", ch),ranks=ranks, xlab=xlab, ylab=ylab, pch=pch,...) 
-      }
+      if(plot)
+        par(mfrow=c(nr, nc))
+      
+      invisible(lapply(seq_len(nCh),
+        function(ch)
+          meanSdPlot(as.matrix(xdat[toconsider,,ch]),
+                     main=sprintf("across samples, channel %d\n(only sample wells)", ch),
+                     ranks=ranks, xlab=xlab, ylab=ylab, pch=pch, plot=plot, ...))) 
 })
