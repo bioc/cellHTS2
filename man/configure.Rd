@@ -4,7 +4,7 @@
 \alias{configure,cellHTS-method}
 \title{Configures the plates and plate result files}
 \description{
-  Annotate the plates and the plate result files of a given \code{\linkS4class{cellHTS}} object.  
+  Annotate the plates and the plate result files of a \code{\linkS4class{cellHTS}} object.  
 }
 \usage{
 \S4method{configure}{cellHTS}(object, descripFile, confFile, logFile, path)
@@ -25,34 +25,47 @@
     function, so any of the valid argument
     types for \code{\link{read.table}} are valid here, too.}
   \item{path}{optional; a character of length one indicating the path in
-    which to find the configuration files. Useful when the files are locate in the same directory, 
-    but should be omitted otherwise.}
+    which to find the configuration files. It can be useful when the
+    files are located in the same directory, 
+    and may be omitted otherwise.}
  }
 
 \details{
-  \item{confFile}{This file is expected to be a tab-delimited file with two first header rows giving the total number of wells and plates in the screen. The next rows should be in the form of a data.frame with at least three columns named \code{Plate}, \code{Well} and \code{Content}. Columns \code{Plate} and \code{Well} are allowed to contain regular expressions.
-For more details about the plate configuration file, read the accompanying vignette.
-}
-  \item{logFile}{If given as an argument, it is expected to be a tab-delimited file with
-at least three columns, and column names \code{Plate}, \code{Well},
-and \code{Flag}. If there are multiple samples (replicates or conditions), a column called \code{Sample} should also be given. If there are multiple channels, a column called \code{Channel} must be given. Further columns are allowed.
+The configuration has three components:
+ 
+\emph{confFile}: This file specifies where the controls are.  This file
+is expected to be a tab-delimited file with two first header rows giving
+the total number of wells and plates in the screen. The next rows should
+be in the form of a spreadsheet table with at least three columns named
+\code{Plate}, \code{Well} and \code{Content}. Columns \code{Plate} and
+\code{Well} are allowed to contain regular expressions.  Data from wells
+that are configured as \emph{empty} will be ignored and are set to
+\code{NA} in the data slot \code{xraw}.  For an example, and for more
+ details, please read the accompanying vignette.
+
+\emph{logFile}: This optional file allows to flag certain measurements
+as invalid. It is expected to be a tab-delimited file with at least
+three columns, and column names \code{Plate}, \code{Well}, and
+\code{Flag}. If there are multiple samples (replicates or conditions), a
+column called \code{Sample} should also be given. If there are multiple channels, a column called
+\code{Channel} must be given. Further columns are allowed.
+ 
+\emph{descripFile}: The screen description file contains general
+information about the screen.
 }
 
-  \item{descripFile}{This file is the screen description file with
-general information about the screen.}
-  
-Data from wells that are annotated as \emph{empty} are ignored and are set to NA in \code{object} in slot \code{xraw}.  
-}
-
-\value{
- An S4 object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}. The followings slots of \code{object} are updated:
- \item{plateConf}{a \code{\link{data.frame}} containing what was read from input file \code{confFile} (except the first two header rows.}
- \item{screenLog}{a data.frame containing what was read from input file \code{logFile}.}
+\value{An S4 object of class \code{\linkS4class{cellHTS}},
+which is obtained by copying \code{object} and updating
+the following slots:
+\itemize{
+ \item{plateConf}{a data frame containing what was read from input file \code{confFile} (except the first two header rows).}
+ \item{screenLog}{a data frame containing what was read from input file \code{logFile}.}
  \item{screenDesc}{object of class \code{character} containing what was read from input file \code{descripFile}.}
  \item{state}{the processing status of the \code{\linkS4class{cellHTS}} object is updated in to \code{state["configured"]=TRUE}.}
- \item{featureData}{the column \code{controlStatus} is updated having into account the well annotation given by the plate configuration file.}
-\item{experimentData}{an object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
-      experiment, constructed from the screen description file.}
+ \item{featureData}{the column \code{controlStatus} is updated taking into account the well annotation given by the plate configuration file.}
+ \item{experimentData}{an object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
+   experiment, constructed from the screen description file.}
+}
 }
 
 \seealso{
@@ -72,4 +85,3 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt", path=datadir)
 }
 
-\keyword{methods}

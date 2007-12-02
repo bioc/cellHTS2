@@ -65,7 +65,7 @@ validityCellHTS = function(object){
   }
 
   if(!((length(object@state)==4L)&&
-       (identical(names(object@state)), c("configured", "normalized", "scored", "annotated"))))
+       (identical(names(object@state), c("configured", "normalized", "scored", "annotated")))))
     msg = append(msg, "'state' must be of length 4 and have names 'configured', 'normalized', 'scored', 'annotated'")
   
   if(is.null(msg))

@@ -353,7 +353,11 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,
         plotTable[count+2, 1] = "<H5 align=left>Standard deviation across replicates</H5>\n"
 
       ## platePlot of sd
-      psd = apply(platedat[,,,ch,drop=FALSE], 1, sd, na.rm=TRUE)
+      sdWithNA = function(x) {
+        x = x[!is.na(x)]
+        if(length(x)>0L) sd(x) else as.numeric(NA)
+      }
+      psd = apply(platedat[,,,ch,drop=FALSE], 1, sdWithNA)
 
       if(!all(is.na(psd))){
 

@@ -136,40 +136,42 @@ and \code{Flag}. Additional columns are \code{Sample} (when there are replicates
    of channels in \code{phenoData}.
  }      
 
- \item{\code{featureData}:}{
-   Object of class
-   \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}},
-   used to contain
-   feature data that is unique to this experiment.
-   It may contain information about the reagents: plate, well, column,
-   the well annotation (sample, control, etc.), etc.
-   
-For a \code{\linkS4class{cellHTS}} object, this slot must contain in its \code{data} component at least three mandatory columns named \code{plate}, \code{well} and \code{controlStatus}.
-These are vectors with the same size of the number of Features in the experiments.
-Column \code{plate} is expected to be a numeric vector giving the plate number (e.g. 1, 2, ...), \code{well} should be a vector of characters (alphanumeric characters) giving the well ID within the plate (e.g. A01, B01, H12, etc.). 
-Column \code{controlStatus} should be a factor specifying the annotation for each well with possible levels: \emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and \emph{pos}. Other levels may be employed for the positive and negative controls, besides \emph{pos} and \emph{neg}.
-    }
+\item{\code{featureData}:}{
+Object of class
+\code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}},
+containing information about the reagents: plate, well, column,
+the well annotation (sample, control, etc.), etc.
+For a \code{\linkS4class{cellHTS}} object, this slot must contain in its
+\code{data} component at least three mandatory columns named
+\code{plate}, \code{well} and \code{controlStatus}. Column
+\code{plate} is expected to be a numeric vector giving the plate number
+(e.g. 1, 2, ...), \code{well} should be a vector of characters
+(alphanumeric characters) giving the well ID within the plate (e.g. A01,
+B01, H12, etc.).  Column \code{controlStatus} should be a factor
+specifying the annotation for each well with possible levels:
+\emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and
+\emph{pos}. Other levels besides \emph{pos} and \emph{neg}
+may be employed for controls.
+}
 
- \item{\code{experimentData}:}{
-   Object of class \code{\link[Biobase:class.MIAME]{MIAME}} containing descriptions of the
-   experiment.
- }
+\item{\code{experimentData}:}{
+Object of class \code{\link[Biobase:class.MIAME]{MIAME}} containing
+descriptions of the experiment.}
 
-    \item{\code{annotation}:}{
-      Object of class \code{"character"}. Usually a length-1 character
-      string identifying the RNAi technology used during the
-      experiment. The annotation string is used to retrieve information 
-      about features, e.g., using the \code{annotation} package.}
+\item{\code{annotation}:}{
+A \code{"character"} of length 1, which can be used to specify
+the name of an annotation package that goes with the reagents used
+for this experiment.}
 
-    \item{\code{.__classVersion__}:}{
-      Object of class \code{\link[Biobase:class.Versions]{Versions}}, containing
-      automatically created information about the class definition
-      Biobase package version, and other information about the user
-      system at the time the instance was created. See
-      \code{\link[Biobase]{classVersion}} and \code{\link[Biobase]{updateObject}} for
-      examples of use.
-    }
-  }
+\item{\code{.__classVersion__}:}{
+  Object of class \code{\link[Biobase:class.Versions]{Versions}}, containing
+  automatically created information about the class definition,
+  Biobase package version, and other information about the user
+  system at the time the instance was created. See
+  \code{\link[Biobase]{classVersion}} and \code{\link[Biobase]{updateObject}} for
+  examples of use.
+}
+  } 
 }
 
 

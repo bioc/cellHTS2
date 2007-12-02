@@ -1,21 +1,21 @@
 \name{configurationAsScreenPlot}
 \alias{configurationAsScreenPlot}
 \title{Screen plot of the plate configuration of a cellHTS object}
-\description{Screen plot displaying the original plate configuration used in the screening stored 
-in a given \code{cellHTS} object.}
+\description{Screen plot displaying the plate configuration of a \code{cellHTS} object.}
 \usage{
 configurationAsScreenPlot(x, verbose=interactive(), posControls, negControls)
 }
 
 \arguments{
-  \item{x}{a configured \code{\linkS4class{cellHTS}} object (i.e. \code{state(x)['configured']=TRUE}).}
-  \item{verbose}{a logical value, if TRUE, the function reports some of its intermediate progress. The default is \code{\link[base:interactive]{interactive()}}.}
+  \item{x}{a configured \code{\linkS4class{cellHTS}} object
+    (i.e. \code{state(x)['configured']} must be \code{TRUE}).}
+  \item{verbose}{a logical value, if \code{TRUE}, the function reports some of its intermediate progress. The default is \code{\link[base:interactive]{interactive()}}.}
   \item{posControls}{a list or vector of regular expressions specifying the name of the positive controls. See details.}
   \item{negControls}{a vector of regular expressions specifying the name of the negative controls. See details.}
 }
 
 \details{
-This function calls the function \code{\link[splotd]{plotScreen}} to create a screen plot showing the plate configuration (as defined by the plate configuration file used to configure the \code{cellHTS} object -- see function \code{\link{configure}}) used for the RNAi experiment stored in \code{x}.
+This function calls the function \code{\link[splots]{plotScreen}} to create a screen plot showing the plate configuration (as defined by the plate configuration file used to configure the \code{cellHTS} object -- see function \code{\link{configure}}) used for the RNAi experiment stored in \code{x}.
 
   \code{posControls} and \code{negControls} should be given as vectors of regular expression patterns specifying the name(s) of the positive(s) and negative(s) controls, respectivey, as provided in the plate configuration file 
 (and acccessed via \code{wellAnno(x)}). 
@@ -44,9 +44,9 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 \author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \examples{
-    data(KcViab) 
+    data("KcViab") 
     # see the plate configuration for the first 20 plates of the screen:
-    configurationAsScreenPlot(KcViab[1:(20*prod(pdim(KcViab))),])
+    configurationAsScreenPlot(KcViab[1:(24*prod(pdim(KcViab))),])
 }
 
-\keyword{manip}
+
