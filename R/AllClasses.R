@@ -40,32 +40,39 @@ checkMandatoryColumns = function(object, name, mandatory, numeric=NULL, factor=N
 
 validityCellHTS = function(object){
 
-    if (!is(object, "cellHTS"))
-      return(paste("cannot validate object of class", class(object)))
+  if (!is(object, "cellHTS"))
+    return(paste("cannot validate object of class", class(object)))
 
-     msg <-NULL
-      if(length(assayData(object))) {
-        msg <- checkMandatoryColumns(object, "phenoData", mandatory=c("replicate", "assay"),
-               numeric=c("replicate"), character="assay")
+  msg <- NULL
+  if(length(assayData(object))>0L) {
+    msg <- checkMandatoryColumns(object, "phenoData", mandatory=c("replicate", "assay"),
+                                 numeric=c("replicate"), character="assay")
+    
+    msg <- append(msg, checkMandatoryColumns(object, "featureData", mandatory=c("plate", "well", "controlStatus"),
+                                             numeric=c("plate"), factor="controlStatus", character="well"))
 
-        msg <- append(msg, checkMandatoryColumns(object, "featureData", mandatory=c("plate", "well", "controlStatus"),
-               numeric=c("plate"), factor="controlStatus", character="well"))
+    ## add test to see whether column 'well' has the alphanumeric format (e.g. "A02")??
+    ch <- assayDataElementNames(object)
 
-        ## add test to see whether column 'well' has the alphanumeric format (e.g. "A02")??
+    if(length(object@batch)>0L) {
+      if(!is.integer(object@batch)) 
+        msg = append(msg, "'batch' must be an array of integer values corresponding to the batch number for each plate, sample and channel!")
+      if(any(dim(object@batch)!=c(dim(object), length(ch))))
+        msg = append(msg, sprintf("'batch' should have dimensions 'Features x Samples x Channels' (%s).",
+          paste(c(dim(object), length(ch)), collapse=" x "))) 
 
-        ch <- assayDataElementNames(object)
-
-
-        if(length(object@batch)) {
-           if(!is.integer(object@batch)) 
-               msg = append(msg, "'batch' should be an array of integer values corresponding to the batch number for each plate, sample and channel!")
-           if(any(dim(object@batch)!=c(dim(object), length(ch)))) msg=append(msg, sprintf("'batch' should have dimensions 'Features x Samples x Channels' (%s).", paste(c(dim(object), length(ch)), collapse=" x "))) 
-
-        }
-       }
-    if(is.null(msg)) msg <- TRUE 
-    return(msg)
+    }
   }
+
+  if(!((length(object@state)==4L)&&
+       (identical(names(object@state)), c("configured", "normalized", "scored", "annotated"))))
+    msg = append(msg, "'state' must be of length 4 and have names 'configured', 'normalized', 'scored', 'annotated'")
+  
+  if(is.null(msg))
+    msg <- TRUE 
+  return(msg)
+  
+}
 ##-----------------------------------------------------------------------------
 
 

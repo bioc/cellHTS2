@@ -7,15 +7,15 @@
 
 \title{Access and replace the batch slot of a cellHTS object}
 \description{
-This generic function accesses and replaces the data stored in slot \code{batch}
-of an object of \code{\linkS4class{cellHTS}} class.
+This method accesses and replaces the data stored in the slot \code{batch}
+of a \code{\linkS4class{cellHTS}} object.
 }
 \usage{
 batch(object)
 batch(object) <- value
 }
 \arguments{
-  \item{object}{Object derived from class \code{\linkS4class{cellHTS}}.}
+  \item{object}{object of class \code{\linkS4class{cellHTS}}.}
   \item{value}{a 3D array of integer values giving the batch number for each plate, sample and channel. Its dimensions should be equal to dim(object)[1] (this corresponds to the total number of features: number of wells per plate x number of plates) x dim(object)[2] (this corresponds to the number of samples or replicates) x number of channels.}
 }
 

@@ -10,7 +10,7 @@ Dataframe with 21888 rows and 11 columns
 \code{flybasename_gene}, \code{go}, \code{go_description}.
 }
 \description{
-See the complete vignette \emph{End-to-end analysis of 
+See the vignette \emph{End-to-end analysis of 
 cell-based screens: from raw intensity readings 
 to the annotated hit list}, 
 Section \emph{Using biomaRt to annotate the target
@@ -18,9 +18,9 @@ genes online} for details. The annotations were obtained on
 21 September 2007.
 }
 \source{
-BioMart webinterface to Ensembl 37.
+BioMart webinterface to Ensembl.
 }
 \examples{
-    data(bdgpbiomart)
+    data("bdgpbiomart")
 }
 \keyword{datasets}

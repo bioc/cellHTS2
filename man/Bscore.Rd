@@ -7,9 +7,11 @@
 
 \title{B score normalization}
 \description{
-  Correction of plate and spatial effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object using the B score method (without variance adjustment of the residuals).
-  Using this method, a two-way median polish is fitted in a per-plate basis to account for row and column effects.
-  NOTE: the obtained residuals within each plate are \emph{NOT} further divided by their median absolute deviations to standardize for plate-to-plate variability.
+  Correction of plate and spatial effects of data stored in slot
+  \code{assayData} of a \code{\linkS4class{cellHTS}} object using
+  the B score method (without variance adjustment of the residuals).
+  Using this method, a two-way median polish is fitted, on a per-plate
+  basis, to account for row and column effects.
 }
 \usage{
 Bscore(object, save.model = FALSE)
@@ -20,32 +22,51 @@ Bscore(object, save.model = FALSE)
 }
 
 \details{
-For convenience, this function should be called indireclty from \code{\link[cellHTS2:normalizePlates]{normalizePlates}} function.
-The normalization is performed in a per-plate fashion using the B score method, for each replicate and channel. 
-In the B score method, the residual \eqn{r_{ijp}} of the measurement for row \emph{i} and column \emph{j} on the \emph{p}-th plate is obtained by fitting a \link[stats:medpolish]{two-way median polish}, in order to account for both row and column effects within the plate:
+  This function is usually not called directly by the user,
+  but from within the
+  \code{\link[cellHTS2:normalizePlates]{normalizePlates}} function.
+  The normalization is performed in a per-plate fashion using the
+  B score method, for each replicate and channel. 
+  In the B score method, the residual \eqn{r_{ijp}} of the measurement
+  for row \emph{i} and column \emph{j} on the \emph{p}-th plate is
+  obtained by fitting a \link[stats:medpolish]{two-way median polish},
+  in order to account for both row and column effects within the plate:
 
-\deqn{r_{ijp} = y_{ijp} - \hat{y}_{ijp} = y_{ijp} - (\hat{\mu}_p + \hat{R}_{ip} + \hat{C}_{jp})}{%
-r_{ijp} = y_{ijp} - yest_{ijp} = y_{ijp} - (mu_p + R_{ip} + C_{jp})}
+  \deqn{
+    r_{ijp} = y_{ijp} - \hat{y}_{ijp} =
+    y_{ijp} - (\hat{\mu}_p + \hat{R}_{ip} + \hat{C}_{jp})}{%
+    r_{ijp} = y_{ijp} - yest_{ijp} =
+    y_{ijp} - (mu_p + R_{ip} + C_{jp})}
 
-\eqn{y_{ijp}} is the measurement value in row \emph{i} and column \emph{j} of plate \emph{p} 
-(taken from slot \code{assayData} - only sample wells are considered), and 
-\eqn{\hat{y}_{ipj}}{yest_{ijp}} is the corresponding fitted value. 
-This is defined as the sum between the estimated average
-of the plate (\eqn{\hat{\mu}_p}{mu_p}), the estimated systematic offset for row \emph{i} 
-(\eqn{\hat{R}_{ip}}{R_{ip}}), and the systematic offset for column \emph{j} (\eqn{\hat{C}_{jp}}{C_{jp}}).
+  \eqn{y_{ijp}} is the measurement value in row \emph{i} and
+  column \emph{j} of plate \emph{p} 
+  (taken from slot \code{assayData} - only sample wells are considered),
+  and \eqn{\hat{y}_{ipj}}{yest_{ijp}} is the corresponding fitted value. 
+  This is defined as the sum between the estimated average
+  of the plate (\eqn{\hat{\mu}_p}{mu_p}), the estimated systematic
+  offset for row \emph{i} (\eqn{\hat{R}_{ip}}{R_{ip}}),
+  and the systematic offset for column \emph{j} (\eqn{\hat{C}_{jp}}{C_{jp}}).
 
 \emph{NOTE:}
-\itemize{
-\item In the original B score method, a further step is performed: for each plate \emph{p}, each of the obtained residual values \eqn{r_{ijp}}'s are divided by the median absolute deviation of the residuals in plate \emph{p} (\eqn{MAD_p}{MAD_p}), giving the B score value:
+In the original B score method, as presented by Malo et al.,
+a further step is performed: for each plate \emph{p},
+each of the obtained residual values \eqn{r_{ijp}}'s are divided by
+the median absolute deviation of the residuals in plate \emph{p}
+(\eqn{MAD_p}{MAD_p}), resulting in:
 
-\deqn{{B_{score}}_{ijp} = \frac{r_{ijp}}{MAD_p}}{%
-Bscore_{ijp} = r_{ijp}/MAD_p
-}
+\deqn{\frac{r_{ijp}}{MAD_p}}{r_{ijp}/MAD_p}
 
-\item In \code{Bscore} function, this step is not performed, but can be done if B score normalization is called using the function \code{\link[cellHTS2:normalizePlates]{normalizePlates}}  with arguments \code{method="Bscore"} and \code{varianceAdjust="byPlate"}. See the latter function for more details. 
-}
+The intention of such a further adjustment is to compensate
+for plate-to-plate variability in dynamic range.
+In the \code{Bscore} function, this step is not automatically
+performed,
+but can be done if B score normalization is called using the
+function \code{\link[cellHTS2:normalizePlates]{normalizePlates}}
+with arguments \code{method="Bscore"} and
+\code{varianceAdjust="byPlate"}. See the latter function for more details. 
 
-If \code{save.model=TRUE}, the models row and column offsets and overall offsets are stored in the slots 
+If \code{save.model=TRUE}, the models row and column offsets and
+overall offsets are stored in the slots 
 \code{rowcol.effects} and \code{overall.effects} of \code{object}.
 }
 
@@ -82,16 +103,21 @@ Boutros, M., Br\'as, L.P. and Huber, W. (2006) Analysis of cell-based RNAi scree
 }
 
 \examples{
-    data(KcViabSmall)
-    x <- KcViabSmall
-    xb <- Bscore(x, save.model = TRUE)
-    ## Calling Bscore function from "normalizePlates" and adding the per-plate variance adjustment step:
-    xopt <- normalizePlates(x, method="Bscore", varianceAdjust="byPlate", save.model = TRUE)
-    all(xb@rowcol.effects==xopt@rowcol.effects, na.rm=TRUE)
-    all(xb@overall.effects==xopt@overall.effects, na.rm=TRUE)
-    ## Access the slots overall.effects and rowcol.effects
-    ef1 = plateEffects(xb)
-    ef2 = plateEffects(xopt)
-    identical(ef1, ef2)
+data("KcViabSmall")
+xb <- Bscore(KcViabSmall, save.model = TRUE)
+## Calling Bscore function from "normalizePlates" and adding the per-plate variance adjustment step:
+xopt <- normalizePlates(KcViabSmall, method="Bscore", varianceAdjust="byPlate", save.model = TRUE)
+## Access the slots overall.effects and rowcol.effects
+ef1 = plateEffects(xb)
+ef2 = plateEffects(xopt)
+
+
+## double-check 
+stopifnot(
+  all(xb@rowcol.effects==xopt@rowcol.effects, na.rm=TRUE),
+  all(xb@overall.effects==xopt@overall.effects, na.rm=TRUE),
+  identical(ef1, ef2)
+)
+
 }
 \keyword{manip}

@@ -347,7 +347,7 @@ function(object, geneIDFile, path=dirname(geneIDFile)) {
 
   file = basename(geneIDFile)
  
-  if(!(is.character(path)&&length(path)==1))
+  if(!(is.character(path)&&(length(path)==1L)))
     stop("'path' must be character of length 1")
 
   geneIDs = read.table(file.path(path, file), sep="\t", header=TRUE, as.is=TRUE, na.string="", quote="",fill=TRUE)

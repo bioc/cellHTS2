@@ -18,18 +18,39 @@
 \alias{meanSdPlot}
 \alias{meanSdPlot,cellHTS-method}
 
-%% COMPLETE THE CLASS-SPECIFIC METHODS
-
-\title{
-  Class to contain cell-based high-throughput RNAi data and experimental meta-data
-}
+\title{A class for data from cell-based high-throughput assays
+  performed in plate format.}
 
 \description{
-  Container for cell-based high-throughput RNA interference assays performed in plate format.
-  It extends the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class.
-  Data are from experiments where the same set of features (probes) where used. 
-  It can contain data from multi-channel assays.
-  Each group of plate results (replicates, conditions) for a given channel is called a \sQuote{sample}.
+  Container for data and experimental meta-data from cell-based
+  high-throughput assays performed in plate format.
+  Typical applications are RNA interference or small molecular compound screens.
+  The class extends the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class.
+  Data are from experiments where the same set of reagents (probes) where used. 
+  The class can represent data from multi-channel assays.
+
+  The data can be thought of as existing in a two- or three-dimensional array, as
+  follows:
+  \itemize{
+    \item The first dimension corresponds to reagents (e.g. siRNAs,
+    chemical compounds) that were used in the assays. For example, if
+    the screen used 100 plates of 384 wells (24 columns, 16 rows), then
+    the first dimension has size 38,400, and the \code{cellHTS} object
+    keeps track of plate ID, row, and column associated with each element.
+    For historic reasons, and because we are using infrastructure that
+    was developed for microarray experiments, the following terms are
+    used synonymously for the elements of the first dimension: reagents,
+    features, probes, genes.
+    \item The second dimension corresponds to assays, including
+    replicates and different experimental conditions (cell type,
+    treatment, genetic background). A potentially confusing terminology is that the data
+    structure that annotates the second dimension is called \code{phenoData}.
+    This is because we are using infrastructure
+    (the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class) that
+    uses this unfortunate term for this purpose.
+    \item The (optional) third dimension corresponds to different
+    channels (e.g. different luminescence reporters)    
+  }
 }
 
 \section{Objects from the Class}{
@@ -55,7 +76,7 @@
 
   \item{\code{state}:}{
     a logical vector of length 4 representing the processing status of
-    the object. Should have the names "configured", "normalized", "scored" and "annotated".
+    the object. It must have the names "configured", "normalized", "scored" and "annotated".
     }
 
 
