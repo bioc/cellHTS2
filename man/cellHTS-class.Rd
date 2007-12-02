@@ -29,8 +29,8 @@
   Data are from experiments where the same set of reagents (probes) where used. 
   The class can represent data from multi-channel assays.
 
-  The data can be thought of as existing in a two- or three-dimensional array, as
-  follows:
+  The data can be thought of as being organised in a two- or
+  three-dimensional array as follows:
   \itemize{
     \item The first dimension corresponds to reagents (e.g. siRNAs,
     chemical compounds) that were used in the assays. For example, if
