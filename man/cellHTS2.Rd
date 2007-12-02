@@ -7,10 +7,12 @@
    cellHTS2 Package Overview
 }
 \details{
-Important data class: \code{\linkS4class{cellHTS}}. 
-This class is a container for cell-based high-throughput RNA
-interference assays performed in plate format and it extends the
-\code{\link[Biobase:class.NChannelSet]{NChannelSet}} class.
+  This package provides data structures and algorithms for
+  cell-based high-throughput assays performed in plate
+  format. Typical applications are RNA interference
+  or small molecular compound screens.
+  The most important data class is \code{\linkS4class{cellHTS}},
+  which extends the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class.
 
 Full help on methods and associated functions is available from within
 class help pages.
@@ -70,10 +72,11 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \bold{Screen configuration and annotation:}
 
-     \code{\link{annotate}} annotates the gene IDs of a given \code{\linkS4class{cellHTS}} object.
+     \code{\link{annotate}} annotates the reagents (e.g. siRNAs,
+     molecular compounds) of a \code{\linkS4class{cellHTS}} object.
 
-     \code{\link{configure}} annotates the plates and the plate result files of a given \code{\linkS4class{cellHTS}} object.
-
+     \code{\link{configure}} annotates the plates and the plate result
+     files of a g\code{\linkS4class{cellHTS}} object.
 
   \bold{Accessors:}  
 
@@ -81,14 +84,14 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
    \code{\link{Data}} accesses and replaces the \code{assayData} slot of a cellHTS object. It returns a 3D array with  dimensions number of features (product between the number of wells per plates and the number of plates) x number of samples (or replicates) x number of channels. 
 
-   \code{\link{geneAnno}} returns the gene IDs used in the screen (i.e. the contents of \code{fData(object)[,"GeneID"]}.  
+   \code{\link{geneAnno}} returns the reagent IDs used in the screen (i.e. the contents of \code{fData(object)[,"GeneID"]}.  
 
    \code{\link{intensityFiles}} returns a list, where each component contains a
     copy of the imported input data files.
 
-   \code{\link{name}} obtains the name of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
+   \code{\link{name}} obtains the name(s) of the assay, or multiple assays, stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
 
-   \code{\link{pdim}} obtains the plate dimension for the data stored in \code{object}.
+   \code{\link{pdim}} obtains the plate dimensions (number of rows and columns) for the data stored in \code{object}.
 
    \code{\link{plate}} plate identifier for each feature (well).
 
@@ -118,17 +121,21 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \bold{Data preprocessing:}
 
-  \code{\link{normalizePlates}} Per-plate data transformation, normalization and variance adjustment.
+  All the following methods work on the data stored in the
+  slot \code{assayData} of a \code{\linkS4class{cellHTS}} object.
   
-  \code{\link{Bscore}} correction of plate and spatial effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object using the B score method (without variance adjustment of the residuals).
+  \code{\link{normalizePlates}} per-plate data transformation, normalization and variance adjustment.
+  
+  \code{\link{Bscore}} correction of plate and spatial effects using the B score method (without variance adjustment of the residuals).
 
-  \code{\link{spatialNormalization}} correction of spatial plate effects of data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
+  \code{\link{spatialNormalization}} correction of spatial effects by fitting a polynomial surface within each plate using local regression (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust local fit}}). Uses a second degree polynomial (local quadratic fit). Only wells containing "sample" are considered to fit the models.
 
-  \code{\link{summarizeChannels}} combines plate-corrected intensities from dual-channel data stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}.
+  \code{\link{summarizeChannels}} combines intensities from a dual-channel assay by applying the function defined in \code{fun}.
 
-  \code{\link{scoreReplicates}} scores normalized replicate values given in a cellHTS object.
+  \code{\link{scoreReplicates}} transform per-replicate values into scores.
    
-  \code{\link{summarizeReplicates}} summarizes between normalized and scored replicate values given in a cellHTS object obtaining a single value for each probe.
+  \code{\link{summarizeReplicates}} summarizes between normalized and
+  scored replicate values, obtaining a single value for each probe.
 
   \code{\link{scores2calls}} applies a sigmoidal transformation to the z-score values stored in a \code{cellHTS} object mapping them to the range [0,1].
 
@@ -169,20 +176,21 @@ per ID.
 
    \code{\link{nbatch}} gives the total number of batches in a cellHTS object.
 
-   \code{\link{writeTab}} this function is a wrapper for function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
+   \code{\link{writeTab}} this function is a wrapper for the function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
 
-   \code{\link{write.tabdel}} wrapper to function 'write.table' used to write data to a tab-delimited file.
+   \code{\link{write.tabdel}} a wrapper for the function \code{\link{write.table}} used to write data to a tab-delimited file.
 
-\code{\link{meanSdPlot}} wrapper of function \code{\link[vsn]{meanSdPlot}} to construct the standard deviation vs mean plot of data stored in a \code{cellHTS} object.
-
-%  \code{\link{...}}   --- COMPLETE -----
-
+   \code{\link{meanSdPlot}} method for \code{\link[vsn]{meanSdPlot}}
+   (from the \code{vsn} package)
+   to construct the standard deviation versus
+   mean plot of data stored in a \code{cellHTS} object.
 }
 
 \author{Ligia P. Bras \email{ligia@ebi.ac.uk}}
 
 \references{
-Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+  Boutros, M., Bras, L.P. and Huber, W. (2006)
+  Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
 }
 
 \keyword{package}
