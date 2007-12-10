@@ -328,6 +328,17 @@ save(xsc, file=paste(experimentName, ".rda", sep=""))
 @ 
 % 
 
+
+%---------------------------------------------------------
+\section{Session info}
+%---------------------------------------------------------
+
+This document was produced using:
+
+<<sessionInfo, results=tex, print=TRUE>>=
+toLatex(sessionInfo())
+@ 
+
 %------------------------------------------------------------
 %Bibliography
 %------------------------------------------------------------

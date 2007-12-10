@@ -1,4 +1,4 @@
-all:	pdf clean
+all:	pdf cellhts2Complete clean
 
 
 pdf:	twoChannels.tex cellhts2.tex twoWay.tex
@@ -14,6 +14,9 @@ pdf:	twoChannels.tex cellhts2.tex twoWay.tex
 	bibtex twoWay
 	pdflatex twoWay
 	pdflatex twoWay
+
+cellhts2Complete: cellhts2Complete.tex
+	unzip -o ../scripts/cellhts2Complete.zip
 
 clean:
 	rm -f *.out *.bbl *.log *.aux *.blg *.brf *.toc *.tex

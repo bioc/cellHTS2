@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{End-to-end analysis of cell-based screens}
+%\VignetteIndexEntry{Main vignette (complete version): End-to-end analysis of cell-based screens}
 %\VignetteKeywords{Cell based assays}
 %\VignettePackage{cellHTS2}
 
@@ -14,6 +14,8 @@ pdfsubject={cellHTS2},%
 pdfkeywords={Bioconductor},%
 pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
 pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
 
 \newcommand{\Robject}[1]{\texttt{#1}}
 \newcommand{\Rpackage}[1]{\textit{#1}}
@@ -39,14 +41,12 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \maketitle
 \tableofcontents
 
-\section{Introduction}
-This technical report demonstrates the use of the
-\Rpackage{cellHTS2} package, a revised version of \Rpackage{cellHTS} package, 
-which accompanies the paper \textit{Analysis
-of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
-Wolfgang Huber~\cite{Boutros2006}.
-For those who are familiar with \Rpackage{cellHTS} package, we advise 
-to change to \Rpackage{cellHTS2} package, since the former package will be discontinued. In \Rpackage{cellHTS2}, we define a \Rclass{cellHTS} object as a S4 class, which inherits from class \Rclass{NChannelSet} of \Rpackage{Biobase}~\footnote{To convert a S3 class \Rclass{cellHTS} object obtained using \Rpackage{cellHTS} package to an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2}, please see the function \Rfunction{convertOldCellHTS}.}.
+\section{Introduction}\label{sec:Intro}
+The package \Rpackage{cellHTS2} is a revised and improved version of 
+the \Rpackage{cellHTS} package~\footnote{To convert a S3 class 
+\Rclass{cellHTS} object that was made using the \Rpackage{cellHTS} package 
+into an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2}, 
+please see the function \Rfunction{convertOldCellHTS}.}.
 
 This report describes the structure of the \Rclass{cellHTS} class, 
 while explaining all the steps necessary to run a
@@ -55,7 +55,7 @@ raw intensity readings to an annotated hit list.
 
 This text has been produced as a reproducible
 document~\cite{Gentleman2004RepRes}. It contains the actual computer
-instructions for the method it describes, and these in turn produce
+instructions for the methods it describes, and these in turn produce
 all results, including the figures and tables that are shown here. The
 computer instructions are given in the language R, thus, in order to
 reproduce the computations shown here, you will need an installation
@@ -99,7 +99,8 @@ corresponding genes in cultured \textit{Drosophila} $Kc_{167}$
 cells~\cite{Boutros2004}. Each of the wells in the plates contains either a
 gene-specific probe, a control, or it can be empty. 
 The experiments were done in duplicate, and the viability of the cells after
-treatment was recorded by a plate reader measuring luciferase activity, which
+treatment was recorded by a plate reader measuring luciferase activity.
+The promoter has been chosen such that the luciferase activity 
 is indicative of ATP levels. Although this set of example data corresponds to a
 single-channel screening assay, the \Rpackage{cellHTS2} package can also 
 deal with cases where there are readings from more channels, corresponding 
@@ -109,9 +110,10 @@ Usually, the measurements from each replicate and each channel
 come in individual result files. The set of available result files and 
 the information about them (which plate,
 which replicate, which channel) is contained in a spreadsheet, which
-we call the \emph{plate list file}. This file should contain the following 
-columns: \emph{Filename},\emph{Plate}, and \emph{Replicate}. 
-The last two columns should be numeric, with values ranging from 1 to 
+we call the \emph{plate list file}. This file should contain at least 
+the following 
+columns: \emph{Filename}, \emph{Plate} and \emph{Replicate}. 
+The last two columns should be integer numbers, with values ranging from 1 to 
 the maximum number of plates or replicates, respectively. 
 The first few lines of an example
 plate list file are shown in Table~\ref{tab:platelist}, 
@@ -124,14 +126,14 @@ of the plate result files listed in the plate list file.
 The first step of the analysis is to read the plate list file, to read
 all the intensity files, and to assemble the data into a single R
 object that is suitable for subsequent analyses.  The main component
-of that object is one big table with the intensity readings of all
+of that object are arrays with the intensity readings of all
 plates, channels, and replicates. We demonstrate the R instructions
 for this step. First we define the path where the input files can be
 found.
 %
 <<dataPath>>=
-experimentName <- "KcViab"
-dataPath <- system.file(experimentName, package="cellHTS2") 
+experimentName = "KcViab"
+dataPath = system.file(experimentName, package="cellHTS2") 
 @ 
 %
 In this example, the input files are in the
@@ -148,7 +150,9 @@ rev(dir(dataPath))[1:12]
 and read the data into the object \Robject{x}
 %
 <<readPlateList, results=hide>>=
-x <- readPlateList("Platelist.txt", name=experimentName, path=dataPath)
+x = readPlateList("Platelist.txt", 
+        name=experimentName, 
+        path=dataPath)
 @ 
 %
 <<showX>>=
@@ -156,7 +160,7 @@ x
 @ 
 %
 The plate format used in the screen (96-well or 384-well plate design) is 
-automatically determined from the raw intensity files, when calling the
+automatically determined from the raw intensity files when calling the
 \Rfunction{readPlateList} function.
 
 %% Create the example table:
@@ -177,18 +181,18 @@ The function \Rfunction{readPlateList} has the argument
 \Robject{importFun} that can be used to provide a different import function to 
 read plate result files with a format different from that shown in 
 Table~\ref{tab:signalintensity}. 
-For example, to import plate data files from EnVision plate reader, set 
+For example, to import plate data files from an EnVision plate reader, set 
 \Robject{importFun=getEnVisionRawData} or 
 \Robject{importFun=getEnvisionCrosstalkCorrectedData} when 
 calling \Rfunction{readPlateList}. Please see the help page of function 
 \Rfunction{getEnVisionRawData} for an example.
 Another import function (``importData.R'') is given together with 
-the example data set for a two-way assay in the directory called \emph{TwoWayAssay} 
-of this package.\\
+the example data set for a two-way assay in the directory called 
+\emph{TwoWayAssay} of this package.\\
 
 While for the above data sets, the measurements from each replicate and channel
 come in separate result files, this is not the case when measurement files 
-are provided in the HTanalyser format. In this case, each output file 
+are provided in the HTanalyst format. In this case, each output file 
 contains meta-experimental data together with intensity readings 
 (in a matrix-like layout) of a set of plates made for the same replicate 
 or screen. Thus, there is no need to have a plate list file, and instead of 
@@ -201,137 +205,184 @@ where we illustrate how it can be applied to import HTAnalyst data files.
 \section{The \Rclass{cellHTS} class and reports}
 %------------------------------------------------------------
 The basic data structure of the package is the class
-\Rclass{cellHTS} which is a container for cell-based high-throughput RNA 
+\Rclass{cellHTS}, which is a container for cell-based high-throughput RNA 
 interference assays (data and experimental meta-data) performed in 
 multi-plate format.
-This class extends the class \Rclass{NChannelSet} of \Rpackage{Biobase} 
+This class extends the class \Rclass{NChannelSet} of the \Rpackage{Biobase} 
 package~\cite{BioC2004}.
 
-Using the notation of the class \Rclass{NChannelSet}, each group of plate 
-results (replicates, conditions) for a given channel is called a \emph{sample}, 
-and data contained in such an object are from experiments 
-where the same set of features (probes) where used. 
-Moreover, a \Rclass{cellHTS} object can contain data from multi-channel assays 
-(see the supplement vignette accompanying this package: 
-\emph{``Analysis of multi-channel cell-based screens''}).\newline
+The data can be thought of as being organised in a two- or 
+three-dimensional array as follows:
+\begin{enumerate}
+\item The first dimension corresponds to reagents (e.g. siRNAs,
+  chemical compounds) that were used in the assays. For example, if
+  the screen used 100 plates of 384 wells (24 columns, 16 rows), then
+  the first dimension has size 38,400, and the \Rclass{cellHTS} object
+  keeps track of plate ID, row, and column associated with each element.
+  For historic reasons, and because we are using infrastructure that
+  was developed for microarray experiments, the following terms are
+  used synonymously for the elements of the first dimension: 
+  \emph{reagents}, \emph{features}, \emph{probes}, \emph{genes}.
+\item The second dimension corresponds to assays, including
+  replicates and different experimental conditions (cell type,
+  treatment, genetic background). 
+  A potentially confusing terminology is that the data
+  structure that annotates the second dimension is called \Robject{phenoData}
+  (see below). This is because we are using infrastructure,
+  namely the \Rclass{NChannelSet} class from the \Rpackage{Biobase}
+  package, that uses this unfortunate term for this purpose.
+  Sometimes, the elements of this second dimension are also 
+  called \emph{samples}.
+\item The (optional) third dimension corresponds to different
+  channels (e.g. different luminescence reporters)    
+\end{enumerate}
 
-The \Rclass{cellHTS} structure includes:
-%
-\begin{itemize}
-
-\item \emph{assayData}: this is an object of class \Rclass{AssayData}, usually an environment containing a set of matrices of identical size. 
-Each matrix represents a single channel.
-In each matrix, the rows correspond to features or reporters (e.\,g.\,, siRNAs, dsRNAs) and the colums to samples (or replicates).
-
-\item \emph{phenoData}: a dataframe (more precisely, an object of class \Rclass{AnnotatedDataFrame}) containing information 
-about the screens, namely the replicate number and the name of the biological assay.
-  It must have the following columns in its data component: \emph{replicate} and \emph{assay}, where \emph{replicate} is expected 
-to be a vector of integers giving the replicate number, while \emph{assay} is expected to be a character vector giving 
-the name of the biological assay. Both of these vectors should have the same length as the number of samples in the \Robject{assayData} slot.
-
-\item \emph{featureData}: a dataframe (more precisely, an object of class \Rclass{AnnotatedDataFrame}) that contains information about the 
-experiment, such as information about the reagents, namely: \emph{plate}, \emph{well}, and \emph{controlStatus}. 
-The latter column gives the annotation for each feature, 
-indicating whether it is a sample or a control or is empty, etc.
-
-For a \Rclass{cellHTS} object, the \Robject{featureData} slot must contain in its data component 
-at least 3 mandatory columns named \emph{plate}, \emph{well} and \emph{controlStatus}, which are vectors with the 
-same length as the number of features in the experiment. Column \emph{plate} is expected to be a numeric vector 
-giving the plate number (e.g. 1, 2, ...), \emph{well} should be a character vector (alphanumeric characters) 
-giving the well ID within the plate (e.g. \emph{A01}, \emph{B01}, ..., \emph{P24}). Column \emph{controlStatus} 
-should be a factor specifying the annotation for each well with possible levels: \emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, 
-\emph{pos}. Other levels may be employed for the positive and negative controls, besides \emph{pos} and \emph{neg}.
-
-\item \emph{experimentData}: is an object of class \Rclass{MIAME} containing descriptions of the experiment. \\
-
-\end{itemize}
-
-
-The \Rclass{cellHTS} class includes additional slots that are used to store the input files used to 
-assemble the \Rclass{cellHTS} object. 
-These are:
-
-\begin{itemize}
-
- \item \emph{plateList}: a dataframe containing what was read from input measurement data files plus a column status 
-of type character containing the string "OK" if the data import appeared to have gone well, 
-and the respective error or warning message otherwise.
-
- \item \emph{intensityFiles}: a list, where each component contains a copy of the imported input data files. 
-Its length corresponds to the number of rows of \emph{plateList}.
-
- \item \emph{plateConf}: a dataframe containing what was read from the configuration file for the experiment (except the first two header rows). 
-
- \item \emph{screenLog}: a dataframe containing what was read from the screen log file for the experiment, in case it exists. 
-
- \item \emph{screenDesc}: a character containing what was read from the description file of the experiment. 
-
-\end{itemize}
-
-
-Other slots are \emph{batch}, \emph{rowcol.effects}, \emph{overall.effects} and \emph{annotation}.  
-For a detailed description of this class, please type \Robject{? cellHTS}.\\
-
-In Section~\ref{sec:read}, we created the
-object \Robject{x}, which is an instance of \Rclass{cellHTS} class. 
-The measurements intensities were stored in slot \Robject{assayData} of \Robject{x}, and this slot 
-is overridden each time we preprocess the experimental data. 
-The slot called \Robject{state}, which is specific for the \Rclass{cellHTS} class, helps to keep track of the 
-preprocessing state of our \Rclass{cellHTS} object. 
-This slot can be accessed via \Rfunction{state}, as shown below:
-
-<<see object state>>=
-state(x)
-@ 
-
-It contains a logical vector of length 4 representing the processing status of the object. It should have the names 
-"configured", "normalized", "scored" and "annotated". 
-We can thus see that \Robject{x} has not been configured, annotated, normalized or scored yet.
-
-These 4 main stages are explained along this vignette and can be briefly described as follows:
+\noindent The main structures  contained in a \Rclass{cellHTS} object are: 
 
 \begin{description}
-\item[Configuration] involves annotating the experiment with information about the screen 
-(e.\,g.\, title, when and how it was performed, which organism, which library, type of assay, etc.), 
-annotating the measured values with information on controls and flagging invalid measurements. 
-This step is covered in Section~\ref{sec:screenconf} and is prerequisite for preprocessing the experimental 
-screening data (i.\,e.\,, for normalization and scoring), since for that we need to 
-know the content of the plate wells.
 
-\item[Annotation] this involves annotating the features with information about the assayed genes. 
-This step is not essential for preprocessing the screening data, since assayed genes are identified 
-primarily by the identifiers of the well and plate where the probes targeting them were placed. 
-Neverthless, it is useful to complement (and complete it) the \Rclass{cellHTS} object with annotation 
-about the probes as detailed in Section~\ref{sec:annotation}, since this information can be displayed 
-in the HTML quality reports generated by \Rpackage{cellHTS2} package, 
-and can be used in further analysis (Section~\ref{sec:additAnno}).
+\item[assayData] an object of class \Rclass{AssayData}, 
+usually an environment containing a set of matrices of identical size. 
+Each matrix represents a single channel.
+In each matrix, the rows correspond to features or reporters 
+(e.\,g.\ siRNAs, dsRNAs) and the colums to samples (different conditions
+and/or replicates).
 
-\item[Normalization] involves removing systematic variations, making measurements comparable across plates 
-and within plates, enhancing the biological signal and eventually transforming the data to a scale more suitable 
-for subsequent analyses.
+\item[phenoData] a dataframe (more precisely, an object of class
+\Rclass{AnnotatedDataFrame}) containing information about the screens,
+such as the replicate number and the type of biological assay.  It
+must have the following columns in its data component:
+\begin{description}
+\item[replicate] a vector of integers giving the replicate number
+\item[assay] a character vector giving the name of
+the biological assay or condition
+\end{description} 
+Both of these columns have the same length as the number of 
+samples in the \Robject{assayData} slot. 
+The choice of name \emph{phenoData} for this structure is
+unfortunate, it has nothing to do with phenotypes.
 
-\item[Replicates scoring and summarization] involves standardizing the values for each replicate and then summarizing replicate values 
-in order to obtain a single-value per probe (for example, a robust $z$-score).
+\item[featureData] a dataframe (more precisely, an object of class
+\Rclass{AnnotatedDataFrame}) that contains information about the
+reagents used in the experiment. There are three mandatory columns,
+in addition there can be an arbitrary number of additional columns,
+for example a target gene identifier. The mandatory columns are:
+\begin{description}
+\item[plate] integers specifying the plate number (e.\,g.\ $1, 2, \ldots$)
+\item[well] alphanumeric character strings
+giving the well ID within the plate (e.g. A01, B01, ..., P24).
+\item[controlStatus] a factor specifying the annotation for each well
+with possible levels: \emph{empty}, \emph{other}, \emph{neg},
+\emph{sample}, \emph{pos}. Other levels besides \emph{pos} and
+\emph{neg} may be employed for the positive and negative controls.
+\end{description}
+
+\item[experimentData] an object of class \Rclass{MIAME} 
+containing descriptions of the experiment.
 
 \end{description}
 
-The steps of data normalization, replicate scoring and summarization constitute the preprocessing work-flow of the screening data, 
-and as mentioned above, alter the contents of \Robject{assayData} slot and even the number of channels 
-of the \Rclass{cellHTS} object. These steps are covered in Section~\ref{sec:norm}. \\
+\noindent The \Rclass{cellHTS} class also includes additional slots
+that are used to store the input files used to assemble the
+\Rclass{cellHTS} object.  These are:
 
-The complete analysis project is contained in a set of \Rclass{cellHTS} objects 
-that reflect different preprocessing stages and that can be 
-shared with others and stored for subsequent computational analyses.
+\begin{description}
 
-The \Rpackage{cellHTS2} package offers export functions for generating 
-human-readable reports, which consist of
-linked HTML pages with tables and plots. The final scored hit list
-is written as a tab-delimited format suitable for reading
-by spreadsheet programs.
+\item[plateList] a dataframe containing names and metadata about
+input measurement data files, plus a column named \emph{status},
+of type \Rclass{character},
+whose elements are the string "OK" if the data import appeared to have gone
+well, and the respective error or warning message otherwise.
 
-Returning to our example data set, we create a report using the 
-function \Rfunction{writeReport}. Since until now, we only have unnormalized experimental data, 
-the \Rclass{cellHTS} object should be given to the function as a list component named ``raw'':
+\item[intensityFiles] a list whose components are
+copies of the imported input data files.  Its length corresponds to the
+number of rows of \Robject{plateList}.
+
+\item[plateConf] a data frame containing what was read from the
+configuration file for the experiment (except the first two header
+rows).
+
+\item[screenLog] a data frame containing what was read from the
+screen log file for the experiment (in case there was one).
+
+\item[screenDesc] a character containing what was read from the 
+description file of the experiment. 
+\end{description}
+
+
+Other slots are \Robject{batch}, 
+\Robject{rowcol.effects}, \Robject{overall.effects} and \Robject{annotation}.  
+For a detailed description of this class, please type 
+\Robject{class ? cellHTS}.
+
+In Section~\ref{sec:read}, we created the object \Robject{x}, which is
+an instance of the \Rclass{cellHTS} class.  The measurements intensities
+are stored in the slot \Robject{assayData} of \Robject{x}.  The slot
+called \Robject{state} helps to keep track of the preprocessing state of our
+\Rclass{cellHTS} object.  This slot can be accessed through the
+\Rfunction{state}, as shown below:
+%
+<<see object state>>=
+state(x)
+@ 
+%
+It contains a logical vector  of length \Sexpr{length(state(x))}
+representing the processing
+status of the object. It should have the names "configured",
+"normalized", "scored" and "annotated".  We can thus see that
+\Robject{x} has not been configured, annotated, normalized or scored
+yet.
+
+These 4 main stages are explained along this vignette and can be
+briefly described as follows:
+
+\begin{description}
+\item[Configuration] involves annotating the experiment with
+information about the screen (e.\,g.\ title, when and how it was
+performed, which organism, which library, type of assay, etc.),
+annotating the measured values with information on controls and
+flagging invalid measurements.  This step is covered in
+Section~\ref{sec:screenconf} and is prerequisite for preprocessing the
+experimental screening data (i.\,e.\ for normalization and scoring).
+
+\item[Annotation] involves annotating the features (reagents) with
+information about, for example, their target genes.  
+This step, detailed in Section~\ref{sec:annotation}, is not essential for
+preprocessing, but this
+information can be used for the HTML quality reports generated by
+\Rpackage{cellHTS2} and in further analyses (see
+the complete report, as explained in Section~\ref{sec:Intro}).
+
+\item[Normalization] involves removing systematic variations, making
+measurements comparable across plates and within plates, enhancing the
+biological signal and eventually transforming the data to a scale
+suitable for subsequent analyses.
+
+\item[Replicates scoring and summarization] involves standardizing the
+values for each replicate and then summarizing replicate values in
+order to obtain a single-value per probe (for example, a robust
+$z$-score).
+
+\end{description}
+
+The steps of data normalization, replicate scoring and summarization
+constitute the preprocessing work-flow of the screening data.  They
+alter the contents of \Robject{assayData} slot and even the number of
+channels of the \Rclass{cellHTS} object. 
+The complete analysis project is contained in a set of
+\Rclass{cellHTS} objects that reflect different preprocessing stages
+and that can be shared with others and stored for subsequent
+computational analyses.
+
+The \Rpackage{cellHTS2} package offers export functions for generating
+human-readable reports, which consist of linked HTML pages with tables
+and plots. The final scored hit list is written as a tab-delimited
+format suitable for reading by spreadsheet programs.
+
+Returning to our example data set, we create a report using the
+function \Rfunction{writeReport}. Since until now we only have
+unnormalized experimental data, the \Rclass{cellHTS} object should be
+given to the function as a list component named ``raw'':
  
 %
 <<writeReport1Show, eval=FALSE>>=
@@ -344,7 +395,7 @@ out <- writeReport(list("raw"=x), force=TRUE)
 It will create a directory of the name given by \Robject{name(x)} in the
 working directory. Alternatively, the argument \Robject{outdir} can be
 specified to direct the output to another directory.
-It can take a while to run this function, since it writes a large number
+It can take a while to run this function, since it creates a large number
 of graphics files. After this function has finished, the index page of
 the report will be in the file indicated by the variable \Robject{out}, 
 %
@@ -354,7 +405,7 @@ out
 %
 and you can view it by directing a web browser to that file.
 %
-<<browseReport1, eval=FALSE>>=
+<<browseReport1>>=
 browseURL(out)
 @ 
 
@@ -388,8 +439,11 @@ The first 5 lines of this file are shown in Table~\ref{tab:screenlog}, and the l
 
 To apply the information contained in these three files in our \Rclass{cellHTS} object, we call:
 <<annotatePlateRes>>=
-x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt", 
-       path=dataPath)
+x = configure(x,
+  descripFile="Description.txt", 
+  confFile="Plateconf.txt", 
+  logFile="Screenlog.txt", 
+  path=dataPath)
 @ 
 %
 Note that the function \Rfunction{configure}\footnote{More precisely,
@@ -419,24 +473,27 @@ delimited text file, with mandatory columns \emph{Plate},
 (see Table~\ref{tab:plateconfiguration} for an example).
 The content of this file (except the two header lines) are stored in slot \Robject{plateConf} of \Robject{x}.\newline
 
-As the name suggests, the \emph{Content} column provides the content of each well 
-in the plate (here referred to as the \textit{well annotation}). 
-Mainly, this annotation falls into four categories: empty wells, wells containing 
-genes of interest, control wells, and wells containing other things that do not 
-fit in the previous categories. The first two types of wells should be indicated in the 
-\textit{Content} column of the
-plate configuration file by \textit{empty} and \textit{sample}, respectively, while the 
-last type of wells should be indicated by \textit{other}. The designation for the 
-control wells in the \textit{Content} column is more flexible. By default, the software
-expects them to be indicated by \textit{pos} (for positive controls), or \textit{neg} 
-(for negative controls). However, other names are allowed, given that they are 
-specified by the user  whenever necessary (for example, when calling the 
-\Rfunction{writeReport} function). This versatility for the control wells' annotation 
-is justified by the fact that, sometimes, multiple positive and/or negative controls 
-can be employed in a given screen, making it useful to give different names 
-to the distinct controls in the \textit{Content} column. Moreover, this versatility might be 
-required in multi-channel screens for which we frequently have reporter-specific 
-controls.
+As the name suggests, the \emph{Content} column provides the content
+of each well in the plate (here referred to as the \textit{well
+annotation}). Mainly, this annotation falls into four categories:
+empty wells, wells targeting genes of interest, control wells, and
+wells containing other things that do not fit in the previous
+categories. The first two types of wells should be indicated in the
+\textit{Content} column of the plate configuration file by
+\textit{empty} and \textit{sample}, respectively, while the last type
+of wells should be indicated by \textit{other}. The designation for
+the control wells in the \textit{Content} column is more flexible. By
+default, the software expects them to be indicated by \textit{pos}
+(for positive controls), or \textit{neg} (for negative
+controls). However, other names are allowed, given that they are
+specified by the user whenever necessary (for example, when calling
+the \Rfunction{writeReport} function). This versatility for the
+control wells' annotation is justified by the fact that, sometimes,
+multiple positive and/or negative controls can be employed in a given
+screen, making it useful to give different names to the distinct
+controls in the \textit{Content} column. Moreover, this versatility
+might be required in multi-channel screens for which we frequently
+have reporter-specific controls.
 
 The \emph{Well} column contains the name of each well of the plate in alphanumeric format 
 (in this case, \Robject{A01} to \Robject{P24}), while column \emph{Plate} gives the plate number (1, 2, ...).
@@ -464,14 +521,21 @@ table(wellAnno(x))
 %
 
 We can also use the function \Rfunction{configurationAsScreenPlot} to see 
-the original plate configuration of all of the plates as a screen plot:
+the plate configuration of all of the plates as a screen plot:
 %
-<<configuration plot>>=
+<<configurationplot, fig=TRUE, width=9, height=9>>=
 configurationAsScreenPlot(x)
 @ 
-%
-
-
+The result is shown in Figure~\ref{fig:configurationplot}. This can be useful
+to verify the correctness of the plate configuration when a complex set
+of rules with regular expressions are used.
+\begin{figure}[tp]
+\begin{center}
+\includegraphics[width=0.9\textwidth]{cellhts2Complete-configurationplot}
+\caption{\label{fig:configurationplot}Screen plot of the plate 
+configuration.}
+\end{center}
+\end{figure}
 
 A special case of well annotation is when different types of positive controls are used 
 for the screening, that is \emph{activator} and \emph{inhibitor} compounds. 
@@ -489,23 +553,29 @@ different parts of the experiment with different plate
 configurations. 
 The use of regular expressions in columns \emph{Plate} and \emph{Well} of the plate configuration file allow 
 therefore to specify different configurations within and between assay plates.
-The two header rows of this file ascertain that all of the plates and wells are covered in the plate configuration file.\\
+The two header rows of this file ascertain that all of the plates and wells are covered in the plate configuration file.
 
 %% Note about 'batches'
-Note that, contrarily to \Rpackage{cellHTS} package, in \Rpackage{cellHTS2} package the concept of \emph{batch} is 
-separated from the concept of having multiple plate 
-configurations. So, for example, different replicate of the same plate can be set as 
-to belong to different batches (even though they are required to have the same plate configuration!) - since readouts were performed on different days, or due to the use of different lots of reagents, etc.\newline
+Note that in contrast to the \Rpackage{cellHTS} package, in
+\Rpackage{cellHTS2} package the concept of \emph{batch} is separated
+from the concept of having multiple plate configurations. So, for
+example, different replicate of the same plate can be set as to belong
+to different batches (even though they are required to have the same
+plate configuration!) - since readouts were performed on different
+days, or due to the use of different lots of reagents, etc.
 
-Batch information (expressed in terms of integer values giving the batch number: 1, 2, ...) can go into a 
-particular slot called \Robject{batch}. This is expected to be a 3D-array 
-(\Robject{Features} $\times$ \Robject{Samples} $\times$ \Robject{Channels}) of integer values giving 
-the batch number (1, 2, ...) for each plate, sample and channel. Its first two dimensions correspond 
-to the dimension of each matrix stored in \Robject{assayData} slot and the third dimension corresponds to the 
-number of channels in \Robject{assayData} slot. 
-This slot should be filled in by the user in case s/he wants to take into account this information in the analysis 
-(for example, see \Rfunction{normalizePlates} function, 
-which allows to adjust the data variance in a per-batch basis).
+Batch information (expressed in terms of integer values giving the
+batch number: 1, 2, ...) can go into a particular slot called
+\Robject{batch}. This is expected to be a 3D-array (\Robject{Features}
+$\times$ \Robject{Samples} $\times$ \Robject{Channels}) of integer
+values giving the batch number (1, 2, ...) for each plate, sample and
+channel. Its first two dimensions correspond to the dimension of each
+matrix stored in \Robject{assayData} slot and the third dimension
+corresponds to the number of channels in \Robject{assayData} slot.
+This slot should be filled in by the user in case s/he wants to take
+into account this information in the analysis (for example, see
+\Rfunction{normalizePlates} function, which allows to adjust the data
+variance on a per-batch basis).
 
 
 %%--------------------------------------------------
@@ -532,69 +602,70 @@ should be discarded and regarded as missing.
 \label{sec:norm}
 %------------------------------------------------------------ 
 
-The data normalization, replicates scoring and summarization functions available in \Rpackage{cellHTS2} package 
-use the data stored in the \Robject{assayData} slot of the \Rclass{cellHTS} object, 
-saving their output to this slot, overridding its previous content. 
-For a list of the available functions, 
-type \Robject{? cellHTS2}.\\
+The data normalization, replicates scoring and summarization functions
+available in \Rpackage{cellHTS2} package work on the data stored in
+the \Robject{assayData} slot of the \Rclass{cellHTS} object.
+They create a copy of their input \Rclass{cellHTS} object,
+with the data replaced by the transformed values. For a
+list of the available functions, type \Robject{? cellHTS2}.
 
-The preprocessing work-flow of a typical RNAi screen using \Rpackage{cellHTS2} 
-package is the following:
+The preprocessing work-flow of a typical RNAi screen using
+\Rpackage{cellHTS2} package is the following:
 
 \begin{description}
 \item[(a)] Per-plate normalization to remove plate and/or edge effects.
-\item[(b)] Scoring of replicate measurements (for example, compute $z$-score values).
+This can be done using the function \Rfunction{normalizePlates}.
+\item[(b)] Scoring of measurements (for example, compute,
+for each replicate, $z$-scores).
+This can be done using the function \Rfunction{scoreReplicates}.
 \item[(c)] Summarization of replicates (for example, take the median value).
+This can be done using the \Rfunction{summarizeReplicates}.
 \end{description}
 
-
-In \Rpackage{cellHTS2} package, step \textbf{(a)} is performed using the 
-function \Rfunction{normalizePlates},
-step \textbf{(b)} is done using the function \Rfunction{scoreReplicates} and 
-step \textbf{(c)} is done using \Rfunction{summarizeReplicates} function.
-In the above preprocessing work-flow, we apply step \textbf{(b)} 
-before step \textbf{(c)} so that 
-the summary selected for replicate summarization has the same meaning
-independently of the type of the assay.
-
-Note that this work-flow is suitable for single-channel data. For dual-channel data, further steps are required, as explained in the 
-vignette \textit{Analysis of multi-channel cell-based screens}, 
+Note that this work-flow is suitable for single-channel data. For
+dual-channel data, further steps are required, as explained in the
+vignette \textit{Analysis of multi-channel cell-based screens},
 accompanying this package.
-
-Below, we illustrate how these functions can be called using our example data set.\\
 
 The function \Rfunction{normalizePlates} can be called to perform per-plate 
 data transformation, normalization and variance adjustment. The normalization 
-is performed in a plate-by-plate fashion, following this work-flow: 
-\begin{enumerate}
-\item \emph{Data transformation}: log transformation of the data (optional, if data 
-are in multiplicative scale);
-\item \emph{Per-plate normalization}: per-plate normalization using the chosen method;
-\item \emph{Variance adjustment}: (optional) variance adjustment of the plate intensity 
-corrected data.
-\end{enumerate}
+is performed in a plate-by-plate fashion and has three components: 
+\begin{description}
+\item[Data transformation] logarithmic transformation 
+(optional, this can be advisable if the data are on multiplicative scale)
+\item[Per-plate normalization] location adjustment for possible 
+plate effects and/or possible spatial effects, using a choice of methods
+that you need to adapt to your data
+\item[Variance adjustment] plate-specific scale (variance) adjustment
+(optional) 
+\end{description}
 
-For more details about this function and available normalization methods, 
-please type \Robject{? normalizePlates}.
-To provide the means to perform the above steps, \Rfunction{normalizePlates} 
-has the arguments \Robject{scale}, \Robject{log}, \Robject{method} and 
+For more details about this function and available normalization
+methods, please type \Robject{? normalizePlates}.  To provide the
+means to perform the above steps, \Rfunction{normalizePlates} has the
+arguments \Robject{scale}, \Robject{log}, \Robject{method} and
 \Robject{varianceAdjust}.
 
-The argument \Robject{scale} allows to define the scale of the data (``additive'' or ``multiplicative''), which will then control the subsequent data transformation and normalization steps. 
-Namely, when data are in multiplicative scale, the function allows to perform $\log_2$ 
-data transformation. For that we need to set the function's argument \Robject{log} to \Robject{TRUE}. Log transformation will then change the scale of the data to be ``additive''.
+The argument \Robject{scale} allows to define the scale of the data
+(``additive'' or ``multiplicative''), which will then control the
+subsequent data transformation and normalization steps.  Namely, when
+data are in multiplicative scale, the function allows to perform
+$\log_2$ data transformation. For that we need to set the function's
+argument \Robject{log} to \Robject{TRUE}. Log transformation will then
+change the scale of the data to be ``additive''.
 
-In the next step of preprocessing, intensities are corrected in a plate-by-plate basis using 
-the chosen normalization method. Per-plate median normalization is one of the methods available 
-in \Rfunction{normalizePlates}, and can be chosen by setting 
-the argument \Robject{method="median"}. 
-In this case, plate effects are corrected by dividing (if the current scale of the data is multiplicative) 
-each measurement by the median value across wells annotated as sample, for each plate and replicate. 
-If data are in additive scale, the per-plate median values are subtracted from each plate measurement instead. 
-All of the available normalization methods are described in Appendix~\ref{sec:normalizationMethods}.
+Per-plate median normalization is one of the methods available in
+\Rfunction{normalizePlates} and can be chosen by setting the argument
+\Robject{method="median"}.  In this case, plate effects are corrected
+by dividing (if the current scale of the data is multiplicative) each
+measurement by the median value across wells annotated as sample, for
+each plate and replicate. If data are in additive scale, the
+per-plate median values are subtracted from each plate measurement
+instead.  All of the available normalization methods are described in
+Appendix~\ref{sec:normalizationMethods}.
 
-In the final preprocessing step, variance of plate-corrected intensities can be 
-adjusted according to argument \Robject{varianceAdjust}, as follows:
+The variance of normalized intensities can be adjusted according to
+argument \Robject{varianceAdjust}, as follows:
 
 \begin{itemize}
 
@@ -602,23 +673,27 @@ adjusted according to argument \Robject{varianceAdjust}, as follows:
 divided by the per-plate median absolute deviations (MAD) in "sample" wells. 
 This is done separately for each replicate and channel;
 
-\item \Robject{varianceAdjust="byBatch"}: using the content of slot 
-\Robject{batch}, plates are split according to assay batches and 
-the individual normalized intensities in each group of plates (batch) are divided 
-by the per-"batch of plates" MAD values (calculated based on "sample" wells). 
-This is done separately for each replicate and channel;
+\item \Robject{varianceAdjust="byBatch"}: using the content of slot
+\Robject{batch}, plates are split according to assay batches and the
+individual normalized intensities in each group of plates (batch) are
+divided by the per-"batch of plates" MAD values (calculated based on
+"sample" wells).  This is done separately for each replicate and
+channel;
 
-\item \Robject{varianceAdjust="byExperiment"}: each normalized measurement 
-is divided by the overall MAD of normalized values in wells containing "sample". 
-This is done separately for each replicate and channel.
+\item \Robject{varianceAdjust="byExperiment"}: each normalized
+measurement is divided by the overall MAD of normalized values in
+wells containing "sample".  This is done separately for each replicate
+and channel.
 
 \end{itemize}
 
-If \Robject{varianceAdjust="none"}, no variance adjustment is performed (default).
+If \Robject{varianceAdjust="none"}, no variance adjustment is
+performed (default).
 
-As explained above, the parameter \Robject{method} of \Rfunction{normalizePlates} 
-allows to choose between different types of per-plate normalization methods. 
-Returning to our example data set, we choose to apply \emph{plate median scaling}:
+As explained above, the parameter \Robject{method} of
+\Rfunction{normalizePlates} allows to choose between different types
+of per-plate normalization methods.  Returning to our example data
+set, we choose to apply \emph{plate median scaling}:
 
 \begin{eqnarray} 
 x'_{ki} &=& \frac{x_{ki}}{M_i}\quad\quad\forall k,i \label{eq:normalizePlateMedian}\\
@@ -632,8 +707,11 @@ the $i$-th result file.
 This is achieved by calling:
 %
 <<normalizePlateMedian>>=
-xn <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median", 
-        varianceAdjust="none")
+xn = normalizePlates(x, 
+   scale="multiplicative", 
+   log=FALSE, 
+   method="median", 
+   varianceAdjust="none")
 @ 
 after which we obtain a \Rclass{cellHTS} object with the normalized 
 intensities stored in the slot
@@ -663,7 +741,7 @@ The symbol $\pm$ indicates that we allow for either
 plus or minus sign in Equation~\eqref{eq:defz}; the minus sign can be
 useful in the application to an inhibitor assay, where an effect
 results in a decrease of the signal and we may want to see this
-represented by a large score. 
+represented by a large score.
 This is done by calling the \Rfunction{scoreReplicates} function, 
 where arguments \Robject{sign} and \Robject{method} define 
 the sign and the scoring method to apply (robust $z$-scores, in this case), 
@@ -738,16 +816,20 @@ intermediate values and shrink the ones showing extreme values, therefore making
 The parameter $z_0$ defines the centre of the sigmoidal transformation, 
 while $\lambda$ controls the smoothness of the transformation. 
 
-This transformation can be done by calling the function \Rfunction{scores2calls}, as shown below:
+This transformation can be done by calling the function
+\Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2Complete-callvalues}.
 %
-<<call values>>=
-y <- scores2calls(xsc, z0=1.5, lambda=2)
-plot(Data(xsc), Data(y), col="blue", xlab="z-scores", ylab="calls", main=expression(1/(1+e^{-lambda *(z-z[0])})))
+<<callvalues, fig=TRUE, width=6, height=3>>=
+y = scores2calls(xsc, z0=1.5, lambda=2)
+plot(Data(xsc), Data(y), col="blue", pch=".",
+   xlab="z-scores", ylab="calls", 
+   main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @ 
+\myincfig{cellhts2Complete-callvalues}{0.5\textwidth}{A sigmoidal transformation that
+can be used for obtaining call values.}
 %
-However, for the purpose of the present analysis, we will consider the $z$-score values instead of the call values.
-
-
+However, for the purpose of the present analysis, we will consider the
+$z$-score values instead of the call values.
 
 %------------------------------------------------------------
 \section{Probe annotation}
@@ -865,21 +947,22 @@ configured, normalized, scored, and annotated:
 xsc
 @
 %
-We can now save the data set to a file. 
+We can now save the scored data set to a file. 
 %
 <<savex>>=
-save(xsc, file=paste(experimentName, ".rda", sep=""), compress=TRUE)
+save(xsc, file=paste(experimentName, ".rda", sep=""))
 @ 
 % 
-The data set can be loaded again for subsequent analysis, or passed
-on to others. To produce a comprehensive report, we can call the
-function \Rfunction{writeReport} again, this time specifying in the functions argument \Robject{cellHTSlist} 
-the three \Rclass{cellHTS} objects: ``raw'', ``normalized'' and ``scored'' \Rclass{cellHTS} objects.
+The data set can be loaded again for subsequent analysis, or passed on
+to others. To produce a comprehensive report, we can call the function
+\Rfunction{writeReport} again, this time specifying in the functions
+argument \Robject{cellHTSlist} the three \Rclass{cellHTS} objects:
+``raw'', ``normalized'' and ``scored'' \Rclass{cellHTS} objects.
 %
 <<writeReport2, results=hide, eval=FALSE>>=
 out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
-  force=TRUE, plotPlateArgs   = list(xrange=c(0.5, 3)),
-  imageScreenArgs = list(zrange=c( -4, 8), ar=1)) 
+  force=TRUE, plotPlateArgs = TRUE, 
+  imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
 @ 
 %
 and use a web browser to view the resulting report.
@@ -907,8 +990,8 @@ and when calling \Rfunction{writeReport},
 the dynamic range is calculated separately for the distinct positive controls, since 
 different positive controls might have different potencies.
 
-The experiment-wide HTML report presents, for each replicate, 
-the boxplots with raw and normalized intensities for the different plates, 
+The experiment-wide HTML report presents, for each replicate, the
+boxplots with raw and normalized intensities for the different plates, 
 and two plots for the controls: one showing the signal 
 from positive and negative controls at each plate, 
 and another plot displaying the distribution of the signal 
@@ -919,15 +1002,12 @@ of positive controls~\cite{Oldenburg1999}, as a measure to quantify
 the distance between their distributions. 
 This measure can also be obtained by calling the function \Rfunction{getZfactor}.
 
-
-
 The experiment-wide report also shows a 
 screen-wide plot with the $z$-scores in every well position of each
 plate. If the argument \Robject{map} of \Rfunction{writeReport} function is set to \Robject{TRUE}, this plot and the plate plots of the per-plate reports
 contain tooltips (information pop-up boxes) 
 dispaying the annotation information at each position within the plates.
-If the scored \Rclass{cellHTS} object provided for \Rfunction{writeReport} 
-is not annotated with gene identifiers, the annotation information shown by the tooltips is simply the well identifiers.
+If the scored \Rclass{cellHTS} object provided for \Rfunction{writeReport} is not annotated with gene identifiers, the annotation information shown by the tooltips is simply the well identifiers.
 For an annotated \Rclass{cellHTS} object, if an optional column 
 called \textit{GeneSymbol} was included in the 
 \emph{annotation file} (see Section~\ref{sec:annotation}), and therefore 
@@ -1300,8 +1380,9 @@ where $\mu_i^{\text{pos}}$ is the average of the measurements on the positive co
 In \Rpackage{cellHTS2} package, this method can be applied by setting 
 the argument \Robject{method="POC"} when calling \Rfunction{normalizePlates} function.
 
-We also provide in the package a normalization method for \Rfunction{normalizePlates} 
-(\Robject{method="negatives"}) that consists of scaling
+We also provide in the package a normalization method for 
+\Rfunction{normalizePlates} (\Robject{method="negatives"})
+that consists of scaling
 the plate measurements by 
 the per-plate median of the intensities on the negative controls~\footnote{If the scale of the data is defined as being additive 
 (i.\,e.\,, argument \Robject{scale="additive"}, or arguments \Robject{scale="multiplicate"} and \Robject{log=TRUE}), measurements are subtracted by the median of per-plate negative controls instead.}.
@@ -1358,7 +1439,8 @@ respectively, calculated at the sample wells. This robust Z score method is perf
 \Rfunction{normalizePlates} as follows: 
 %
 <<Z score method, eval=FALSE>>=
- xZ <- normalizePlates(x, scale="additive", log=FALSE, method="median", varianceAdjust="byPlate") 
+ xZ <- normalizePlates(x, scale="additive", log=FALSE,
+         method="median", varianceAdjust="byPlate") 
 @ 
 
 %
@@ -1377,7 +1459,8 @@ We also have two variants of the plate median scaling which consist of using as 
 
 The next methods are intended to explicitly correct for \emph{spatial effects} within plates, i.\,e.\,, the presence of 
 intensity gradients within the plates. 
-Such signal gradients can be caused by differences in temperature, incubation time or concentration, etc., in different wells across a plate.
+Such signal gradients can be caused by differences in temperature, 
+incubation time or concentration, etc., in different wells across a plate.
 Typically, these gradients produce repeatitive patterns, which make it possible to distinguish them from real actives that should be more or less randomly dispersed for quasi-randomized collections of compounds.
 
 
@@ -1393,7 +1476,8 @@ x^{\text{B}}_{rci} = \frac{e_{rci}}{MAD_i}	\label{eq:BscoreVarAdj}
 \end{eqnarray} 
 \noindent
 Here, $x_{rci}$ is the measurement value in the $r$th row and $c$th column of the plate corresponding to the $i$th result file, $\hat{x}_{rci}$ is the corresponding fitted value defined as the sum between the estimated average of the replicate plate ($\hat{\mu}_i$), the estimated systematic offset for row $r$ ($\hat{R}_{ri}$) and the systematic offset for column $c$ ($\hat{C}_{ci}$) in that replicated plate.
-In a second step, each of the obtained residual values $e_{rci}$'s of the $i$th result file are divided by their median absolute deviation ($MAD_i$) 
+In a second step, each of the obtained residual values $e_{rci}$'s of the $i$th result file are divided by their 
+median absolute deviation ($MAD_i$) 
 giving the final B score value -- Equation~(\ref{eq:BscoreVarAdj}).
 
 
@@ -1462,11 +1546,27 @@ myPlots=function(z,...) {
 }
 dv = Data(xn)[,,1]
 myPlots(dv, main="untransformed")
-xlog = normalizePlates(x, scale="multiplicative", log=TRUE, method="median", varianceAdjust="byExperiment")
+xlog = normalizePlates(x, scale="multiplicative", log=TRUE, 
+       method="median", varianceAdjust="byExperiment")
 dvlog = Data(xlog)[,,1]
 myPlots(dvlog, main="log2")
 @ 
 %
+
+%---------------------------------------------------------
+\section{Session info}
+%---------------------------------------------------------
+\begin{table*}[h]%[tbp]
+\begin{minipage}{\textwidth}
+<<sessionInfo, results=tex, print=TRUE>>=
+toLatex(sessionInfo())
+@ 
+\end{minipage}
+\caption{\label{tab:sessioninfo}%
+The output of \Rfunction{sessionInfo} on the build system 
+after running this vignette.}
+\end{table*}
+
 
 %------------------------------------------------------------
 %Bibliography
@@ -1475,5 +1575,4 @@ myPlots(dvlog, main="log2")
 \bibliographystyle{plain}
 
 \end{document}
-
 
