@@ -94,7 +94,7 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
   ## calculate quality metrics
   for (ch in 1:nrChannels) {
 
-    # if there are no neg controls or no type of positive controls, Z'-factor cannot be calculated!
+    ## if there are no neg controls or no type of positive controls, Z'-factor cannot be calculated!
     if( nrPos[ch] & nrNeg[ch]) { 
        yy <- matrix(y[,,ch, drop=FALSE], ncol=nrReplicates, nrow=d[1])
        xact <- yy[actCtrls[[ch]],, drop=FALSE]
@@ -106,19 +106,16 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
        nms$activators<- xact
        nms$inhibitors <- xinh
 
-       aux <- matrix(NA, ncol=length(nms), nrow=nrReplicates)
-       aux <- sapply(1:length(nms), function(d) {
-          for (i in 1:ncol(nms[[d]])) aux[i,d]<- zfacFun(nms[[d]][,i], xneg[,i], locationFun, spreadFun)
-          aux[,d]
-       }
-       )
-
+       aux <- matrix(as.numeric(NA), ncol=length(nms), nrow=nrReplicates)
        colnames(aux) <- names(nms)
+       for(d in seq(along=nms))
+         for (i in seq_len(ncol(nms[[d]])))
+           aux[i, d] <- zfacFun(nms[[d]][,i], xneg[,i], locationFun, spreadFun)
 
        inames <- which(colnames(aux) %in% names(Zfac) )
        for(i in inames) {
-        nm <- colnames(aux)[i]
-        Zfac[[nm]][,ch] <- aux[,i]
+         nm <- colnames(aux)[i]
+         Zfac[[nm]][,ch] <- aux[,i]
        }
  } else { #nrPos & nrNeg
     if(verbose) cat("\nNo positive and/or negative controls were found!\n\n")
