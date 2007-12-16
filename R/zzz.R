@@ -1,13 +1,9 @@
 .onLoad <- function(lib, pkg) {
-  ## load methods package
-  require("methods")
-  ## pDesc = packageDescription("cellHTS")
-  ## cat(sprintf("\n\n\t\tcellHTS %s, %s\nPlease check at www.bioconductor.org for the most recent version.\n\n",
-  ## pDesc$Version, pDesc$Date))
+  cat("Type citation('cellHTS2') for how to cite cellHTS2.")
 }
 
 .onAttach <- function(libname, pkgname) {
    ##set up menus -- windows only for now
    if( .Platform$OS.type == "windows" && .Platform$GUI == "Rgui" )
-      addVigs2WinMenu("cellHTS") ## in Biobase
+      addVigs2WinMenu("cellHTS2") ## in Biobase
 }
