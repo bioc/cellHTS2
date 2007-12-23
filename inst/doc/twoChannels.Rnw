@@ -451,14 +451,14 @@ posControls <- "(?i)^geneC$|^geneD$"
 out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn1, "scored"=xsc), 
  outdir="logRatio", 
  imageScreenArgs=list(zrange=c(-4,4)),
- plotPlateArgs=list(xrange=c(-3,3)), 
+ plotPlateArgs=TRUE, map=TRUE, 
  posControls=posControls, negControls=negControls)
 @
 <<report2Do, results=hide, echo=FALSE>>=
 out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn1, "scored"=xsc), 
   force=TRUE, outdir="logRatio", 
   imageScreenArgs=list(zrange=c(-4,4)),
-  plotPlateArgs=list(xrange=c(-3,3)), 
+  plotPlateArgs=TRUE, map=TRUE,
   posControls=posControls, negControls=negControls)
 @
 %
