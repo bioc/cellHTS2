@@ -77,8 +77,9 @@ if(any(is.na(mtW))) {
               nx=pdim(x)[["ncol"]], ny=pdim(x)[["nrow"]], main="Plate configuration", ncol=ifelse(max(plate(x))<6L, max(plate(x)), 6L))
 
 # put correct names:
-   aux <- sapply(names(wellCols), function(i) plateConf(x)$Content[match(i, tolower(plateConf(x)$Content))]) #name given in the conf file
-   if(any(is.na(aux)) aux[is.na(aux)] <- names(wellCols)[is.na(aux)]
+  aux <- sapply(names(wellCols), function(i) plateConf(x)$Content[match(i, tolower(plateConf(x)$Content))]) #name given in the conf file
+   if(any(is.na(aux))) aux[is.na(aux)] <- names(wellCols)[is.na(aux)]
+  
    names(wellCols) <- aux
 
   invisible(wellCols)
