@@ -44,7 +44,7 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
   d <- dim(y)
   nrReplicates <- d[2]
   nrChannels <- d[3]
-
+  nrProbes <- d[1]
   wAnno <- as.character(wellAnno(x))
 
 
@@ -96,7 +96,7 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
 
     ## if there are no neg controls or no type of positive controls, Z'-factor cannot be calculated!
     if( nrPos[ch] & nrNeg[ch]) { 
-       yy <- matrix(y[,,ch, drop=FALSE], ncol=nrReplicates, nrow=d[1])
+       yy <- matrix(y[,,ch, drop=FALSE], ncol=nrReplicates, nrow=nrProbes)
        xact <- yy[actCtrls[[ch]],, drop=FALSE]
        xinh <- yy[inhCtrls[[ch]],, drop=FALSE]
        xpos = lapply(posCtrls[[ch]], function(d) yy[d, ,drop=FALSE])
