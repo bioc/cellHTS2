@@ -46,7 +46,7 @@ checkPosControls <- function(posControls, nrChan, wellAnnotation, plateConfConte
       aux <- unique(posControls)
       aux <- findControls(aux[!emptyOrNA(aux)], wellAnnotation)
       if(length(aux)) {
-          namePos <- unique(sapply(aux, function(i) unique(wellAnnotation[i])))
+          namePos <- unique(unlist(sapply(aux, function(i) unique(wellAnnotation[i]))))
           namePos <- sort(plateConfContent[match(namePos, tolower(plateConfContent))]) 
       }
     } else {

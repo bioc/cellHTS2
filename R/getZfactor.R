@@ -78,7 +78,7 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
 
      nms <- if(twoWay) c("activators", "inhibitors") else namePos
 
-## the line below is needed to have some feedback in 'writeReport'
+# ## the line below is needed to have some feedback in 'writeReport'
      Zfac <- vector("list", length=max(1, length(nms)))
      names(Zfac) <- nms
      for(i in 1:length(Zfac)) { 
@@ -101,16 +101,14 @@ getZfactor <- function(x, robust=TRUE, verbose=interactive(), posControls, negCo
        xinh <- yy[inhCtrls[[ch]],, drop=FALSE]
        xpos = lapply(posCtrls[[ch]], function(d) yy[d, ,drop=FALSE])
        xneg = yy[negCtrls[[ch]], , drop=FALSE]
-
        nms <- xpos
        nms$activators<- xact
        nms$inhibitors <- xinh
-
        aux <- matrix(as.numeric(NA), ncol=length(nms), nrow=nrReplicates)
        colnames(aux) <- names(nms)
-       for(d in seq(along=nms))
-         for (i in seq_len(ncol(nms[[d]])))
-           aux[i, d] <- zfacFun(nms[[d]][,i], xneg[,i], locationFun, spreadFun)
+       for(dn in seq(along=nms))
+         for (i in seq_len(ncol(nms[[dn]])))
+           aux[i, dn] <- zfacFun(nms[[dn]][,i], xneg[,i], locationFun, spreadFun)
 
        inames <- which(colnames(aux) %in% names(Zfac) )
        for(i in inames) {
