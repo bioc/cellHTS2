@@ -187,7 +187,7 @@ For example, to import plate data files from an EnVision plate reader, set
 calling \Rfunction{readPlateList}. Please see the help page of function 
 \Rfunction{getEnVisionRawData} for an example.
 Another import function (``importData.R'') is given together with 
-the example data set for a two-way assay in the directory called 
+the example data set for a enhancer-supressor screen in the directory called 
 \emph{TwoWayAssay} of this package.\\
 
 While for the above data sets, the measurements from each replicate and channel
@@ -197,7 +197,7 @@ contains meta-experimental data together with intensity readings
 (in a matrix-like layout) of a set of plates made for the same replicate 
 or screen. Thus, there is no need to have a plate list file, and instead of 
 using \Rfunction{readPlateList} we should call the function 
-\Rfunction{readHTAnalystData}. Please see the help page for this function (\Robject{? readPlateHTAnalystData}), 
+\Rfunction{readHTAnalystData}. Please see the help page for this function (\Robject{? readHTAnalystData}), 
 where we illustrate how it can be applied to import HTAnalyst data files.
 
 

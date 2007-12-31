@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Supplement: two-way assays}
+%\VignetteIndexEntry{Supplement: enhancer-suppressor screens}
 %\VignetteKeywords{Two-way assays, cell based assays}
 %\VignettePackage{cellHTS2}
 
@@ -8,7 +8,7 @@
 \definecolor{darkblue}{rgb}{0.0,0.0,0.75}
 \usepackage[%
 baseurl={http://www.bioconductor.org},%
-pdftitle={Analysis of two-way cell-based assays},%
+pdftitle={Analysis of enhancer-suppressor screens},%
 pdfauthor={Ligia Bras},%
 pdfsubject={cellHTS2},%
 pdfkeywords={Bioconductor},%
@@ -32,7 +32,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \begin{document}
 
 %------------------------------------------------------------
-\title{Analysis of two-way cell-based assays}
+\title{Analysis of enhancer-suppressor screens}
 %------------------------------------------------------------
 \author{L\'igia Br\'as, Michael Boutros and Wolfgang Huber}
 \maketitle
@@ -48,9 +48,8 @@ package.
 %Wolfgang Huber~\cite{Boutros2006}. 
 
 The report explains how the 
-\Rpackage{cellHTS2} package can be used to document and analyse two-way assays.
-We call \emph{two-way assays} to the assays where we can have two types of effectors: 
-\emph{activators} and \emph{inhibitors}. In such cases, both type of effectors are used as positive controls, and they need to be considering indivually by the \Rpackage{cellHTS2} package.
+\Rpackage{cellHTS2} package can be used to document and analyse enhancer-suppressor screens (or \emph{two-way assays}), where we can have two types of effectors: \emph{activators} (or enhancers) and \emph{inhibitors} (or repressors). 
+In such cases, both type of effectors are used as positive controls, and they need to be considered indivually by the \Rpackage{cellHTS2} package.
 
 This text has been produced as a reproducible
 document~\cite{Gentleman2004RepRes}, containing the actual computer
@@ -81,8 +80,7 @@ options(error=recover)
 \label{sec:assemble}
 %------------------------------------------------------------
 
-The example data set corresponds to one 96-well plate of a two-way assay 
-performed with human cells. The screen was performed in duplicate, 
+The example data set corresponds to one 96-well plate of an enhancer-suppressor screen performed with human cells. The screen was performed in duplicate, 
 and a luminescence-reporter was used in the assay.
 
 
@@ -161,8 +159,9 @@ x <- configure(x, descripFile = "Description.txt",
 @ 
 %
 In this data set, instead of using the default names \emph{pos} and \emph{neg} for 
-positive and negative controls, respectively, we have used the names of the target genes.
-Thus, the well annotation in this sample plate looks like this~\footnote{Note that when reading the plate configuration file, the 
+positive and negative controls, respectively, we used the names of the target genes.
+Thus, the well annotation in this sample plate looks like 
+this~\footnote{Note that when reading the plate configuration file, the 
 \Rfunction{configure} function 
 puts the content of the column \emph{Content} 
 in lowercase. However, the orignal content of this column 
@@ -174,12 +173,12 @@ table(wellAnno(x))
 @ 
 Here, \emph{AATK}, \emph{ATTK} and \emph{MAP2K6} are positive controls, whereas
 \emph{GFP} and \emph{mock} (mock transfection) correspond to negative controls. 
-We will return to this issue in Section~\ref{sec:preprocess}, but now, we will proceed to 
-the next step in the data assemble stage, whereby we add the annotation information 
+We shall return to this issue in Section~\ref{sec:preprocess}, but now, we proceed to 
+the next step of data assemble, whereby we add the annotation information 
 to \Robject{x}. This information is in the \emph{screen annotation file}, and 
 Table~\ref{tab:geneID} shows the first 5 lines of this file.
 Besides the mandatory columns \emph{Plate}, \emph{Well} and \emph{GeneID}, 
-the file contains the optional column \emph{GeneSymbol}, whose content will be used for
+the file contains the optional column \emph{GeneSymbol}, whose content is used for
 the tooltips display in the HTML quality reports that will be produced later on.
 %
 <<annotate the data>>=
@@ -208,15 +207,16 @@ using the \Rfunction{writeReport} function.
 For that, we must define the positive and negative controls needed when calling 
 this function.\\
 
-For a 2-way assay, the argument \Robject{posControls} of 
+For an enhancer-suppressor screen, the argument \Robject{posControls} of 
 \Rfunction{writeReport} should be defined as a list with two components: 
-\emph{act} and \emph{inh}, which should be defined as vectors of regular 
+\emph{act} (for activator or enhancers) and \emph{inh} (for inhibitors or suppressors), 
+which should be defined as vectors of regular 
 expressions with the same length as the number of channels (in this case, length one).
-These arguments will be passed to the \Rfunction{regexpr} function 
+These arguments are passed to the \Rfunction{regexpr} function 
 for pattern matching within the well annotation (\Robject{wellAnno(x)}).\\
 
 In the example presented here, in the positive controls, we have 
-\emph{AATK} and \emph{ATTK} as activator effectors, and \emph{MAP2K6} as 
+\emph{AATK} and \emph{ATTK} as enhancers, and \emph{MAP2K6} as 
 an inhibitor effector.
 The negative controls are \emph{GFP} and the mock transfection 
 (indicated as \emph{mock} in the plate configuration file).
@@ -318,7 +318,7 @@ browseURL(out)
 %
 The quality reports have been created in the folder \Robject{2Wnormalized} 
 in the working directory. Now the report shows also controls-related plots, 
-distinguishing the two types of positive controls (activators and inhibitors).
+distinguishing the two types of positive controls (enhancers and suppressors).
 Furthermore, the report shows the image plot with the final scored and summarized values 
 for the whole data set.
 Finally, we save the scored and summarized \Rclass{cellHTS} object to a file. 
