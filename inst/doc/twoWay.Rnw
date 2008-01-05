@@ -32,7 +32,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \begin{document}
 
 %------------------------------------------------------------
-\title{Analysis of enhancer-suppressor screens}
+\title{Analysis of screens with enhancer and suppressor controls}
 %------------------------------------------------------------
 \author{L\'igia Br\'as, Michael Boutros and Wolfgang Huber}
 \maketitle

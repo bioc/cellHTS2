@@ -538,10 +538,12 @@ configuration.}
 \end{figure}
 
 A special case of well annotation is when different types of positive controls are used 
-for the screening, that is \emph{activator} and \emph{inhibitor} compounds. 
-The vignette \textit{Analysis of two-way cell-based assays} 
-accompanying this package explains how such screens can be handled 
-using \Rpackage{cellHTS2} package.
+for the screening, that is \emph{enhancer} and \emph{suppressor} compounds. 
+The vignette 
+\textit{Analysis of screens with enhancer and suppressor controls} 
+accompanying this package explains how such controls can be handled 
+during the screen analysis using \Rpackage{cellHTS2} package.
+
 
 %--------------------------------------------------
 \subsubsection{Multiple plate configurations}
