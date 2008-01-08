@@ -15,7 +15,7 @@ getTopTable(cellHTSlist, file="topTable.txt", verbose=interactive())
 
 \arguments{
   \item{cellHTSlist}{a list of \code{\linkS4class{cellHTS}} objects. See details.}
-  \item{file}{the name of the output file. Default is "topTable.txt"}
+  \item{file}{the name of the output file. Default is "topTable.txt".}
   \item{verbose}{a logical value, if \code{TRUE}, the function reports its progress. Defaults to the state of \code{\link[base:interactive]{interactive()}}.}
 }
 

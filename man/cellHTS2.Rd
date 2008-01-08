@@ -46,8 +46,10 @@ Other functions: \code{\link{oneRowPerId}}, \code{\link{write.tabdel}},
 \code{\link{getEnVisionCrosstalkCorrectedData}},
 \code{\link{getTopTable}}, \code{\link{getMeasureRepAgreement}}. 
 \code{\link{getDynamicRange}}, \code{\link{getZfactor}},
-\code{\link{writeReport}}, \code{\link{convertOldCellHTS}}, 
-and \code{\link{scores2calls}}.
+\code{\link{writeReport}}, \code{\link{convertOldCellHTS}},
+\code{\link{scores2calls}},
+and \code{\link{templateDescriptionFile}}.
+
 
 A full listing of documented topics is available in HTML view by
 typing \code{help.start()} and selecting the \code{cellHTS2} package from the
@@ -144,7 +146,6 @@ typing \code{help.start()} and selecting the \code{cellHTS2} package from the
 
   \code{\link{compare2cellHTS}} compares two \code{\linkS4class{cellHTS}} objects to see whether they derive from the same initial \code{\linkS4class{cellHTS}} object.
 
-
   \code{\link{convertOldCellHTS}} converts an old S3 class \code{cellHTS} object obtained using \code{cellHTS} package 
 to new S4 class \code{cellHTS} object(s) to use with package \code{cellHTS2}.
 
@@ -174,7 +175,10 @@ For example, wells can be identified by an alphanumeric character (e.g. "B02" or
   \code{\link{oneRowPerId}}  rearranges dataframe entries such that there is exactly one row
 per ID.
 
-   \code{\link{nbatch}} gives the total number of batches in a cellHTS object.
+   \code{\link{nbatch}} gives the total number of batches in a \code{\linkS4class{cellHTS}} object.
+
+   \code{\link{templateDescriptionFile}} creates a template description file for an RNAi experiment with default entries compliant with MIAME class 
+and with additional entries specific for a \code{\linkS4class{cellHTS}} object.
 
    \code{\link{writeTab}} this function is a wrapper for the function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
 

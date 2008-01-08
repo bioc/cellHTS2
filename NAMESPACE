@@ -25,6 +25,7 @@ export("oneRowPerId",
        "spatialNormalization",
        "summarizeChannels",
        "summarizeReplicates",
+       "templateDescriptionFile",
        "writeReport",
        "write.tabdel")
 

@@ -1,6 +1,6 @@
 Package: cellHTS2
-Version: 2.3.17
-Date: 5 January 2008
+Version: 2.3.18
+Date: 8 January 2008
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras <ligia@ebi.ac.uk>, Wolfgang Huber <huber@ebi.ac.uk>, Michael Boutros <m.boutros@dkfz.de>
 Maintainer: Ligia Bras <ligia@ebi.ac.uk>
@@ -20,6 +20,6 @@ Collate: AllClasses.R  AllGeneric.R adjustVariance.R
          methods-cellHTS.R  methods-ROC.R  normalizePlates.R  
          oneRowPerId.R  perPlateScaling.R  plotSpatialEffects.R  
          QMbyPlate.R  QMexperiment.R  readHTAnalystData.R  readPlateList.R  
-         summarizeReplicates.R   tableOutput.R  
+         summarizeReplicates.R   tableOutput.R  templateDescriptionFile.R
          writeReport.R  write.tabdel.R  zzz.R
 

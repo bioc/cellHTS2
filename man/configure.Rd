@@ -70,6 +70,7 @@ the following slots:
 
 \seealso{
   \code{\link[cellHTS2:readPlateList]{readPlateList}}
+  \code{\link[cellHTS2:templateDescriptionFile]{templateDescriptionFile}}
 }
 
 \author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}

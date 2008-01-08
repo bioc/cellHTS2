@@ -423,6 +423,10 @@ experiment:
 the screen, its goal, the conditions under which it was performed,
 references, and any other information that is pertinent to the
 biological interpretation of the experiments. 
+In \Rpackage{cellHTS2} package we provide a function that creates a template description file 
+whose entries can be edited and completed by the user. Type \Robject{? templateDescriptionFile}.
+This file contains the entries compliant with the \Rclass{MIAME} class and also additional fields specific for the 
+\Rclass{cellHTS} class.
 
 \item \emph{Plate configuration file} is used to annotate the measured data with
 information on controls. 
@@ -596,7 +600,12 @@ identified by the plate number (and possible sample number and channel number) a
 the well identifier (alphanumeric identifier). 
 The type of flag is specified in the column \emph{Flag}. Most commonly,
 this will have the value ``NA'', indicating that the measurement
-should be discarded and regarded as missing.
+should be discarded and regarded as missing.\\
+
+For those users that have been using \Rpackage{cellHTS} package and need to migrate 
+their projects to \Rpackage{cellHTS2} package, 
+we explain how this can be smoothly performed in Appendix~\ref{sec:migratingProjects}.
+
 
 
 %------------------------------------------------------------
@@ -1170,7 +1179,7 @@ if not.
 % @ 
 
 <<obsolete GO ids>>=
-obsolete = c("GO:0005489", "GO:0005660")
+obsolete = c("GO:0005489", "GO:0015997", "GO:0045034", "GO:0005660")
 @ 
 
 Some distractions are the GO terms 
@@ -1342,6 +1351,77 @@ In fact, Figure~\ref{cellhts2Complete-scoresComparison} evidenciates how the sco
 exactly agree up to an offset (mean versus median) and scale 
 (standard deviation versus MAD).
 %
+
+%------------------------------------------------------------
+\section{Appendix: How to convert \Rpackage{cellHTS} to \Rpackage{cellHTS2} configuration files}
+\label{sec:migratingProjects}
+%------------------------------------------------------------
+
+We advise the users of \Rpackage{cellHTS} package to start using the improved package \Rpackage{cellHTS2} described herein, 
+since the latter provides better functionality for working with multi-channel screens and multiple screens.
+
+To facilitate this transition and help users to migrate their \Rpackage{cellHTS}-specific projects to \Rpackage{cellHTS2}, 
+we provide in this package a function that converts the old S3 \Robject{cellHTS} object associated with \Rpackage{cellHTS} 
+package into one or several S4 
+\Robject{cellHTS} defined with the \Rpackage{cellHTS2} package. This function is called \Rfunction{convertOldCellHTS}.
+
+However, you might want to migrate an existing project from start, i.\,e.\,, 
+redo all the steps starting by reading the intensity files and configuring the screening data. In this case, you need 
+to update the screen log file (if available), the screen description file and the screen configuration 
+file~\footnote{The expected format of the other input files, namely the raw intensity data files (Section~\ref{sec:read}) 
+and the annotation file (Section~\ref{sec:annotation}) remains unchanged between the two packages.}.\\
+
+% Screen description file
+Regarding the screen description file, as mentioned in Section~\ref{sec:screenconf}, 
+we provide a function that creates a template screen description file that can be edited and modified by the user. Below we examplify how such file can be created:
+%
+<<example for description file>>=
+  out <- templateDescriptionFile("template-Description.txt", force=TRUE)
+  out
+  readLines(out)
+@
+%
+\input{cellhts2-cellHTSpackage-specificplateconfiguration} 
+\input{cellhts2-cellHTSpackage-specificscreenlog} 
+
+% Create the example table for the older formats of plate configuration and screen log files
+<<old plateConfscreenLogTable, results=hide, echo=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "old-Plateconf.txt"), 
+  "cellHTS package-specific plate configuration", selRows=1:28)
+cellHTS2:::tableOutput(file.path(dataPath, "old-Screenlog.txt"), 
+  "cellHTS package-specific screen log", selRows=1:3)
+@ 
+%
+
+% Screen log file
+The format of the screen log file compatible with \Rpackage{cellHTS2} package is shown in Table~\ref{tab:screenlog}.
+Compared to the previous format required for \Rpackage{cellHTS} package (Table~\ref{tab:cellHTSpackage-specificscreenlog}), 
+we note that column \textit{Filename} was 
+replaced by two columns named \textit{Plate} and \textit{Sample}. \\
+
+
+% Screen configuration file
+In \Rpackage{cellHTS} package, the concept of \textit{batch} is intrinsically related with the plate configuration, since
+a change in plate configuration along the experiment had to be handled by setting each distinct plate 
+configuration as corresponding to a different batch.
+Therefore, in \Rpackage{cellHTS} package, the plate configuration file had three mandatory columns named \textit{Batch}, \textit{Well},
+\textit{Content}, where the \textit{Batch} column allowed for different plate configurations. The first 28 lines of such file for 
+the example RNAi screen considered in this report is shown in Table~\ref{tab:cellHTSpackage-specificplateconfiguration}.
+Thus, in the old format required for the plate configuration file, we had to have a number of rows equal to the product between the 
+total number of batches and the total number of wells per plate.
+
+In contrast to \Rpackage{cellHTS} package, in \Rpackage{cellHTS2} package the concept of \emph{batch} 
+and multiple plate configurations were made independent (see Section~\ref{sec:multPlateConfs}).
+For \Rpackage{cellHTS2} package, Table~\ref{tab:plateconfiguration} shows the required file format, which was discussed in more detail 
+in Section~\ref{sec:plateconf}.
+
+Due to the separation between batch and multiple plate configuration, the column \textit{Batch} was removed, and replaced by the column 
+\emph{Plate}. The other two mandatory columns \emph{Well} and \emph{Content} were kept.
+Additionally, we now require that this file contains two extra header lines giving the total number of wells and plates 
+(Table~\ref{tab:plateconfiguration}). 
+There is also an improvement in the file format related with the fact that \emph{Plate} and \emph{Well} columns now allow 
+the use of regular expressions (see Section~\ref{sec:plateconf} for more specific information), which allows to cover the plate 
+configuration used in the screen with just a few lines. Besides, it allows to specify different configurations within and between assay plates.
 
 
 
