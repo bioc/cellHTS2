@@ -283,16 +283,16 @@ function(object, geneIDFile, path=dirname(geneIDFile)) {
   if(!(is.character(path)&&(length(path)==1L)))
     stop("'path' must be character of length 1")
 
-  geneIDs = read.table(file.path(path, file), sep="\t", header=TRUE, as.is=TRUE, na.string="", quote="",fill=TRUE)
+  geneIDs = read.table(file.path(path, file), sep="\t", header=TRUE, stringsAsFactors=FALSE, na.string="", quote="", fill=FALSE)
 
   checkColumns(geneIDs, file, mandatory=c("Plate", "Well", "GeneID"),
                numeric=c("Plate"))
 
   ## sort the data by Plate and then by well
-  ## ordering by well might be problematic when we have "A2" instead of "A02"... so first check if all well IDs are given as alphanumeric characters with 3 characters.
-if(any(nchar(geneIDs$Well)!=3)) 
+  ## ordering by well might be problematic when we have "A2" instead of "A02"...
+  ## so first check if all well IDs are given as alphanumeric characters with 3 characters.
+  if(any(nchar(geneIDs$Well)!=3)) 
     stop(sprintf("Well IDs in the gene annotation file '%s' must contain 1 letter and 2 digits. E.g. 'A02'.", geneIDFile))
-
 
   geneIDs = geneIDs[order(geneIDs$Plate, geneIDs$Well),]
 
