@@ -61,8 +61,7 @@ mtW <- match(wellAnnotation, names(wellCols))
 if(any(is.na(mtW))) {
   wh <- is.na(mtW)
   notCovered <- unique(wellAnnotation[wh])
-  if(verbose) sprintf("Uncovered well annotation (%s) is colored in yellow", paste(notCovered, collapse=", ")) 
-  notCov <- terrain.colors(length(notCovered))
+  notCov <- rainbow(length(notCovered))
   names(notCov) <- notCovered
   wellCols <- c(wellCols, notCov)
   mtW[wh] <- match(wellAnnotation[wh], names(wellCols))
