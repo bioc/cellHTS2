@@ -1,18 +1,18 @@
 ## Adapted from 'readPlateData' (package 'cellHTS': (C) Michael Boutros and Wolfgang Huber, Nov 2005)
 
-readPlateList <- function(filename, path=dirname(filename), name, importFun, verbose=interactive()) {
-
+readPlateList = function(filename, path=dirname(filename), name, importFun, verbose=interactive()) {
+  
   file = basename(filename)
   dfiles = dir(path)
-
+  
   if(!(is.character(path)&&length(path)==1))
     stop("'path' must be character of length 1")
-
+  
   pd = read.table(file.path(path, file), sep="\t", header=TRUE, as.is=TRUE)
-
+  
   checkColumns(pd, file, mandatory=c("Filename", "Plate", "Replicate"),
                numeric=c("Plate", "Replicate", "Channel", "Batch"))
-
+  
   ## consistency check for "importFun"
   if (!missing(importFun)) {
     if (!is(importFun, "function")) stop("'importFun' should be a function to use to read the raw data files")
@@ -28,7 +28,7 @@ readPlateList <- function(filename, path=dirname(filename), name, importFun, ver
       return(out)
     }
   }
-
+  
   ## check if the data files are in the given directory
   a = unlist(sapply(pd$Filename, function(z) grep(z, dfiles, ignore.case=TRUE)))
   if (length(a)==0) stop(sprintf("None of the files were found in the given 'path': %s", path))
@@ -63,7 +63,6 @@ readPlateList <- function(filename, path=dirname(filename), name, importFun, ver
   nrRep   = max(pd$Replicate)
   nrPlate = max(pd$Plate)
 
-
   combo = paste(pd$Plate, pd$Replicate)
 
   ## Channel: if not given, this implies that there is just one
@@ -72,19 +71,14 @@ readPlateList <- function(filename, path=dirname(filename), name, importFun, ver
     channel = pd$Channel
     combo = paste(combo, pd$Channel)
   } else {
-    nrChannel = 1
-    channel = rep(as.integer(1), nrow(pd))
+    nrChannel = 1L
+    channel = rep(1L, nrow(pd))
     pd$Channel = channel	
   }
 
-# expect one file for each plate, replicate and channel
-  if(nrow(pd)!=nrRep*nrPlate*nrChannel) stop("Some of the plates or replicates or channels are not covered in the plate list file!\n Please check your plate list file!")
-
-## NOTE: column 'batch' is no longer required.
-
   whDup = which(duplicated(combo))
-  if(length(whDup)>0) {
-    idx = whDup[1:min(5, length(whDup))]
+  if(length(whDup)>0L) {
+    idx = whDup[1:min(5L, length(whDup))]
     msg = paste("The following rows are duplicated in the plateList table:\n",
       "\tPlate Replicate Channel\n", "\t",
       paste(idx, combo[idx], sep="\t", collapse="\n\t"),
@@ -92,23 +86,25 @@ readPlateList <- function(filename, path=dirname(filename), name, importFun, ver
     stop(msg)
   }
 
-  xraw = array(as.numeric(NA), dim=c(nrWell, nrPlate, nrRep, nrChannel))
+  xraw = array(NA_real_, dim=c(nrWell, nrPlate, nrRep, nrChannel))
   intensityFiles = vector(mode="list", length=nrow(pd))
   names(intensityFiles) = pd[, "Filename"]
 
   status = character(nrow(pd))
 
-  for(i in 1:nrow(pd)) {
+  for(i in seq_len(nrow(pd))) {
     if(verbose)
-      cat(" Reading file ", i, ": ", pd[i, "Filename"], ";", sep="")
+      cat("\rReading file ", i, ": ", pd[i, "Filename"], sep="")
 
     ff = grep(pd[i, "Filename"], dfiles, ignore.case=TRUE)
 
     if (length(ff)!=1) {
+      
       f = file.path(path, pd[i, "Filename"])
       status[i] = sprintf("File not found: %s", f)
 
     } else {
+      
       f = file.path(path, dfiles[ff])
       names(intensityFiles)[i] = dfiles[ff]
 
@@ -119,66 +115,59 @@ readPlateList <- function(filename, path=dirname(filename), name, importFun, ver
         xraw[pos, pd$Plate[i], pd$Replicate[i], channel[i]] = out[[1]]$val
   	"OK"
       },
-              warning = function(e) {
-                paste(class(e)[1], e$message, sep=": ")
-              },
-              error = function(e) {
-                paste(class(e)[1], e$message, sep=": ")
-              }) ## tryCatch
+      warning = function(e) paste(class(e)[1], e$message, sep=": "),
+      error = function(e)   paste(class(e)[1], e$message, sep=": ")
+      ) ## tryCatch
+    
     } ## else
   } ## for
 
   if(verbose)
-    cat("\nDone.\n\n")
+  cat("\nDone.\n\n")
 
-# ----  Store the data as a "cellHTS" object ----
-# arrange the assayData slot:
-adata <- assayDataNew(storage.mode="environment")
-chNames <- paste("ch", 1:nrChannel, sep="")
+  ## ----  Store the data as a "cellHTS" object ----
+  ## arrange the assayData slot:
+  adata = assayDataNew(storage.mode="environment")
+  chNames = paste("ch", seq_len(nrChannel), sep="")
 
-for(ch in 1:nrChannel) 
+  for(ch in seq_len(nrChannel)) 
     assign(chNames[ch], matrix(xraw[,,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlate), env=adata)
 
-#stopifnot(ls(adata)==chNames)
-storageMode(adata) <- "lockedEnvironment"
+  storageMode(adata) <- "lockedEnvironment"
 
-## arrange the phenoData slot:
-pdata = new("cellHTS")@phenoData
-pData(pdata) <- data.frame(replicate=1:nrRep, assay=I(rep(name, nrRep)))
-varMetadata(pdata)[["channel"]] = factor(rep("_ALL_",2), levels=c(chNames, "_ALL_"))
+  ## arrange the phenoData slot:
+  pdata = new("AnnotatedDataFrame",
+    data = data.frame(replicate = seq_len(nrRep),
+                      assay = rep(name, nrRep),
+                      stringsAsFactors = FALSE),
+    varMetadata = data.frame(
+         labelDescription = c("Replicate number", "Biological assay"),
+         channel = factor(rep("_ALL_", 2L), levels=c(chNames, "_ALL_")),
+         row.names = c("replicate", "assay"),
+         stringsAsFactors = FALSE))
 
-# pdata <- new("AnnotatedDataFrame", 
-#                   data=data.frame(replicate=1:nrRep, assay=I(rep(name, nrRep))),
-#                   varMetadata=data.frame(labelDescription=I(c("Replicate number", "Biological assay")), 
-#                                          channel=factor(rep("_ALL_",2), levels=c(chNames, "_ALL_"))))
+  ## arrange the featureData slot:
+  well = convertWellCoordinates(seq_len(nrWell), pdim=dimPlate)$letnum
+  fdata = new("AnnotatedDataFrame", 
+    data = data.frame(plate = rep(seq_len(nrPlate), each=nrWell),
+                      well = rep(well, nrPlate), 
+                      controlStatus = factor(rep("unknown", nrWell*nrPlate)),
+                      stringsAsFactors = FALSE), 
+    varMetadata = data.frame(
+      labelDescription = c("Plate number", "Well ID", "Well annotation"),
+      row.names = c("plate", "well", "controlStatus"),
+         stringsAsFactors = FALSE))
 
+  res = new("cellHTS", 
+   assayData = adata,
+   phenoData = pdata,
+   featureData = fdata,
+   plateList = cbind(pd[,1L,drop=FALSE], status=I(status), pd[,-1L,drop=FALSE]),
+   intensityFiles=intensityFiles)
 
-
-## arrange the featureData slot:
-well <- convertWellCoordinates(as.integer(1:nrWell), pdim=dimPlate)$letnum
-fdata <- new("cellHTS")@featureData
-pData(fdata) <- data.frame(plate=rep(1:nrPlate, each=nrWell), well=I(rep(well,nrPlate)), 
-                           controlStatus=factor(rep("unknown", nrWell*nrPlate)))
-
-# 
-# fdata <- new("AnnotatedDataFrame", 
-#            data=data.frame(plate=rep(1:nrPlate, each=nrWell), well=I(rep(well,nrPlate)), 
-#                            controlStatus=factor(rep("unknown", nrWell*nrPlate))), 
-#            varMetadata=data.frame(labelDescription=I(c("Plate number", "Well ID", "Well annotation"))))
-
-
- res = new("cellHTS", 
-   assayData=adata,
-   phenoData=pdata,
-   featureData=fdata,
-   plateList=cbind(pd[,1,drop=FALSE], status=I(status), pd[,-1,drop=FALSE]),
-   intensityFiles=intensityFiles
-   #state=c("configured"=FALSE, "normalized"=FALSE, "scored"=FALSE, "annotated" = FALSE)
-   )
-
-## output the possible errors that were encountered along the way:
+  ## output the possible errors that were encountered along the way:
   whHadProbs = which(status!="OK")
- if(length(whHadProbs)>0 & verbose) {
+  if(length(whHadProbs)>0 & verbose) {
     idx = whHadProbs[1:min(5, length(whHadProbs))]
     msg = paste("Please check the following problems encountered while reading the data:\n",
       "\tFilename \t Error\n", "\t",
