@@ -54,7 +54,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
   nrWell = prod(dimPlate)
 
   if(verbose)
-    cat(sprintf("Found data in %d x %d (%d well) format.\n", dimPlate[1], dimPlate[2], nrWell))
+    cat(sprintf("%s: found data in %d x %d (%d well) format.\n", name, dimPlate[1], dimPlate[2], nrWell))
 
   ## Should we check whether these are true?
   ##     "96"  = c(nrow=8, ncol=12),
@@ -94,7 +94,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
 
   for(i in seq_len(nrow(pd))) {
     if(verbose)
-      cat("\rReading file ", i, ": ", pd[i, "Filename"], sep="")
+      cat("\rReading ", i, ": ", pd$Filename[i], sep="")
 
     ff = grep(pd[i, "Filename"], dfiles, ignore.case=TRUE)
 
@@ -127,14 +127,13 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
 
   ## ----  Store the data as a "cellHTS" object ----
   ## arrange the assayData slot:
-  adata = assayDataNew(storage.mode="environment")
-  chNames = paste("ch", seq_len(nrChannel), sep="")
-
-  for(ch in seq_len(nrChannel)) 
-    assign(chNames[ch], matrix(xraw[,,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlate), env=adata)
-
-  storageMode(adata) <- "lockedEnvironment"
-
+  dat = lapply(seq_len(nrChannel), function(ch) 
+    matrix(xraw[,,,ch], ncol=nrRep, nrow=nrWell*nrPlate))
+  names(dat) = paste("ch", seq_len(nrChannel), sep="")
+    
+  adata = do.call("assayDataNew",
+    c(storage.mode="lockedEnvironment", dat))
+    
   ## arrange the phenoData slot:
   pdata = new("AnnotatedDataFrame",
     data = data.frame(replicate = seq_len(nrRep),
@@ -142,7 +141,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
                       stringsAsFactors = FALSE),
     varMetadata = data.frame(
          labelDescription = c("Replicate number", "Biological assay"),
-         channel = factor(rep("_ALL_", 2L), levels=c(chNames, "_ALL_")),
+         channel = factor(rep("_ALL_", 2L), levels=c(names(dat), "_ALL_")),
          row.names = c("replicate", "assay"),
          stringsAsFactors = FALSE))
 
