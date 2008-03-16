@@ -3,9 +3,9 @@ checkColumns = function(x, name, mandatory, numeric) {
   missingColumns = setdiff(mandatory, colnames(x))
   if(length(missingColumns)>0L)
     stop(paste("Column", ifelse(length(missingColumns)>1, "s "," "),
-               paste(missingColumns, collapse=", "),
+               paste("'", missingColumns, "'", collapse=", ", sep=""),
                ifelse(length(missingColumns)>1, " are", " is"),
-               " missing from ", name, "\n"))
+               " missing from ", name, "\n", sep=""))
   
   for(j in intersect(numeric, colnames(x))) {
     if(!is.numeric(x[,j]))

@@ -244,7 +244,9 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
   ## See if output directory exists. If not, create. If yes, check if it is empty,
   ## and if not, depending on parameter 'force', throw an error or clean it up.
   if(missing(outdir)) {
-    outdir <- file.path(getwd(), name(xr))
+    if(force)
+      stop("To prevent accidental deletion of files, please specify 'outdir' explicitely if you want to use the 'force=TRUE' option.")
+    outdir = file.path(getwd(), name(xr))
   }
 
   if(file.exists(outdir)){
@@ -255,7 +257,8 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
 
     if(length(outdirContents)>0) {
       if(!force)
-        stop(sprintf("'%s' is not empty.", outdir))
+        stop(paste(sprintf("The directory '%s' is not empty.", outdir),
+             "Please remove the directory first, or use the argument 'force=TRUE'.\n", sep="\n"))
       unlink(file.path(outdir, outdirContents), recursive=TRUE)
     } 
   } else {
@@ -594,7 +597,8 @@ if(all(is.null(names(dr)))) names(dr) <- namePos
 ## (only based on the content of plate configuration file! No updates based on screen log file.)
   if(state(xr)[["configured"]]) {
     ## Create a data.frame for the screen plot with plate configuration
-    res <- makePlot(outdir, con=con, name="configurationAsScreenPlot", w=7, h=7, psz=8,
+    res <- makePlot(outdir, con=con, name="configurationAsScreenPlot",
+                    w=7, h=7*pdim(xr)["nrow"]/pdim(xr)["ncol"]*ceiling(nrPlate/6)/6+0.5, psz=8,
                     fun = function() {
                      do.call("configurationAsScreenPlot", 
                          args=list(x=xr, verbose=FALSE, posControls=unlist(posControls), negControls=negControls))

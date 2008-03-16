@@ -19,7 +19,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
   } else {
     ## default function (compatible with the file format of the plate reader)
     importFun = function(f) {
-      txt = readLines(f)
+      txt = readLines(f, warn=FALSE)
       sp  = strsplit(txt, "\t")
       well = sapply(sp, "[", 2)
       val  = sapply(sp, "[", 3)
@@ -123,7 +123,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
   } ## for
 
   if(verbose)
-  cat("\nDone.\n\n")
+    cat("\rRead", nrow(pd), "plates.             \n\n")
 
   ## ----  Store the data as a "cellHTS" object ----
   ## arrange the assayData slot:

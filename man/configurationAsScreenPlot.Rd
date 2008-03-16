@@ -45,8 +45,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 
 \examples{
     data("KcViab") 
-    # see the plate configuration for the first 20 plates of the screen:
-    configurationAsScreenPlot(KcViab[1:(24*prod(pdim(KcViab))),])
+    configurationAsScreenPlot(KcViab)
 }
 
 

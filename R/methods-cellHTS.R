@@ -360,10 +360,11 @@ if (!missing(path))
   tt <- sapply(tt, strsplit, split=":")
   tt <- as.integer(sapply(tt, "[", 2L))
 
-  if(tt[hinfo$"Plates"] != nrPlate) stop(sprintf("in plate screen log file '%s', the number of plates \n specified in the row header 'Plates:' should be %d instead of %d!", confFile, nrPlate, tt[hinfo$"Plates"]))
+  if(tt[hinfo$"Plates"] != nrPlate)
+    stop(sprintf("in '%s', the number of plates \n specified in the header line 'Plates:' is %d but I expected %d.", confFile, nrPlate, tt[hinfo$"Plates"]))
 
-  if(tt[hinfo$"Wells"] != nrWpP) stop(sprintf("in plate screen log file '%s', the number of wells per plate \n specified in the row header 'Wells:' should be %d instead of %d!", confFile, nrWpP, tt[hinfo$"Wells"]))
-
+  if(tt[hinfo$"Wells"] != nrWpP)
+    stop(sprintf("in '%s', the number of wells per plate \n specified in the header line 'Wells:' is %d but I expected %d!", confFile, nrWpP, tt[hinfo$"Wells"]))
 
   ## Check if the screen log file was given
   slog=NULL
@@ -374,11 +375,12 @@ if (!missing(path))
     ## Check if the screen log file is empty
     if (nrow(slog)) {
       ## check consistency of columns 'Plate', 'Channel' and 'Sample'
-        for(i in c("Sample", "Channel")) {
-               if(!(i %in% names(slog))) 
-                 slog[[i]] <- rep(1L, nrow(slog)) 
-               else 
-                 if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep="")))) stop(sprintf("Column '%s' of the screen log file '%s' contains invalid entries.", i, logFile))
+      for(i in c("Sample", "Channel")) {
+        if(!(i %in% names(slog))) 
+          slog[[i]] <- rep(1L, nrow(slog)) 
+        else 
+          if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
+            stop(sprintf("Column '%s' of the screen log file '%s' contains invalid entries.", i, logFile))
         }
 
         checkColumns(slog, logFile, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"), numeric=c("Plate", "Sample", "Channel"))

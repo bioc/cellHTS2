@@ -389,19 +389,20 @@ Returning to our example data set, we create a report using the
 function \Rfunction{writeReport}. Since until now we only have
 unnormalized experimental data, the \Rclass{cellHTS} object should be
 given to the function as a list component named ``raw'':
- 
-%
-<<writeReport1Show, eval=FALSE>>=
-out = writeReport(list("raw"=x))
-@ 
-<<writeReport1Do, echo=FALSE, results=hide>>=
-out = writeReport(list("raw"=x), force=TRUE)
+ %
+<<writeReport, results=hide>>=
+out = writeReport(list("raw"=x), force = TRUE, outdir = "report-raw")
 @ 
 %
-It will create a directory of the name given by \Robject{name(x)} in the
-working directory. Alternatively, the argument \Robject{outdir} can be
-specified to direct the output to another 
-directory.
+This will write the report into the directory given by the argument
+\Robject{outdir}. The option \Robject{force=TRUE} tells the function
+to delete and overwrite a possibly already existing directory of the
+same name.  This option needs to be used with caution and is only
+accepted if \Robject{outdir} is explicitely specified.  If the
+argument \Robject{outdir} is not specified, the default is a
+subdirectory of the current working directory with name given by
+\Robject{name(x)}.
+
 It can take a while to run this function, since it creates a large number
 of graphics files. After this function has finished, the index page of
 the report will be in the file indicated by the variable \Robject{out}, 
@@ -906,11 +907,12 @@ to others. To produce a comprehensive report, we can call the function
 argument \Robject{cellHTSlist} the three \Rclass{cellHTS} objects:
 ``raw'', ``normalized'' and ``scored'' \Rclass{cellHTS} objects.
 %
-<<writeReport2, results=hide, eval=FALSE>>=
+<<writeReport2, results=hide>>=
 out = writeReport(cellHTSlist=
   list("raw"=x, "normalized"=xn, "scored"=xsc), 
-  force=TRUE, plotPlateArgs = TRUE, 
-  imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
+  plotPlateArgs = TRUE, 
+  imageScreenArgs = list(zrange=c(-4, 8), ar=1), map=TRUE,
+  force = TRUE, outdir = "report-normalized") 
 @ 
 %
 and use a web browser to view the resulting report.
@@ -919,23 +921,24 @@ and use a web browser to view the resulting report.
 browseURL(out)
 @ 
 % 
-The report contains a quality report for each plate, and also for
-the whole screening assays. 
-The per-plate HTML reports display the
-scatterplot between duplicated plate measurements, the 
-histogram of the normalized signal intensities for each replicate, 
-and plate plots representing, in a false color scale, the normalized values of 
-each replicate, and the standard deviation between replicate measurements 
-at each plate position.
-It also reportes different measures of agreement between replicate measurements, such as the 
-repeatability standard deviation between replicate plates and the Spearman correlation coefficient between 
-duplicates. The per-plate reports also show the dynamic range, calculated as the 
-ratio between the geometric means of the positive and negative
-controls. These measures can also be obtained independently from \Rfunction{writeReport} function, by using the functions \Rfunction{getMeasureRepAgreement} and \Rfunction{getDynamicRange} 
-provided in \Rpackage{cellHTS2} package.
-If different positive controls were specified at the configuration step 
-and when calling \Rfunction{writeReport}, 
-the dynamic range is calculated separately for the distinct positive controls, since 
+The report contains a quality report for each plate, and also for the
+whole screening assays.  The per-plate HTML reports display the
+scatterplot between duplicated plate measurements, the histogram of
+the normalized signal intensities for each replicate, and plate plots
+representing, in a false color scale, the normalized values of each
+replicate, and the standard deviation between replicate measurements
+at each plate position.  It also reportes different measures of
+agreement between replicate measurements, such as the repeatability
+standard deviation between replicate plates and the Spearman
+correlation coefficient between duplicates. The per-plate reports also
+show the dynamic range, calculated as the ratio between the geometric
+means of the positive and negative controls. These measures can also
+be obtained independently from \Rfunction{writeReport} function, by
+using the functions \Rfunction{getMeasureRepAgreement} and
+\Rfunction{getDynamicRange} provided in \Rpackage{cellHTS2} package.
+If different positive controls were specified at the configuration
+step and when calling \Rfunction{writeReport}, the dynamic range is
+calculated separately for the distinct positive controls, since
 different positive controls might have different potencies.
 
 The experiment-wide HTML report presents, for each replicate, the
@@ -950,18 +953,22 @@ of positive controls~\cite{Oldenburg1999}, as a measure to quantify
 the distance between their distributions. 
 This measure can also be obtained by calling the function \Rfunction{getZfactor}.
 
-The experiment-wide report also shows a 
-screen-wide plot with the $z$-scores in every well position of each
-plate. If the argument \Robject{map} of \Rfunction{writeReport} function is set to \Robject{TRUE}, this plot and the plate plots of the per-plate reports
-contain tooltips (information pop-up boxes) 
-dispaying the annotation information at each position within the plates.
-If the scored \Rclass{cellHTS} object provided for \Rfunction{writeReport} is not annotated with gene identifiers, the annotation information shown by the tooltips is simply the well identifiers.
-For an annotated \Rclass{cellHTS} object, if an optional column 
-called \textit{GeneSymbol} was included in the 
-\emph{annotation file} (see Section~\ref{sec:annotation}), and therefore 
-is present in \Robject{featureData} slot of the annotated object, then its content is used for the tooltips. 
-Otherwise, the content of column ``GeneID'' of the \Robject{featureData} slot (which can be accessed 
-via \Robject{geneAnno}) is considered. 
+The experiment-wide report also shows a screen-wide plot with the
+$z$-scores in every well position of each plate. If the argument
+\Robject{map} of \Rfunction{writeReport} function is set to
+\Robject{TRUE}, this plot and the plate plots of the per-plate reports
+contain tooltips (information pop-up boxes) dispaying the annotation
+information at each position within the plates.  If the scored
+\Rclass{cellHTS} object provided for \Rfunction{writeReport} is not
+annotated with gene identifiers, the annotation information shown by
+the tooltips is simply the well identifiers.  For an annotated
+\Rclass{cellHTS} object, if an optional column called
+\textit{GeneSymbol} was included in the \emph{annotation file} (see
+Section~\ref{sec:annotation}), and therefore is present in
+\Robject{featureData} slot of the annotated object, then its content
+is used for the tooltips.  Otherwise, the content of column \emph{GeneID}
+of the \Robject{featureData} slot (which can be accessed via
+\Robject{geneAnno}) is considered.
 
 The screen-wide image plot can also be produced separately using the
 function \Rfunction{imageScreen} given in the \Rpackage{cellHTS2}
@@ -976,44 +983,49 @@ imageScreen(xsc, ar=1, zrange=c(-3,4))
 @ 
 
 It should be noted that the per-plate and per-experiment quality
-reports are constructed based on the normalized \Rclass{cellHTS} object, in case it is provided to \Rfunction{writeReport} function. Otherwise, it uses the
-data of the raw \Rclass{cellHTS} object. 
-The quality report produced by \Rfunction{writeReport} function has also a 
-link to a file called \emph{topTable.txt} that contains the list of scored probes 
-ordered by decreasing $z$-score values, when the final scored \Rclass{cellHTS} object is provided. This file has one row for each well and plate, 
-and for the present example data set, it has the following columns:
+reports are constructed based on the normalized \Rclass{cellHTS}
+object, in case it is provided to \Rfunction{writeReport}
+function. Otherwise, it uses the data of the raw \Rclass{cellHTS}
+object.  The quality report produced by \Rfunction{writeReport}
+function has also a link to a file called \emph{topTable.txt} that
+contains the list of scored probes ordered by decreasing $z$-score
+values, when the final scored \Rclass{cellHTS} object is
+provided. This file has one row for each well and plate, and for the
+present example data set, it has the following columns:
+
 \begin{itemize}
 \item \verb=plate= plate identifier for each feature;
-\item \verb=position= gives the position of the well in the plate (runs from 1 to the total number of wells in the plate); 
+\item \verb=position= gives the position of the well in the plate 
+  (runs from 1 to the total number of wells in the plate); 
 \item \verb=well= gives the alphanumeric well identifier for each feature;
-\item \verb=score= corresponds to the summarized score calculated for each probe (data stored in the scored and summarized object \Robject{xsc});
-\item \verb=wellAnno= corresponds to the well annotation (as given by the plate configuration file);
-\item \verb=finalWellAnno= gives the final well annotation for the scored values. 
-It combines the information given in the plate configuration file with the values in 
-\Robject{assayData} slot of the scored \Rclass{cellHTS} object, in order to have into account the wells 
-that have been flagged either by the screen log file, or manually by the user during the analysis. 
-These flagged wells appear with the annotation \emph{flagged}.
-
-\item \verb=raw_r1_ch1= and \verb=raw_r2_ch1= contain the raw intensities for replicate 1 
-and replicate 2, respectively (data stored in the unnormalized \Rclass{cellHTS} object \Robject{x}). 
-'ch' refers to channel;
-
-\item \verb=median_ch1= corresponds to the median of raw measurements across replicates;
-
-\item \verb=diff_ch1= gives the difference between replicated raw measurements (only given
-if the number of replicates is equal to two); 
-
-\item \verb=average_ch1= corresponds to the average between replicate raw intensities 
-(only given if the number of replicates is higher than two);
-
-\item \verb=raw/PlateMedian_r1_ch1= and \verb=raw/PlateMedian_r2_ch1= give the ratio between each 
-raw measurement and the median intensity in each plate for replicate 1 and replicate 2, respectively. 
-The plate median is determined for the raw intensities, using exclusively the wells annotated as ``sample''.
-
+\item \verb=score= corresponds to the summarized score calculated for each 
+  probe (data stored in the scored and summarized object \Robject{xsc});
+\item \verb=wellAnno= corresponds to the well annotation (as given by the 
+  plate configuration file);
+\item \verb=finalWellAnno= gives the final well annotation for the 
+  scored values. It combines the information given in the plate 
+  configuration file with the values in 
+  \Robject{assayData} slot of the scored \Rclass{cellHTS} object, 
+  in order to take into account the wells that have been flagged either 
+  by the screen log file, or manually by the user during the analysis. 
+  These flagged wells appear with the annotation \emph{flagged}.
+\item \verb=raw_r1_ch1= and \verb=raw_r2_ch1= contain the raw intensities 
+  for replicate 1 and replicate 2, respectively 
+  (data stored in the unnormalized \Rclass{cellHTS} object \Robject{x}). 
+  'ch' is an abbreviation for channel;
+\item \verb=median_ch1= corresponds to the median of raw measurements 
+  across replicates;
+\item \verb=diff_ch1= gives the difference between replicated raw 
+  measurements (only given if the number of replicates is equal to two); 
+\item \verb=average_ch1= corresponds to the average between 
+  replicate raw intensities (only given if the number of replicates is higher than two);
+\item \verb=raw/PlateMedian_r1_ch1= and \verb=raw/PlateMedian_r2_ch1= give 
+  the ratio between each raw measurement and the median intensity in 
+  each plate for replicate 1 and replicate 2, respectively. The plate median 
+  is determined for the raw intensities, using exclusively the wells annotated as ``sample''.
 \item \verb=normalized_r1_ch1= and \verb=normalized_r2_ch1= give the normalized 
-intensities for replicate 1 and replicate 2, respectively. This corresponds to the data stored in the normalized 
-\Rclass{cellHTS} object \Robject{xn}. 
-
+  intensities for replicate 1 and replicate 2, respectively. This corresponds 
+  to the data stored in the normalized \Rclass{cellHTS} object \Robject{xn}. 
 \end{itemize} 
 
 Additionally, if any of the \Rclass{cellHTS} objects provided in the argument \Robject{cellHTSlist} to \Rfunction{writeReport} has been annotated (as in the present case), it also contains the data given in 
@@ -1099,9 +1111,9 @@ Regarding the screen description file, as mentioned in Section~\ref{sec:screenco
 we provide a function that creates a template screen description file that can be edited and modified by the user. Below we examplify how such file can be created:
 %
 <<example for description file>>=
-  out <- templateDescriptionFile("template-Description.txt", force=TRUE)
-  out
-  readLines(out)
+out = templateDescriptionFile("template-Description.txt", force=TRUE)
+out
+readLines(out)
 @
 %
 

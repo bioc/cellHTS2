@@ -33,7 +33,10 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
     stop("Please configure 'object' (using the function 'configure') before normalization.")
 
   ## Check the conformity between the scale of the data and the chosen preprocessing
-  if(scale=="additive" & log) stop("Please set 'log' to FALSE, since data are in 'additive' scale!") 
+  if(scale=="additive" & log)
+    stop("For data on the 'additive' scale, please do not set 'log=TRUE'. ",
+         "Please have a look at the documentation of the 'scale' and 'log' options ",
+         "of the 'normalizePlates' function.") 
 
   if(!(varianceAdjust %in% c("none", "byPlate", "byBatch", "byExperiment"))) 
          stop(sprintf("Undefined value %s for 'varianceAdjust'.", varianceAdjust))
