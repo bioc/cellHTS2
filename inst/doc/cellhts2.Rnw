@@ -413,7 +413,7 @@ out
 %
 and you can view it by directing a web browser to that file.
 %
-<<browseReport1>>=
+<<browseReport1, eval=FALSE>>=
 browseURL(out)
 @ 
 
