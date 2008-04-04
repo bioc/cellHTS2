@@ -1,63 +1,70 @@
 ## Function to convert between the different ways of specifying well coordinate, e.g.:
 ##   "B02" ->    c("B", "02")  ->     26
 
-convertWellCoordinates <- function(x, pdim){
+convertWellCoordinates <- function(x, pdim, type="384"){
 
-if(!is.character(x) & !is.integer(x)) stop("'x' must be either a character vector with alphanumeric well IDs (e.g. 'B03' or c('B', '03'))\n or a vector of integers with position IDs within a plate (e.g. 27).")
+  if(!missing(pdim)){
+    if(!missing(type))
+      stop("Please specify either 'pdim' or 'type' but not both.")
 
-if(!all(names(pdim) %in% c("nrow", "ncol")) | length(pdim)!=2 | !is.integer(pdim)) stop("'pdim' should be a vector of length 2 with names 'nrow' and 'ncol' giving the number of rows
-    and columns in a plate (integer values). E.g. set it to 'c(nrow=16L, ncol=24L)' for 384-well plates.")
+    storage.mode(pdim) = "integer"
+    
+    if(!(all(names(pdim) %in% c("nrow", "ncol")) && (length(names(pdim))==2L)))
+      stop("'pdim' should be a vector of length 2 with names 'nrow' and 'ncol'.")
+    if(any(is.na(pdim)))
+      stop("'pdim' contains invalid values: %s", paste(as.character(pdim), collapse="\n"))
+  } else {
+    if(!(is.character(type)&&(length(type)==1L)))
+      stop("'type' must be a character of length 1.")
+    pdim = switch(type,
+      "24"  = c(nrow= 4L, ncol= 6L),
+      "96"  = c(nrow= 8L, ncol=12L),
+      "384" = c(nrow=16L, ncol=24L),
+      stop("Invalid 'type': %s", type))
+  }
+    
 
-# see which is the type of the well ID:
-if(is.integer(x)){
-   num=TRUE
+  if(is.character(x)) {
+    ## x is of the form A01, B13, ... 
+    if(is.matrix(x))
+      x = apply(x, 1L, paste, collapse="") 
 
-} else {
-num=FALSE
+    ## Add a zero if necessary
+    s = (nchar(x)==2L)
+    x[s] = paste(substr(x[s], 1L, 1L), "0", substr(x[s], 2L, 2L), sep="")
+    
+    if(any(nchar(x)!=3L))
+      stop("Elements of 'x' must have length 3: 1 letter and 2 digits.")
 
-# put as alphanumeric vector:
-if(is.matrix(x)) x = apply(x, 1, paste, collapse="") 
+    let = substr(x, 1L, 1L)
+    num = substr(x, 2L, 3L)
+    let.num = cbind(let, num)
+    letnum = x
 
-if (length(x)==2)  {
-    if(nchar(x)[1]==1) { 
-      if(!(x[1] %in% LETTERS[1:pdim[["nrow"]]]) & !(nchar(x[2])==2)) 
-        stop("Invalid position IDs in 'x'.") 
+    
+    irow = match(let, LETTERS)
+    icol = as.integer(num)
+    if( any(is.na(irow)) || any(irow>pdim["nrow"]) || any(irow<1L) ||
+        any(is.na(icol)) || any(icol>pdim["ncol"]) || any(icol<1L) )
+      stop("Invalid position IDs in 'x'.")
+    num = (irow-1L) * pdim["ncol"] + icol
+    
+  } else if(is.numeric(x)) {
+    ## x is of the form 1, 14, 18, ...
+    num = as.integer(x)
+    if(any(num<1L)||any(num>prod(pdim))) 
+      stop(sprintf("Invalid values in 'x', must be between 1 and %d.", prod(pdim)))
 
-    x = paste(x, collapse="") 
-    } 
- }
+    irow = 1L + (num-1L) %/% pdim["ncol"]
+    icol = 1L + (num-1L) %%  pdim["ncol"]
+    let.num = cbind(LETTERS[irow], sprintf("%02d", icol))
+    letnum  = apply(let.num, 1L, paste, collapse="")
 
-if(any(nchar(x)!=3))
-    stop("Well IDs must contain 1 letter and 2 digits. E.g., c('A', '02') or c('A02').")
-}
+  } else {
+    stop("'x' must be either a character vector with alphanumeric well IDs ",
+         "(e.g. 'B03' or c('B', '03'))\n or a vector of integers with position ",
+         "IDs within a plate (e.g. 27).")
+  }
 
-
-
-if(num) {
-
-  num = x
-# 'x' contains numeric position IDs that should be converted into alphanumeric well IDs:
- if(!all(x %in% 1:prod(pdim))) 
-   stop("Invalid position IDs in 'x'.")
-
- row <- 1 +(x-1) %/% pdim[["ncol"]]
- col <- 1 + (x-1) %% pdim[["ncol"]]
- letnum <- sprintf("%s%02d",LETTERS[row], col) 
- let.num <- cbind(substr(letnum,1,1), substr(letnum, 2,3)) #LETTERS[row], col)
-} else {
-# convert from alphanumeric well ID to numeric well ID (positions):
-  letnum=x
-  let = substr(x, 1, 1)
-  num = substr(x, 2, 3)
-  let.num= cbind(let, num)
-  let = match(let, LETTERS)
-  num = as.integer(num)
-  inv = is.na(let) | (let>pdim[["nrow"]]) | is.na(num) | (num>pdim[["ncol"]])
-  if(any(inv))
-    stop("Invalid position IDs in 'x'.")
-  num <- (let-1)*pdim[["ncol"]]+num
-
-} 
-
-return(out=list(letnum=letnum, let.num=let.num, num=num))
+  return(list(letnum = letnum, let.num = let.num, num = num))
 }
