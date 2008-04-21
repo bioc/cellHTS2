@@ -81,12 +81,12 @@ validityCellHTS = function(object){
 ##-----------------------------------------------------------------------------
 validityROC <- function(object) {
 
-  if(!equalOrZero(length(object@TP), 1000) | !equalOrZero(length(object@FP), 1000)) return("'TP' and 'FP' should be vectors of integers with length 1000.")
+  if(!equalOrZero(length(object@TP), 1000L) ||
+     !equalOrZero(length(object@FP), 1000L) ||
+     (length(object@TP)!=length(object@FP))) return("'TP' and 'FP' should be vectors of integers with length 1000.")
 
-  if(length(object@TP)!=length(object@FP)) return("'FP' and 'TP' should be vectors of integers with length 1000.")
 
   if(any(is.na(object@TP))) return("'TP' must not contain NA values.")
-
   if(any(is.na(object@FP))) return("'FP' must not contain NA values.")
 
   if(is.na(object@posNames)) return("'posNames' must not contain NA values.")
