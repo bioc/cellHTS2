@@ -21,6 +21,6 @@ cellhts2Complete: cellhts2Complete.tex
 clean:
 	rm -f *.out *.bbl *.log *.aux *.blg *.brf *.toc *.tex
 	rm -f *.dvi *.ps Rplots.pdf cellhts2-* twoChannels-* twoWay-* tmp_* template-Description.txt
-	rm -rf raw KcViab logRatio 2Wraw 2Wnormalized KcViab.rda  DualChannelScreen.rda TwoWayAssay.rda
+	rm -rf report-raw report-normalized raw logRatio 2Wraw 2Wnormalized *.rda
 
 
