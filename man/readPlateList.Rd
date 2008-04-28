@@ -4,7 +4,8 @@
 \description{
   Reads a collection of plate reader data files into a \code{cellHTS} object.
   The names of the files, plus additional information
-  (plate number, repeat number) is expected in a tab-delimited table specified
+  (plate number, repeat number, assay/treatment/condition)
+  is expected in a tab-delimited table specified
   by the argument \code{filename}.  
 }
 \usage{
@@ -31,7 +32,8 @@ readPlateList(filename, path=dirname(filename), name, importFun, verbose=interac
   least three columns named \code{Filename}, \code{Plate},
   and \code{Replicate}. The contents of the columns \code{Plate} and
   \code{Replicate} are expected to be integers. Further columns are
-  allowed.
+  allowed, and can be used to denote, for example, different variants of the
+  assay, treatments, incubation times, conditions, etc.
 
   \code{importFun} can be used to define a custom function to import
   data files. The \code{importFun} function should accept as its first argument
@@ -67,11 +69,13 @@ readPlateList(filename, path=dirname(filename), name, importFun, verbose=interac
   After calling this function, the content of the following slots is as follows:
   \item{assayData}{an object of class \code{\link[Biobase]{AssayData}}
     containing the imported measurement data. Each matrix represents a
-    single channel, and each sample (replicate) corresponds to a
+    single channel, and each run corresponds to a
     column. Thus, the total number of rows in each matrix corresponds to
-    the product between the number of wells per plate and the number of assay plates.}
-
-  \item{phenoData}{the argument \code{name} is stored in its column \code{assay}.}
+    the product between the number of wells per plate and the number of
+    assay plates.}
+  \item{phenoData}{information about the runs, infered from the
+    \code{plateList} file: which replicate, which variant of the
+    assay, treatment, incubation times etc.}
   \item{featureData}{the information about the plate and well
     identifiers for each plate measurement are stored in columns
     \code{plate} 
@@ -98,19 +102,18 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 
 
 \examples{
-    datadir <- system.file("KcViabSmall", package = "cellHTS2")
-    x <- readPlateList("Platelist.txt", "KcViabSmall", path=datadir)
+datadir <- system.file("KcViabSmall", package = "cellHTS2")
+x <- readPlateList("Platelist.txt", "KcViabSmall", path=datadir)
 
 
-   ## To read data files obtained from an EnVision plate reader:
-    datadir <- system.file("EnVisionExample", package = "cellHTS2")
-    x <- readPlateList("platelist.txt", name="EnVisionEx",
+## To read data files obtained from an EnVision plate reader:
+datadir <- system.file("EnVisionExample", package = "cellHTS2")
+x <- readPlateList("platelist.txt", name="EnVisionEx",
           importFun=getEnVisionRawData, path=datadir)
 
-       ## to get the cross talk corrected data:
-       y <- readPlateList("platelist.txt", name="EnVisionEx", 
-           importFun=getEnVisionCrosstalkCorrectedData, path=datadir)
-
+## to get the cross talk corrected data:
+y <- readPlateList("platelist.txt", name="EnVisionEx",
+          importFun=getEnVisionCrosstalkCorrectedData, path=datadir)
 
 }
 \keyword{manip}
