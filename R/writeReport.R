@@ -240,27 +240,20 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
   }
 
 
-  ## Step 1) Creating the output directory
+  ## Create the output directory
   ## See if output directory exists. If not, create. If yes, check if it is empty,
   ## and if not, depending on parameter 'force', throw an error or clean it up.
-  if(missing(outdir)) {
-    if(force)
-      stop("To prevent accidental deletion of files, please specify 'outdir' explicitely if you want to use the 'force=TRUE' option.")
+  if(missing(outdir))
     outdir = file.path(getwd(), name(xr))
-  }
 
   if(file.exists(outdir)){
     if(!file.info(outdir)$isdir)
       stop(sprintf("'%s' must be a directory.", outdir))
     outdirContents = dir(outdir, all.files = TRUE)
     outdirContents = setdiff(outdirContents, c(".", ".."))
-
-    if(length(outdirContents)>0) {
-      if(!force)
-        stop(paste(sprintf("The directory '%s' is not empty.", outdir),
-             "Please remove the directory first, or use the argument 'force=TRUE'.\n", sep="\n"))
-      unlink(file.path(outdir, outdirContents), recursive=TRUE)
-    } 
+    if(  (length(outdirContents)>0L) && !force )
+      stop(paste(sprintf("The directory '%s' is not empty.", outdir),
+                 "Please empty the directory manually, or use the argument 'force=TRUE' to overwrite.\n", sep="\n"))
   } else {
     dir.create(outdir, recursive=TRUE)
   }
