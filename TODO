@@ -42,3 +42,8 @@
   complex design, document how to use limma's lmFit and eBayes.
 
 
+* major reorganisation of writeReport:
+  each plot or table should be its own function
+  each of these functions will in general consist of two functions,
+    one for computing, one for rendering
+  check hwriter package!!
