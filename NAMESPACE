@@ -2,6 +2,8 @@ importFrom("methods", "show")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
 
+importFrom("graphics", "lines", "plot")
+
 exportClasses("cellHTS", "ROC")
 
 export("oneRowPerId", 
