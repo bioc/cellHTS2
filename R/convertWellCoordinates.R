@@ -12,7 +12,8 @@ convertWellCoordinates <- function(x, pdim, type="384"){
     if(!(all(names(pdim) %in% c("nrow", "ncol")) && (length(names(pdim))==2L)))
       stop("'pdim' should be a vector of length 2 with names 'nrow' and 'ncol'.")
     if(any(is.na(pdim)))
-      stop("'pdim' contains invalid values: %s", paste(as.character(pdim), collapse="\n"))
+      stop("'pdim' contains invalid values: %s", paste(as.character(pdim),
+                                                       collapse="\n"))
   } else {
     if(!(is.character(type)&&(length(type)==1L)))
       stop("'type' must be a character of length 1.")
@@ -60,7 +61,9 @@ convertWellCoordinates <- function(x, pdim, type="384"){
     let.num = cbind(LETTERS[irow], sprintf("%02d", icol))
     letnum  = apply(let.num, 1L, paste, collapse="")
 
-  } else {
+  } else if(!length(x)){
+      letnum <- let.num <- num <- NULL
+  }else{
     stop("'x' must be either a character vector with alphanumeric well IDs ",
          "(e.g. 'B03' or c('B', '03'))\n or a vector of integers with position ",
          "IDs within a plate (e.g. 27).")

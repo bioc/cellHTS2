@@ -371,7 +371,8 @@ if (!missing(path))
   if(!missing(logFile)) {
     ppath = ifelse(missing(path), dirname(logFile), path)
     logFile = basename(logFile)
-    slog = read.table(file.path(ppath, logFile),  sep="\t", header=TRUE, as.is=TRUE, na.string="", fill=TRUE)
+    slog = read.table(file.path(ppath, logFile),  sep="\t", header=TRUE,
+    as.is=TRUE, na.string="", fill=TRUE)
     ## Check if the screen log file is empty
     if (nrow(slog)) {
       ## check consistency of columns 'Plate', 'Channel' and 'Sample'
@@ -387,6 +388,9 @@ if (!missing(path))
 
      invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
      if(sum(invalidPlateID)) stop(sprintf("Column 'Plate' of the screen log file '%s' contains invalid entries.",logFile))
+    }else{
+        slog <- NULL
+        warning("The screen log file is empty and will be ignored.") 
     }
   } 
 
