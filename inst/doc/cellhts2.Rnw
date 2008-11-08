@@ -534,26 +534,33 @@ table(wellAnno(x))
 We can also use the function \Rfunction{configurationAsScreenPlot} to see 
 the plate configuration of all of the plates as a screen plot:
 %
-<<configurationplot, fig=TRUE, width=9, height=9>>=
+<<configurationplot, echo=FALSE, results=hide>>=
+png("cellhts2-configurationplot.png", width=650, height=650)
+configurationAsScreenPlot(x)
+dev.off()
+@
+<<configurationplotShow, eval=FALSE>>=
 configurationAsScreenPlot(x)
 @ 
+
+
 The result is shown in Figure~\ref{fig:configurationplot}. This can be useful
 to verify the correctness of the plate configuration when a complex set
 of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{cellhts2-configurationplot}
+\includegraphics[width=0.9\textwidth]{cellhts2-configurationplot.png}
 \caption{\label{fig:configurationplot}Screen plot of the plate 
 configuration.}
 \end{center}
 \end{figure}
 
-A special case of well annotation is when different types of positive controls are used 
-for the screening, that is \emph{enhancer} and \emph{suppressor} compounds. 
-The vignette 
-\textit{Analysis of screens with enhancer and suppressor controls} 
-accompanying this package explains how such controls can be handled 
-during the screen analysis using \Rpackage{cellHTS2} package.
+A special case of well annotation is when different types of positive
+controls are used for the screening, that is \emph{enhancer} and
+\emph{suppressor} compounds.  The vignette \textit{Analysis of screens
+  with enhancer and suppressor controls} accompanying this package
+explains how such controls can be handled during the screen analysis
+using \Rpackage{cellHTS2} package.
 
 
 %--------------------------------------------------
@@ -562,11 +569,12 @@ during the screen analysis using \Rpackage{cellHTS2} package.
 %%--------------------------------------------------
 Although it is good practice to use the same plate configuration for
 the whole experiment, sometimes this does not work out, and there are
-different parts of the experiment with different plate
-configurations. 
-The use of regular expressions in columns \emph{Plate} and \emph{Well} of the plate configuration file allow 
-therefore to specify different configurations within and between assay plates.
-The two header rows of this file ascertain that all of the plates and wells are covered in the plate configuration file.
+different parts of the experiment with different plate configurations.
+The use of regular expressions in columns \emph{Plate} and \emph{Well}
+of the plate configuration file allow therefore to specify different
+configurations within and between assay plates.  The two header rows
+of this file ascertain that all of the plates and wells are covered in
+the plate configuration file.
 
 %% Note about 'batches'
 Note that in contrast to the \Rpackage{cellHTS} package, in
@@ -835,15 +843,23 @@ The parameter $z_0$ defines the centre of the sigmoidal transformation,
 while $\lambda$ controls the smoothness of the transformation. 
 
 This transformation can be done by calling the function
-\Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2-callvalues}.
+\Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2-callvalues.png}.
 %
-<<callvalues, fig=TRUE, width=6, height=3>>=
+<<callvalues, echo=FALSE, results=hide>>=
+y = scores2calls(xsc, z0=1.5, lambda=2)
+png("cellhts2-callvalues.png")
+plot(Data(xsc), Data(y), col="blue", pch=".",
+   xlab="z-scores", ylab="calls", 
+   main=expression(1/(1+e^{-lambda *(z-z[0])})))
+dev.off()
+@
+<<callvaluesShow, eval=FALSE>>=
 y = scores2calls(xsc, z0=1.5, lambda=2)
 plot(Data(xsc), Data(y), col="blue", pch=".",
    xlab="z-scores", ylab="calls", 
    main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @ 
-\myincfig{cellhts2-callvalues}{0.5\textwidth}{A sigmoidal transformation that
+\myincfig{cellhts2-callvalues.png}{0.5\textwidth}{A sigmoidal transformation that
 can be used for obtaining call values.}
 %
 However, for the purpose of the present analysis, we will consider the
@@ -1295,30 +1311,46 @@ e_{rci} = x_{rci} - \hat{x}_{rci} = x_{rci} - \left( \hat{\mu}_i + \hat{R}_{ri} 
 x^{\text{B}}_{rci} = \frac{e_{rci}}{MAD_i}	\label{eq:BscoreVarAdj}
 \end{eqnarray} 
 \noindent
-Here, $x_{rci}$ is the measurement value in the $r$th row and $c$th column of the plate corresponding to the $i$th result file, $\hat{x}_{rci}$ is the corresponding fitted value defined as the sum between the estimated average of the replicate plate ($\hat{\mu}_i$), the estimated systematic offset for row $r$ ($\hat{R}_{ri}$) and the systematic offset for column $c$ ($\hat{C}_{ci}$) in that replicated plate.
-In a second step, each of the obtained residual values $e_{rci}$'s of the $i$th result file are divided by their 
-median absolute deviation ($MAD_i$) 
-giving the final B score value -- Equation~(\ref{eq:BscoreVarAdj}).
+Here, $x_{rci}$ is the measurement value in the $r$th row and $c$th
+column of the plate corresponding to the $i$th result file,
+$\hat{x}_{rci}$ is the corresponding fitted value defined as the sum
+between the estimated average of the replicate plate ($\hat{\mu}_i$),
+the estimated systematic offset for row $r$ ($\hat{R}_{ri}$) and the
+systematic offset for column $c$ ($\hat{C}_{ci}$) in that replicated
+plate.  In a second step, each of the obtained residual values
+$e_{rci}$'s of the $i$th result file are divided by their median
+absolute deviation ($MAD_i$) giving the final B score value --
+Equation~(\ref{eq:BscoreVarAdj}).
 
 
-We implemented a method similar to the B score method described in 
-Malo \textit{et al.}~\cite{Malo2006} and Brideau \textit{et al.}~\cite{Brideau2003} using the Tukey's median polish procedure~\cite{Tukey1977} (function \textit{medpolish} of the package \textit{stats}) which fits an 
-additive model to the data according to Equation~(\ref{eq:BscoreResiduals}). 
-The Tukey's median polish algorithm works by alternately removing the row and column medians and continues until the proportional reduction in the sum of absolute residuals is less than $\epsilon$ or until the maximum number of iterations has been reached.
-The B score method can be applied by defining argument 
-\Robject{method="Bscore"} in \Rfunction{normalizePlates}. Alternatively, 
-the method can be applied by calling a separate function 
+We implemented a method similar to the B score method described in
+Malo \textit{et al.}~\cite{Malo2006} and Brideau \textit{et
+  al.}~\cite{Brideau2003} using the Tukey's median polish
+procedure~\cite{Tukey1977} (function \textit{medpolish} of the package
+\textit{stats}) which fits an additive model to the data according to
+Equation~(\ref{eq:BscoreResiduals}).  The Tukey's median polish
+algorithm works by alternately removing the row and column medians and
+continues until the proportional reduction in the sum of absolute
+residuals is less than $\epsilon$ or until the maximum number of
+iterations has been reached.  The B score method can be applied by
+defining argument \Robject{method="Bscore"} in
+\Rfunction{normalizePlates}. Alternatively, the method can be applied
+by calling a separate function
 called \Rfunction{Bscore} provided in the \Rpackage{cellHTS2} package.\\
 
 
-In \textit{cellHTS2} package, we provide two additional spatial normalization methods 
-that fit a polynomial surface to the intensities within each assay plate using local regression and that can be performed via 
-\Rfunction{normalizePlates} or \Rfunction{spatialNormalization} functions, although we advise to apply these methods using the 
-former function. The fit can be performed either using the \textit{loess} procedure or the 
-\textit{locfit.robust} function of package \textit{locfit}.
-In \Rfunction{normalizePlates}, if \Robject{method="locfit"}, 
-spatial effects are removed by fitting a bivariate local regression to each plate and replicate, 
-while if \Robject{method="loess"}, a loess curve is fitted instead.
+In \textit{cellHTS2} package, we provide two additional spatial
+normalization methods that fit a polynomial surface to the intensities
+within each assay plate using local regression and that can be
+performed via \Rfunction{normalizePlates} or
+\Rfunction{spatialNormalization} functions, although we advise to
+apply these methods using the former function. The fit can be
+performed either using the \textit{loess} procedure or the
+\textit{locfit.robust} function of package \textit{locfit}.  In
+\Rfunction{normalizePlates}, if \Robject{method="locfit"}, spatial
+effects are removed by fitting a bivariate local regression to each
+plate and replicate, while if \Robject{method="loess"}, a loess curve
+is fitted instead.
 
 
 
@@ -1328,11 +1360,11 @@ while if \Robject{method="loess"}, a loess curve is fitted instead.
 %------------------------------------------------------------
 \section{Appendix: Data transformation}
 %------------------------------------------------------------
-\myincfig{cellhts2-transfplots}{0.95\textwidth}{Comparison between untransformed 
-(left) and logarithmically (base 2) transformed (right), normalized data. 
-Upper: histogram of intensity values of replicate 1. 
-Middle: scatterplots of standard deviation versus mean of the two replicates. 
-Bottom: Normal quantile-quantile plots.}
+\myincfig{cellhts2-transfplots.png}{0.95\textwidth}{Comparison between
+  untransformed (left) and logarithmically (base 2) transformed
+  (right), normalized data.  Upper: histogram of intensity values of
+  replicate 1.  Middle: scatterplots of standard deviation versus mean
+  of the two replicates.  Bottom: Normal quantile-quantile plots.}
 
 An obvious question is whether to do the statistical analyses on the
 original intensity scale or on a transformed scale such as the
@@ -1340,23 +1372,42 @@ logarithmic one.  Many statistical analysis methods, as well as
 visualizations work better if (to sufficient approximation)
 \begin{itemize}
 \item replicate values are normally distributed,
-\item the data are evenly distributed along their dynamic range, 
-\item the variance is homogeneous along the dynamic range~\cite{Huber2002ismb}.
+\item the data are evenly distributed along their dynamic range,
+\item the variance is homogeneous along the dynamic
+  range~\cite{Huber2002ismb}.
 \end{itemize}
 
 Figure~\ref{cellhts2-transfplots} compares these properties for
-untransformed and log-transformed normalized data, showing that the difference is small. 
-Intuitively, this can be explained by the fact that for
-small $x$,
+untransformed and log-transformed normalized data, showing that the
+difference is small.  Intuitively, this can be explained by the fact
+that for small $x$,
 \[
 \log(1+x)\approx x
 \]
 and that indeed the range of the untransformed data is mostly not far
 from 1.  Hence, for the data examined here, the choice between
-original scale and logarithmic scale is one of taste, rather
-than necessity.
+original scale and logarithmic scale is one of taste, rather than
+necessity.
 %
-<<transfplots, fig=TRUE, include=FALSE, width=6.5, height=9>>=
+<<transfplots, echo=FALSE, results=hide>>=
+library("vsn")
+png("transfplots.png", width=468, height=648)
+par(mfcol=c(3,2))
+myPlots=function(z,...) {
+  hist(z[,1], 100, col="lightblue", xlab="",...)
+  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+  qqnorm(z[,1], pch='.', ...)
+  qqline(z[,1], col='blue')
+}
+dv = Data(xn)[,,1]
+myPlots(dv, main="untransformed")
+xlog = normalizePlates(x, scale="multiplicative", log=TRUE, 
+       method="median", varianceAdjust="byExperiment")
+dvlog = Data(xlog)[,,1]
+myPlots(dvlog, main="log2")
+dev.off()
+@
+<<transfplotsShow, eval=FALSE>>=
 library("vsn")
 par(mfcol=c(3,2))
 myPlots=function(z,...) {
