@@ -535,7 +535,7 @@ We can also use the function \Rfunction{configurationAsScreenPlot} to see
 the plate configuration of all of the plates as a screen plot:
 %
 <<configurationplot, echo=FALSE, results=hide>>=
-png("cellhts2-configurationplot.png", width=650, height=650)
+png("cellhts2-configurationplot.png", width=324, height=324)
 configurationAsScreenPlot(x)
 dev.off()
 @
@@ -549,7 +549,7 @@ to verify the correctness of the plate configuration when a complex set
 of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{cellhts2-configurationplot.png}
+\includegraphics[width=324px,height=324px]{cellhts2-configurationplot.png}
 \caption{\label{fig:configurationplot}Screen plot of the plate 
 configuration.}
 \end{center}
@@ -845,7 +845,7 @@ while $\lambda$ controls the smoothness of the transformation.
 This transformation can be done by calling the function
 \Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2-callvalues.png}.
 %
-<<callvalues, echo=FALSE, results=hide>>=
+<<callvalues, echo=FALSE, results=hide, width=180, height=180>>=
 y = scores2calls(xsc, z0=1.5, lambda=2)
 png("cellhts2-callvalues.png")
 plot(Data(xsc), Data(y), col="blue", pch=".",
@@ -859,8 +859,7 @@ plot(Data(xsc), Data(y), col="blue", pch=".",
    xlab="z-scores", ylab="calls", 
    main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @ 
-\myincfig{cellhts2-callvalues.png}{0.5\textwidth}{A sigmoidal transformation that
-can be used for obtaining call values.}
+\myincfig{cellhts2-callvalues.png}{180px}{A sigmoidal transformation that can be used for obtaining call values.}
 %
 However, for the purpose of the present analysis, we will consider the
 $z$-score values instead of the call values.
@@ -1360,11 +1359,12 @@ is fitted instead.
 %------------------------------------------------------------
 \section{Appendix: Data transformation}
 %------------------------------------------------------------
-\myincfig{cellhts2-transfplots.png}{0.95\textwidth}{Comparison between
-  untransformed (left) and logarithmically (base 2) transformed
-  (right), normalized data.  Upper: histogram of intensity values of
-  replicate 1.  Middle: scatterplots of standard deviation versus mean
-  of the two replicates.  Bottom: Normal quantile-quantile plots.}
+\myincfig{cellhts2-transfplots.png}{324px}{Comparison
+  between untransformed (left) and logarithmically (base 2)
+  transformed (right), normalized data.  Upper: histogram of intensity
+  values of replicate 1.  Middle: scatterplots of standard deviation
+  versus mean of the two replicates.  Bottom: Normal quantile-quantile
+  plots.}
 
 An obvious question is whether to do the statistical analyses on the
 original intensity scale or on a transformed scale such as the
@@ -1391,7 +1391,7 @@ necessity.
 %
 <<transfplots, echo=FALSE, results=hide>>=
 library("vsn")
-png("transfplots.png", width=468, height=648)
+png("cellhts2-transfplots.png", width=324, height=474)
 par(mfcol=c(3,2))
 myPlots=function(z,...) {
   hist(z[,1], 100, col="lightblue", xlab="",...)

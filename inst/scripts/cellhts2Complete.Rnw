@@ -527,15 +527,21 @@ table(wellAnno(x))
 We can also use the function \Rfunction{configurationAsScreenPlot} to see 
 the plate configuration of all of the plates as a screen plot:
 %
-<<configurationplot, fig=TRUE, width=9, height=9>>=
+<<configurationplot, echo=FALSE, results=hide>>=
+png("cellhts2Complete-configurationplot.png", width=324, height=324)
+configurationAsScreenPlot(x)
+dev.off()
+@
+<<configurationplotShow, eval=FALSE>>=
 configurationAsScreenPlot(x)
 @ 
+
 The result is shown in Figure~\ref{fig:configurationplot}. This can be useful
 to verify the correctness of the plate configuration when a complex set
 of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
-\includegraphics[width=0.9\textwidth]{cellhts2Complete-configurationplot}
+\includegraphics[width=324pt,height=324pt]{cellhts2Complete-configurationplot.png}
 \caption{\label{fig:configurationplot}Screen plot of the plate 
 configuration.}
 \end{center}
@@ -828,16 +834,25 @@ The parameter $z_0$ defines the centre of the sigmoidal transformation,
 while $\lambda$ controls the smoothness of the transformation. 
 
 This transformation can be done by calling the function
-\Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2Complete-callvalues}.
+\Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2Complete-callvalues.png}.
 %
-<<callvalues, fig=TRUE, width=6, height=3>>=
+<<callvalues, echo=FALSE, results=hide, width=180, height=180>>=
+y = scores2calls(xsc, z0=1.5, lambda=2)
+png("cellhts2Complete-callvalues.png")
+plot(Data(xsc), Data(y), col="blue", pch=".",
+   xlab="z-scores", ylab="calls", 
+   main=expression(1/(1+e^{-lambda *(z-z[0])})))
+dev.off()
+@
+<<callvaluesShow, eval=FALSE>>=
 y = scores2calls(xsc, z0=1.5, lambda=2)
 plot(Data(xsc), Data(y), col="blue", pch=".",
    xlab="z-scores", ylab="calls", 
    main=expression(1/(1+e^{-lambda *(z-z[0])})))
-@ 
-\myincfig{cellhts2Complete-callvalues}{0.5\textwidth}{A sigmoidal transformation that
-can be used for obtaining call values.}
+@
+\myincfig{cellhts2Complete-callvalues.png}{180px}{A
+  sigmoidal transformation that can be used for obtaining call
+  values.}
 %
 However, for the purpose of the present analysis, we will consider the
 $z$-score values instead of the call values.
@@ -1251,35 +1266,38 @@ isEnriched <- (acTtest<=1e-3) & (acMean>0.5)
 %
 A volcano plot of the $-\log_{10}$ of the $p$-value \Robject{acTtest} versus
 the per category mean $z$-score \Robject{acMean} is shown in
-Figure~\ref{cellhts2Complete-volcano}. For a given category, the $p$-value is calculated from the 
+Figure~\ref{cellhts2Complete-volcano.png}. For a given category, the $p$-value is calculated from the 
 $t$-test against the null hypothesis that there is no difference between the mean
 $z$-score of all probes and the mean $z$-score of the probes in that category. 
 To select the enriched categories (\Robject{isEnriched}), we considered a significance
 level of $0.1\%$ for the $t$-test, and a per category mean $z$-score greater
 than $0.5$. This led to the \Sexpr{sum(isEnriched)} categories marked in red in
-Figure~\ref{cellhts2Complete-volcano} are listed in Table~\ref{tab:enrichedGoCateg}.
+Figure~\ref{cellhts2Complete-volcano.png} are listed in Table~\ref{tab:enrichedGoCateg}.
 
  
 %
 \input{cellhts2-enrichedGoCateg} 
 %
-\myincfig{cellhts2Complete-volcano}{0.5\textwidth}{Volcano plot of the $t$-test
-  $p$-values and the mean $z$-values of the category analysis for Gene
-  Ontology categories. The top categories are shown in red.}
+\myincfig{cellhts2Complete-volcano.png}{180px}{Volcano
+  plot of the $t$-test $p$-values and the mean $z$-values of the
+  category analysis for Gene Ontology categories. The top categories
+  are shown in red.}
 %
-<<volcano, fig=TRUE, echo=FALSE, results=hide, include=FALSE, width=3.2, height=3.2>>=
+<<volcano, echo=FALSE, results=hide>>=
+png("cellhts2Complete-volcano.png", width=180, height=180)
 par(mai=c(0.9,0.9,0.1,0.1))
 px = cbind(acMean, -log10(acTtest))
 plot(px, main='', xlab=expression(z[mean]), 
      ylab=expression(-log[10]~p), pch=".", col="black")
 points(px[isEnriched, ], pch=16, col="red", cex=0.7)
+dev.off()
 stopifnot(identical(names(acMean), names(acTtest)),  
           identical(names(acMean), names(acNum))) 
 @ 
 %
 <<enrichedGoCateg, echo=FALSE, results=hide>>=
 enrichedGOCateg <- names(which(isEnriched))
-require("GO")
+require("GO.db")
 res <- data.frame(
    "$n$" = acNum[isEnriched], 
     "$z_{\\mbox{\\scriptsize mean}}$" = signif(acMean[isEnriched],2), 
@@ -1327,27 +1345,29 @@ data2003$ourScore = as.vector(Data(xsc))[i]
 @ 
 %
 %
-\myincfig{cellhts2Complete-scoresComparison}{\textwidth}{Scored 
+\myincfig{cellhts2Complete-scoresComparison.png}{324px}{Scored 
 values obtained in the paper of Boutros \textit{et al.} against the scored 
 values calculated herein. Each panel corresponds to one 384-well plate. 
 Axis labels are not pretty - they overlap with neighboring panels due to space constraints.}
 %
-<<scoresComparison,echo=FALSE,results=hide,fig=TRUE,include=FALSE,width=5,width=5>>=
+<<scoresComparison,echo=FALSE,results=hide>>=
 require("geneplotter")
+png("cellhts2Complete-scoresComparison.png", width=324, height=324)
 par(mfrow=c(7,9), mai=c(0,0,0,0))
 for(i in 1:max(data2003$Plate)) {
    sel = (data2003$Plate==i)
    plot(data2003$ourScore[sel], data2003$Score[sel], pch=19, cex=0.6)
   }
+dev.off()
 @ 
 %
-Figure~\ref{cellhts2Complete-scoresComparison} shows the scatterplot between Boutros 
+Figure~\ref{cellhts2Complete-scoresComparison.png} shows the scatterplot between Boutros 
 \textit{et al.}'s scores and our scores in each of the 384-well plates.
 The results between the two analyses are very similar, except for two minor 
 details: use of robust estimators of location and spread (median and MAD 
 instead of mean and standard deviation), and estimation of MAD over 
 the whole experiment instead of plate-by-plate.
-In fact, Figure~\ref{cellhts2Complete-scoresComparison} evidenciates how the scored values
+In fact, Figure~\ref{cellhts2Complete-scoresComparison.png} evidenciates how the scored values
 exactly agree up to an offset (mean versus median) and scale 
 (standard deviation versus MAD).
 %
@@ -1589,11 +1609,12 @@ while if \Robject{method="loess"}, a loess curve is fitted instead.
 %------------------------------------------------------------
 \section{Appendix: Data transformation}
 %------------------------------------------------------------
-\myincfig{cellhts2Complete-transfplots}{0.95\textwidth}{Comparison between untransformed 
-(left) and logarithmically (base 2) transformed (right), normalized data. 
-Upper: histogram of intensity values of replicate 1. 
-Middle: scatterplots of standard deviation versus mean of the two replicates. 
-Bottom: Normal quantile-quantile plots.}
+\myincfig{cellhts2Complete-transfplots.png}{324px}{Comparison
+  between untransformed (left) and logarithmically (base 2)
+  transformed (right), normalized data.  Upper: histogram of intensity
+  values of replicate 1.  Middle: scatterplots of standard deviation
+  versus mean of the two replicates.  Bottom: Normal quantile-quantile
+  plots.}
 
 An obvious question is whether to do the statistical analyses on the
 original intensity scale or on a transformed scale such as the
@@ -1605,7 +1626,7 @@ visualizations work better if (to sufficient approximation)
 \item the variance is homogeneous along the dynamic range~\cite{Huber2002ismb}.
 \end{itemize}
 
-Figure~\ref{cellhts2Complete-transfplots} compares these properties for
+Figure~\ref{cellhts2Complete-transfplots.png} compares these properties for
 untransformed and log-transformed normalized data, showing that the difference is small. 
 Intuitively, this can be explained by the fact that for
 small $x$,
@@ -1617,7 +1638,25 @@ from 1.  Hence, for the data examined here, the choice between
 original scale and logarithmic scale is one of taste, rather
 than necessity.
 %
-<<transfplots, fig=TRUE, include=FALSE, width=6.5, height=9>>=
+<<transfplots, echo=FALSE, results=hide>>=
+library("vsn")
+png("cellhts2Complete-transfplots.png", width=324, height=474)
+par(mfcol=c(3,2))
+myPlots=function(z,...) {
+  hist(z[,1], 100, col="lightblue", xlab="",...)
+  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+  qqnorm(z[,1], pch='.', ...)
+  qqline(z[,1], col='blue')
+}
+dv = Data(xn)[,,1]
+myPlots(dv, main="untransformed")
+xlog = normalizePlates(x, scale="multiplicative", log=TRUE, 
+       method="median", varianceAdjust="byExperiment")
+dvlog = Data(xlog)[,,1]
+myPlots(dvlog, main="log2")
+dev.off()
+@
+<<transfplotsShow, eval=FALSE>>=
 library("vsn")
 par(mfcol=c(3,2))
 myPlots=function(z,...) {
