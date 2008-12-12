@@ -173,7 +173,6 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                                function(i) round(xnorm[,,i], 3))
     }
 
-    browser()
     if(state(xsc)[["annotated"]]) {
         n <- tolower(names(fData(xsc)))
         sel <- !(n %in% tolower(c("controlStatus", names(out))))
