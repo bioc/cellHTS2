@@ -275,248 +275,288 @@ setMethod("nbatch", signature(object="cellHTS"),
 ##----------------------------------------
 ## annotate
 ##----------------------------------------
-setMethod("annotate", signature("cellHTS"),
-function(object, geneIDFile, path=dirname(geneIDFile)) {
-
-  file = basename(geneIDFile)
+setMethod("annotate",
+          signature=signature("cellHTS"),
+          definition=function(object, geneIDFile, path=dirname(geneIDFile))
+      {
+          file <- basename(geneIDFile)
  
-  if(!(is.character(path)&&(length(path)==1L)))
-    stop("'path' must be character of length 1")
+          if(!(is.character(path)&&(length(path)==1L)))
+              stop("'path' must be character of length 1")
 
-  geneIDs = read.table(file.path(path, file), sep="\t", header=TRUE, stringsAsFactors=FALSE, na.string="", quote="", fill=FALSE)
+          geneIDs <- read.table(file.path(path, file), sep="\t", header=TRUE,
+                                stringsAsFactors=FALSE, na.string="", quote="",
+                                fill=FALSE)
+          
+          checkColumns(geneIDs, file, mandatory=c("Plate", "Well", "GeneID"),
+                       numeric=c("Plate"))
 
-  checkColumns(geneIDs, file, mandatory=c("Plate", "Well", "GeneID"),
-               numeric=c("Plate"))
+          ## sort the data by Plate and then by well
+          ## ordering by well might be problematic when we have "A2" instead of "A02"...
+          ## so first check if all well IDs are given as alphanumeric characters with
+          ## 3 characters.
+          ## if(any(nchar(geneIDs$Well)!=3)) 
+          ##    stop(sprintf(paste("Well IDs in the gene annotation file '%s' must ",
+          ##                       "contain 1 letter and 2 digits. E.g. 'A02'."), geneIDFile))
+          ## geneIDs <- geneIDs[order(geneIDs$Plate, geneIDs$Well),]
+          ## Why not simply convert wellIDs to that format? Sorting is also not needed
+          ## anymore because we map by name
+          geneIDs$Well <- sprintf("%s%02d", substr(geneIDs$Well, 1, 1),
+                                  as.numeric(substr(geneIDs$Well, 2, 3)))
 
-  ## sort the data by Plate and then by well
-  ## ordering by well might be problematic when we have "A2" instead of "A02"...
-  ## so first check if all well IDs are given as alphanumeric characters with 3 characters.
-  if(any(nchar(geneIDs$Well)!=3)) 
-    stop(sprintf("Well IDs in the gene annotation file '%s' must contain 1 letter and 2 digits. E.g. 'A02'.", geneIDFile))
+          ## Some checkings for dimension of "Plate" and "Well"
+          ## expect prod(x@pdim) * x@nrPlate rows. We warn if there are eroneous entries
+          ## but since we map to rownames we can still procede
+          pdims <- pdim(object)
+          wcoord <- convertWellCoordinates(geneIDs$Well, pdims)
+          nrWpP <- prod(pdim(object))
+          nrPlate <- max(plate(object))
+          plates <- rep(seq_len(nrPlate), each=nrWpP)
+          if(nrow(geneIDs) != nrWpP*nrPlate){
+              warning(paste("Incomplete input file '", geneIDFile, "': for full annotation",
+                            " we expect ", nrWpP*nrPlate, " rows, one for each of the ",
+                            nrWpP, " wells on each of the ", nrPlate, " plates.\nSome ",
+                            "gene IDs will be missing.\n", sep=""))
+          }else if(!(all(wcoord$num %in% seq_len(nrWpP)) && all(geneIDs$Plate %in% plates)))
+              warning(paste("Invalid values in the  input file '", geneIDFile, "' are being",
+                            " ignored for annotation./n", sep=""))
 
-  geneIDs = geneIDs[order(geneIDs$Plate, geneIDs$Well),]
+          ## We want to allow for missing entries in the annotation file, so we first
+          ## create a complete table and map values by name (combination of plate and
+          ## well)
+          wells <- rep(sprintf("%s%02d", rep(LETTERS[seq_len(pdims[1])], each=pdims[2]),
+                           rep(seq_len(pdims[2]), pdims[1])), nrPlate)
+          rnames <- paste(plates, wells, sep="_")
+          annTab <- as.data.frame(matrix(NA, ncol=ncol(geneIDs), nrow=nrWpP*nrPlate,
+                                         dimnames=list(rnames, colnames(geneIDs))))
+          annTab[paste(geneIDs$Plate, geneIDs$Well, sep="_"),] <- geneIDs
 
-  ## Some checkings for dimension of "Plate" and "Well"
-  ## expect prod(x@pdim) * x@nrPlate rows
-  nrWpP   = prod(pdim(object))
-  nrPlate = max(plate(object))
+          ## store the geneIDs data.frame into the featureData slot
+          ## 'annotation(object)' returns a character vector indicating the annotation package
+          geneIDs <- annTab[, !c(names(annTab) %in% c("Plate", "Well")), drop=FALSE]
+          ## flag 'NA' values in the "GeneID" column:
+          geneIDs[apply(geneIDs, 2, function(i) i %in% "NA")] <- NA 
+          
+          ## add the columns into featureData:
+          fData(object)[names(geneIDs)] <- geneIDs
+          fvarMetadata(object)[names(geneIDs),]=names(geneIDs)
 
-  if (!((nrow(geneIDs)==nrWpP*nrPlate) && all(convertWellCoordinates(geneIDs$Well, pdim(object))$num==rep(1:nrWpP, times=nrPlate)) &&
-       all(geneIDs$Plate == rep(1:nrPlate, each=nrWpP))))
-    stop(paste("Invalid input file '", geneIDFile, "': expecting ", nrWpP*nrPlate,
-               " rows, one for each well and for each plate. Please see the vignette for",
-               " an example.\n", sep=""))
-
-
-  ## store the geneIDs data.frame into the featureData slot
-  ## 'annotation(object)' returns a character vector indicating the annotation package
-
-  geneIDs <- geneIDs[, !c(names(geneIDs) %in% c("Plate", "Well")), drop=FALSE]
-  ## flag 'NA' values in the "GeneID" column:
-  #geneIDs$GeneID[geneIDs$GeneID %in% "NA"] = NA
-  geneIDs[apply(geneIDs, 2, function(i) i %in% "NA")] <- NA 
-
-  ## add the columns into featureData:
-  fData(object)[names(geneIDs)] <- geneIDs
-  fvarMetadata(object)[names(geneIDs),]=names(geneIDs)
-
-
-  object@state[["annotated"]] = TRUE
-  validObject(object)
-  return(object)
-})
+          ## change status and return object
+          object@state[["annotated"]] = TRUE
+          validObject(object)
+          return(object)
+      })
 
 
 ##----------------------------------------
 ## configure
 ##----------------------------------------
 setMethod("configure", signature("cellHTS"),
-  function(object, descripFile, confFile, logFile, path) {
+          function(object, descripFile, confFile,
+                   logFile, path)
+      {
+          
+          ## If 'path' is given, we assume that all the files are in this directory.
+          if (!missing(path)) 
+              if(!(is.character(path)&&length(path)==1))
+                  stop("'path' must be character of length 1")
 
-# If 'path' is given, we assume that all the files are in this directory.
-if (!missing(path)) 
-  if(!(is.character(path)&&length(path)==1))
-    stop("'path' must be character of length 1")
+          ## get dimensions:
+          nrWpP   = prod(pdim(object))
+          nrPlate = max(plate(object))
+          nrSample <- ncol(object)
+          chNames <- channelNames(object)
+          nrChannel <- length(chNames)
 
-# get dimensions:
-  nrWpP   = prod(pdim(object))
-  nrPlate = max(plate(object))
-  nrSample <- ncol(object)
-  chNames <- channelNames(object)
-  nrChannel <- length(chNames)
+          xraw <- Data(object)
 
-  xraw <- Data(object)
+          ppath = ifelse(missing(path), dirname(confFile), path)
+          confFile = basename(confFile)
 
-  ppath = ifelse(missing(path), dirname(confFile), path)
-  confFile = basename(confFile)
+          tt = readLines(file.path(ppath, confFile), n=2)
+          hinfo = list(Wells = grep("^Wells:", tt),
+                       Plates  =   grep("^Plates:", tt))
 
-  tt = readLines(file.path(ppath, confFile), n=2)
-  hinfo = list(Wells = grep("^Wells:", tt),
-              Plates  =   grep("^Plates:", tt))
+          if(any(listLen(hinfo)==0))
+              stop(sprintf("Could not find all expected header rows ('Wells' and 'Plates') in plate configuration file '%s'.\n", confFile))
 
-  if(any(listLen(hinfo)==0))
-    stop(sprintf("Could not find all expected header rows ('Wells' and 'Plates') in plate configuration file '%s'.\n", confFile))
+          tt <- sapply(tt, strsplit, split=":")
+          tt <- as.integer(sapply(tt, "[", 2L))
 
-  tt <- sapply(tt, strsplit, split=":")
-  tt <- as.integer(sapply(tt, "[", 2L))
-
-  if(tt[hinfo$"Plates"] != nrPlate)
-    stop(sprintf("in '%s', the number of plates \n specified in the header line 'Plates:' is %d but I expected %d.", confFile, nrPlate, tt[hinfo$"Plates"]))
-
-  if(tt[hinfo$"Wells"] != nrWpP)
-    stop(sprintf("in '%s', the number of wells per plate \n specified in the header line 'Wells:' is %d but I expected %d!", confFile, nrWpP, tt[hinfo$"Wells"]))
-
-  ## Check if the screen log file was given
-  slog=NULL
-  if(!missing(logFile)) {
-    ppath = ifelse(missing(path), dirname(logFile), path)
-    logFile = basename(logFile)
-    slog = read.table(file.path(ppath, logFile),  sep="\t", header=TRUE,
-    as.is=TRUE, na.string="", fill=TRUE)
-    ## Check if the screen log file is empty
-    if (nrow(slog)) {
-      ## check consistency of columns 'Plate', 'Channel' and 'Sample'
-      for(i in c("Sample", "Channel")) {
-        if(!(i %in% names(slog))) 
-          slog[[i]] <- rep(1L, nrow(slog)) 
-        else 
-          if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
-            stop(sprintf("Column '%s' of the screen log file '%s' contains invalid entries.", i, logFile))
-        }
-
-        checkColumns(slog, logFile, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"), numeric=c("Plate", "Sample", "Channel"))
-
-     invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
-     if(sum(invalidPlateID)) stop(sprintf("Column 'Plate' of the screen log file '%s' contains invalid entries.",logFile))
-    }else{
-        slog <- NULL
-        warning("The screen log file is empty and will be ignored.") 
-    }
-  } 
-
-
-   ## Process the description file
-   ppath = ifelse(missing(path), dirname(descripFile), path)
-   descripFile = basename(descripFile)
-   descript = readLines(file.path(ppath, descripFile))
+          if(tt[hinfo$"Plates"] != nrPlate)
+              stop(sprintf("in '%s', the number of plates \n specified in the header line 'Plates:' is %d but I expected %d.", confFile, nrPlate, tt[hinfo$"Plates"]))
+          
+          if(tt[hinfo$"Wells"] != nrWpP)
+              stop(sprintf("in '%s', the number of wells per plate \n specified in the header line 'Wells:' is %d but I expected %d!", confFile, nrWpP, tt[hinfo$"Wells"]))
+          
+          ## Check if the screen log file was given
+          slog=NULL
+          if(!missing(logFile)) {
+              ppath = ifelse(missing(path), dirname(logFile), path)
+              logFile = basename(logFile)
+              slog = read.table(file.path(ppath, logFile),  sep="\t", header=TRUE,
+                                as.is=TRUE, na.string="", fill=TRUE)
+              ## Check if the screen log file is empty
+              if (nrow(slog)) {
+                  ## check consistency of columns 'Plate', 'Channel' and 'Sample'
+                  for(i in c("Sample", "Channel")) {
+                      if(!(i %in% names(slog))) 
+                          slog[[i]] <- rep(1L, nrow(slog)) 
+                      else 
+                          if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
+                              stop(sprintf("Column '%s' of the screen log file '%s' contains invalid entries.", i, logFile))
+                  }
+                  
+                  checkColumns(slog, logFile, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"), numeric=c("Plate", "Sample", "Channel"))
+                  
+                  invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
+                  if(sum(invalidPlateID)) stop(sprintf("Column 'Plate' of the screen log file '%s' contains invalid entries.",logFile))
+              }else{
+                  slog <- NULL
+                  warning("The screen log file is empty and will be ignored.") 
+              }
+          } 
 
 
-   ## Store the contents of the description file in the 'experimentData' slot which is accessed via description(object):
-   miameList = list(sepLab=grep("Lab description", descript),
-        name = grep("^Experimenter name:", descript),
-	lab  =   grep("^Laboratory:", descript),
-        contact = grep("^Contact information:", descript),
-	title=grep( "^Title:", descript),
-	pubMedIds=grep( "^PMIDs:",descript),
- 	url=grep("^URL:",descript),
-	abstract=grep("^Abstract:",descript)
-  )
-
-  miameInfo = lapply(miameList, function(i) unlist(strsplit(descript[i], split=": "))[2L]) 
-  miameInfo = lapply(miameInfo, function(i) if(is.null(i)) "" else { if(is.na(i)) "" else i })
-  miameInfo = with(miameInfo, new("MIAME", 
-    name=name,
-    lab = lab,
-    contact=contact,
-    title=title,
-    pubMedIds=pubMedIds,
-    url=url,
-    abstract=abstract))
-
-  #store the rest of the description information into slot "other":
-  otherInfo <- descript[-unlist(miameList)]
-  #otherInfo <- otherInfo[nchar(otherInfo)>0] #remove empty lines
-  #notes(miameInfo) <- unlist(lapply(otherInfo, function(i) append(append("\t",i), "\n")))
-  notes(miameInfo) <- lapply(otherInfo, function(i) paste("\t", i, "\n", collapse="")) 
+          ## Process the description file
+          ppath = ifelse(missing(path), dirname(descripFile), path)
+          descripFile = basename(descripFile)
+          descript = readLines(file.path(ppath, descripFile))
 
 
-   ## Process the plate annotation file:
-   conf = read.table(file.path(ppath, confFile), sep="\t", header=TRUE, as.is=TRUE, na.string="", fill=TRUE, skip=2)
+          ## Store the contents of the description file in the 'experimentData' slot which
+          ## is accessed via description(object):
+          miameList = list(sepLab=grep("Lab description", descript),
+                           name = grep("^Experimenter name:", descript),
+                           lab  =   grep("^Laboratory:", descript),
+                           contact = grep("^Contact information:", descript),
+                           title=grep( "^Title:", descript),
+                           pubMedIds=grep( "^PMIDs:",descript),
+                           url=grep("^URL:",descript),
+                           abstract=grep("^Abstract:",descript)
+                           )
+          
+          miameInfo = lapply(miameList, function(i) unlist(strsplit(descript[i], split=": "))[2L]) 
+          miameInfo = lapply(miameInfo, function(i) if(is.null(i)) "" else { if(is.na(i)) ""
+          else i })
+          miameInfo = with(miameInfo, new("MIAME", 
+                                          name=name,
+                                          lab = lab,
+                                          contact=contact,
+                                          title=title,
+                                          pubMedIds=pubMedIds,
+                                          url=url,
+                                          abstract=abstract))
 
-   checkColumns(conf, confFile, mandatory=c("Plate", "Well", "Content"),
-               numeric=integer(0))  #column 'Plate' is no longer numeric
-
-   pWells <- well(object)[1:nrWpP] 
-
-   ## Process the configuration file into wellAnno slot
-   ## and set all 'empty' wells to NA in object
-   pcontent = tolower(conf$Content)  ## ignore case!
-   wAnno = factor(rep(NA, nrWpP*nrPlate), levels=unique(pcontent))
+          ## store the rest of the description information into slot "other":
+          otherInfo <- descript[-unlist(miameList)]
+          ## otherInfo <- otherInfo[nchar(otherInfo)>0] #remove empty lines
+          ## notes(miameInfo) <- unlist(lapply(otherInfo, function(i) append(append("\t",i), "\n")))
+          notes(miameInfo) <- lapply(otherInfo, function(i) paste("\t", i, "\n", collapse="")) 
 
 
-   # In the current plate configuration file, the concept of 'batch' is separated from the plate configuration issue.
-   conf[conf=="*"] <- " *"
-   #count <- character() 
+          ## Process the plate annotation file:
+          conf = read.table(file.path(ppath, confFile), sep="\t", header=TRUE, as.is=TRUE,
+                            na.string="", fill=TRUE, skip=2)
 
-   for (i in 1:nrow(conf)) {
-     iconf <- conf[i,]
-     # get plate IDs
-     wp <- if(is.numeric(iconf$Plate)) iconf$Plate  else  c(1:nrPlate)[regexpr(iconf$Plate, 1:nrPlate)>0]
-     # get well IDs
-     ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0], pdim(object))$num
-     #count <- append(count, sprintf("%d-%d-%s", rep(wp, each=length(ww)), rep(ww, length(wp)), rep(pcontent[i], length(wp)*length(ww))) )
-     if(!length(wp)) stop(sprintf("In the plate configuration file '%s', no plate matches were found for rule specified by line %d:\n\t %s \n\t %s", confFile, i, paste(names(conf), collapse="\t"), paste(iconf, collapse="\t")))
+          checkColumns(conf, confFile, mandatory=c("Plate", "Well", "Content"),
+                       numeric=integer(0))  #column 'Plate' is no longer numeric
 
-     if(!length(ww)) stop(sprintf("In the plate configuration file '%s', no well matches were found for rule specified by line %d:\n\t %s \n\t %s", confFile, i, paste(names(conf), collapse="\t"), paste(iconf, collapse="\t")))
+          pWells <- well(object)[1:nrWpP] 
+
+          ## Process the configuration file into wellAnno slot
+          ## and set all 'empty' wells to NA in object
+          pcontent = tolower(conf$Content)  ## ignore case!
+          wAnno = factor(rep(NA, nrWpP*nrPlate), levels=unique(pcontent))
+
+
+          ## In the current plate configuration file, the concept of 'batch' is separated
+          ## from the plate configuration issue. However it might make sense to be able to
+          ## specify batches at this level. Have to think about how that would work.
+          conf[conf=="*"] <- " *"
+          ##count <- character()
+          ##batches <- array(dim=c(nrPlate, nrSample, nrChannel))
+
+          for (i in 1:nrow(conf)) {
+              iconf <- conf[i,]
+              ## get plate IDs
+              wp <- if(is.numeric(iconf$Plate)) iconf$Plate  else
+              c(1:nrPlate)[regexpr(iconf$Plate, 1:nrPlate)>0]
+              ## get well IDs
+              ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0],
+                                           pdim(object))$num
+              
+              ## count <- append(count, sprintf("%d-%d-%s", rep(wp, each=length(ww)),
+              ## rep(ww, length(wp)), rep(pcontent[i], length(wp)*length(ww))) )
+              if(!length(wp)) stop(sprintf("In the plate configuration file '%s', no plate matches were found for rule specified by line %d:\n\t %s \n\t %s", confFile, i,
+                                           paste(names(conf), collapse="\t"),
+                                           paste(iconf, collapse="\t")))
+
+              if(!length(ww)) stop(sprintf("In the plate configuration file '%s', no well matches were found for rule specified by line %d:\n\t %s \n\t %s", confFile, i,
+                                           paste(names(conf), collapse="\t"),
+                                           paste(iconf, collapse="\t")))
  
-     wAnno[ww + rep(nrWpP*(wp-1), each=length(ww))] = pcontent[i] 
-   }
+              wAnno[ww + rep(nrWpP*(wp-1), each=length(ww))] = pcontent[i] 
+          }
 
 
-  ## Each well and plate should be covered at leat once.
-  ## Allow duplication and consider the latter occurence.
-  missAnno <- is.na(wAnno)
-  if(sum(missAnno)) {
-    ind <- which(missAnno)[1:min(5, sum(missAnno))]
-    msg = paste("The following plates and wells were not covered in the plate configuration file\n",
-      "'", confFile, "':\n",
-      "\tPlate Well\n", "\t",
-      paste((ind-1) %/% nrWpP + 1,  1+(ind-1)%%nrWpP, sep="\t", collapse="\n\t"),
-      if(sum(missAnno)>5) sprintf("\n\t...and %d more.\n", sum(missAnno)-5), "\n", sep="")
-    stop(msg)
-  }
+          ## Each well and plate should be covered at leat once.
+          ## Allow duplication and consider the latter occurence.
+          missAnno <- is.na(wAnno)
+          if(sum(missAnno)) {
+              ind <- which(missAnno)[1:min(5, sum(missAnno))]
+              msg = paste("The following plates and wells were not covered in the plate configuration file\n",
+                          "'", confFile, "':\n",
+                          "\tPlate Well\n", "\t",
+                          paste((ind-1) %/% nrWpP + 1,  1+(ind-1)%%nrWpP, sep="\t",
+                                collapse="\n\t"),
+                          if(sum(missAnno)>5) sprintf("\n\t...and %d more.\n",
+                                                      sum(missAnno)-5), "\n", sep="")
+              stop(msg)
+          }
 
 
 
-    #get empty positions from the final well anno and flag them in each replicate and channel
-    empty = which(wAnno=="empty")
-    xraw[] = apply(xraw, 2:3, replace, list=empty, NA) 
+          ## get empty positions from the final well anno and flag them in each replicate
+          ## and channel
+          empty = which(wAnno=="empty")
+          xraw[] = apply(xraw, 2:3, replace, list=empty, NA) 
 
 
-  ## store the conf data.frame into the 'plateConf' slot of 'object' and
-  ## slog into the 'screenlog' slot
-  ## descript into the screenDesc slot
-   object@plateConf = conf
-   object@screenLog = slog
-   object@screenDesc = descript
+          ## store the conf data.frame into the 'plateConf' slot of 'object' and
+          ## slog into the 'screenlog' slot
+          ## descript into the screenDesc slot
+          object@plateConf = conf
+          object@screenLog = slog
+          object@screenDesc = descript
+          
+          ## Process the configuration file into 'controlStatus' column of featureData slot
+          ## and set all 'empty' wells to NA in assayData slot
 
-  ## Process the configuration file into 'controlStatus' column of featureData slot
-  ## and set all 'empty' wells to NA in assayData slot
+          ## Process screenlog
+          if (!is.null(slog)) {
+              ipl  = slog$Plate
+              irep = slog$Sample
+              ich  = slog$Channel
+              ipos = convertWellCoordinates(slog$Well, pdim(object))$num
+              stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))
+              
+              xraw[cbind(ipos + nrWpP*(ipl-1), irep, ich)] = NA 
+          } 
 
-  ## Process screenlog
-  if (!is.null(slog)) {
-    ipl  = slog$Plate
-    irep = slog$Sample
-    ich  = slog$Channel
-    ipos = convertWellCoordinates(slog$Well, pdim(object))$num
-    stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))
+          ## update object (measurements and well anno) 
+          Data(object) <- xraw
 
-    xraw[cbind(ipos + nrWpP*(ipl-1), irep, ich)] = NA 
-  } 
+          ## update well anno information: 
+          fData(object)$controlStatus=wAnno
+          stopifnot(all(fData(object)$controlStatus!="unknown"))
 
-  ## update object (measurements and well anno) 
-  Data(object) <- xraw
-
-  ## update well anno information: 
-  fData(object)$controlStatus=wAnno
-  stopifnot(all(fData(object)$controlStatus!="unknown"))
-
-  ## add the 'miame'-like description:
-  description(object) <- miameInfo
-  object@state[["configured"]] <- TRUE
-  validObject(object)
-  return(object)
-} )
+          ## add the 'miame'-like description:
+          description(object) <- miameInfo
+          object@state[["configured"]] <- TRUE
+          validObject(object)
+          return(object)
+      } )
 
 
 
