@@ -594,7 +594,7 @@ if(all(is.null(names(dr)))) names(dr) <- namePos
     res <- makePlot(outdir, con=con, name="configurationAsScreenPlot",
                     w=7, h=7*pdim(xr)["nrow"]/pdim(xr)["ncol"]*ceiling(nrPlate/6)/6+0.5, psz=8,
                     fun = function() {
-                     do.call("configurationAsScreenPlot", 
+                     do.call(configurationAsScreenPlot, 
                          args=list(x=xr, verbose=FALSE, posControls=unlist(posControls), negControls=negControls))
                      },
                     print=FALSE, isImageScreen=FALSE)
@@ -651,7 +651,7 @@ makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8, fun=function(){ image(
   ##   -------  Step 7)  Screen-wide image plot ---------------
     res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=8,
                     fun = function(map=imageScreenArgs$map)
-                      do.call("imageScreen", args=append(list(object=xsc, map=map), imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
+                      do.call(imageScreen, args=append(list(object=xsc, map=map), imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
                     print=FALSE, isImageScreen=TRUE)
 
     count = nrow(plotTable)

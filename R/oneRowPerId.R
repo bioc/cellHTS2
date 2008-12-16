@@ -13,5 +13,5 @@ oneRowPerId = function(x, ids) {
     return(I(r))
   })
   names(d) = colnames(x)[2:ncol(x)]
-  do.call("data.frame", d)
+  do.call(data.frame, d)
 }

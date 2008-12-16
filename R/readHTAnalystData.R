@@ -56,7 +56,7 @@ readHTAnalystData = function(filenames, path=dirname(filenames), name,
   for(i in seq(along=intfl))
     names(intfl[[i]]) = paste(names(dfiles)[i], names(intfl[[i]]), sep="-plate")
 
-  uli = do.call("c", intfl)
+  uli = do.call(c, intfl)
   stopifnot(length(Replicate)==length(uli))
 
 

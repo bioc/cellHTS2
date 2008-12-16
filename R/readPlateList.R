@@ -135,7 +135,7 @@ readPlateList <- function(filename,
                   matrix(xraw[,,,ch], ncol=nrRep, nrow=nrWell*nrPlate))
     names(dat) <- paste("ch", seq_len(nrChannel), sep="")
     
-    adata <- do.call("assayDataNew", c(storage.mode="lockedEnvironment", dat))
+    adata <- do.call(assayDataNew, c(storage.mode="lockedEnvironment", dat))
     
     ## arrange the phenoData slot:
     pdata <- new("AnnotatedDataFrame",
