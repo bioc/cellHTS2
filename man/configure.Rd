@@ -57,7 +57,7 @@ information about the screen.
 \value{An S4 object of class \code{\linkS4class{cellHTS}},
 which is obtained by copying \code{object} and updating
 the following slots:
-\itemize{
+%\itemize{
  \item{plateConf}{a data frame containing what was read from input file \code{confFile} (except the first two header rows).}
  \item{screenLog}{a data frame containing what was read from input file \code{logFile}.}
  \item{screenDesc}{object of class \code{character} containing what was read from input file \code{descripFile}.}
@@ -65,7 +65,7 @@ the following slots:
  \item{featureData}{the column \code{controlStatus} is updated taking into account the well annotation given by the plate configuration file.}
  \item{experimentData}{an object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
    experiment, constructed from the screen description file.}
-}
+%}
 }
 
 \seealso{
