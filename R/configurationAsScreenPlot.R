@@ -3,7 +3,8 @@
 # The default color code is similar to that used in writeReport
 configurationAsScreenPlot <- function(x, verbose=interactive(), posControls, negControls){
 
-    ## optional inputs: names of 'pos' and 'neg' controls given as vectors of regular expressions
+    ## optional inputs: names of 'pos' and 'neg' controls given as vectors of
+    ## regular expressions
     
     ## initial checks:
     if(!is(x, "cellHTS"))
@@ -49,14 +50,14 @@ configurationAsScreenPlot <- function(x, verbose=interactive(), posControls, neg
     if(length(namePos)){
         cols.pos <-
             if(length(namePos)==1) pcolPal[1] else colorRampPalette(pcolPal,
-                                                                    space="Lab")(length(namePos))
+                     space="Lab")(length(namePos))
         names(cols.pos) <- namePos
         wellCols <- c(wellCols, cols.pos)
     }
     if(length(nameNeg)){
         cols.neg <-
             if(length(nameNeg)==1) ncolPal[1] else colorRampPalette(ncolPal,
-                                                                    space="Lab")(length(nameNeg))
+                     space="Lab")(length(nameNeg))
         names(cols.neg) <- nameNeg
         wellCols <- c(wellCols, cols.neg)
     }
@@ -78,7 +79,9 @@ configurationAsScreenPlot <- function(x, verbose=interactive(), posControls, neg
     ## just a single image plot of all plates:
     ldat <- split(mtW, plate(x))
     grid.newpage()
-    plotScreen(ldat, zrange=range(mtW), fill=wellCols, #na.fill="yellow", 
+    fill <- if(length(wellCols)>1) wellCols else rep(wellCols, 2)
+    zrange <- if(length(wellCols)>1) range(mtW) else c(0, 1)
+    plotScreen(ldat, zrange=zrange, fill=fill, #na.fill="yellow", 
                nx=pdim(x)[["ncol"]], ny=pdim(x)[["nrow"]], main="Plate configuration",
                ncol=ifelse(max(plate(x)) < 6L, max(plate(x)), 6L))
 

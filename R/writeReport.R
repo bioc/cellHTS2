@@ -1,128 +1,149 @@
 
-writehref = function(x, url, con)
+writehref <- function(x, url, con)
   cat(sprintf("<A HREF=\"%s\">%s</A>", url, x), file=con)
 
-writeheader = function(x, level, con)
-    cat(sprintf("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s</H%d></CENTER>\n\n",
-                as.character(x), as.integer(level), as.character(x), as.integer(level)), file=con)
+writeheader <- function(x, level, con)
+    cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s",
+                      "</H%d></CENTER>\n\n", sep=""),
+                as.character(x), as.integer(level), as.character(x), as.integer(level)),
+        file=con)
 
-writeExperimentHeader = function(xy, x, y, url, level, con)
-    cat(sprintf("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s<A HREF=\"%s\">%s</A></H%d></CENTER>\n\n",
-                as.character(xy), as.integer(level), as.character(x), url,  as.character(y), as.integer(level)), file=con)
+writeExperimentHeader <- function(xy, x, y, url, level, con)
+    cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER>",
+                      "<H%d>%s<A HREF=\"%s\">%s</A></H%d></CENTER>\n\n", sep=""),
+                as.character(xy), as.integer(level), as.character(x), url,  as.character(y),
+                as.integer(level)), file=con)
 
-writetail = function(con)
+writetail <- function(con)
     cat(sprintf("<BR><HR>%s</HTML></HEAD>\n", date()), file=con)
 
 
-# ------------------------------------------------------------
-writeHTMLtable = function(x, url, con,
-  colors = c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0"), center=FALSE, extra=NULL) {
+## ------------------------------------------------------------
+writeHTMLtable <- function(x, url, con,
+                           colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0"),
+                           center=FALSE, extra=NULL) {
 
-  if(!is.data.frame(x))
-    stop("'x' must be a data.frame")
-  nr = nrow(x)
-  nc = ncol(x)
-  if(!missing(url)) {
-    if(! (is.matrix(url) && is.character(url) && nrow(url)==nr && ncol(url)==nc))
-      stop("'url' must be a character matrix of the same size as 'x'")
-    for(j in 1:nc)
-      x[, j] = ifelse(is.na(url[, j]), x[, j], sprintf("<A HREF=\"%s\">%s</A>", url[, j], x[, j]))
-  }
+    if(!is.data.frame(x))
+        stop("'x' must be a data.frame")
+    nr <- nrow(x)
+    nc <- ncol(x)
+    if(!missing(url)) {
+        if(! (is.matrix(url) && is.character(url) && nrow(url)==nr && ncol(url)==nc))
+            stop("'url' must be a character matrix of the same size as 'x'")
+        for(j in 1:nc)
+            x[, j] <- ifelse(is.na(url[, j]), x[, j], sprintf("<A HREF=\"%s\">%s</A>",
+                                                              url[, j], x[, j]))
+    }
 
 
   if(center) cat("<CENTER>\n", file=con)
-    if (!is.null(extra)){
-       nn = (nc-1)/length(extra)
-       cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]), paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn, rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n", sep="", file=con)
-
-       cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)), collapse=""),"</TR>\n", sep="", file=con)
-    } else {
+  if (!is.null(extra)){
+      nn <- (nc-1)/length(extra)
+       cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]),
+           paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn,
+                         rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n",
+           sep="", file=con)
+      cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1],
+                                colnames(x)), collapse=""),"</TR>\n", sep="", file=con)
+  } else {
       cat("<TABLE border=0><TR>",
-      paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)), collapse=""),
-      "</TR>\n", sep="", file=con) 
-    }
+          paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)),
+                collapse=""),
+          "</TR>\n", sep="", file=con) 
+  }
 
-  for(i in 1:nr)
-#     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>", colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
-#         "</TR>\n", sep="", file=con)
-    cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\">%s</TD>", colors[2*(i%%2)+(1)%%2+1], x[i,1]), collapse=""), paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>", colors[2*(i%%2)+(2:nc)%%2+1], x[i,-1]), collapse=""),
-        "</TR>\n", sep="", file=con)
-
-  cat("</TABLE>\n", file=con)
-  if(center) cat("</CENTER>\n", file=con)
+    for(i in 1:nr)
+        ##     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
+        ##         colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
+        ##         "</TR>\n", sep="", file=con)
+        cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\">%s</TD>", colors[2*(i%%2)+(1)%%2+1],
+                                  x[i,1]), collapse=""),
+            paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
+                          colors[2*(i%%2)+(2:nc)%%2+1], x[i,-1]), collapse=""),
+            "</TR>\n", sep="", file=con)
+    cat("</TABLE>\n", file=con)
+    if(center) cat("</CENTER>\n", file=con)
 }
 #-----------------------------------------------------------------
 
 
 
-writeHTMLtable4plots = function(x, con,
-  colors = c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0")) {
+writeHTMLtable4plots <- function(x, con, colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff",
+                                         "#e0e0f0")) {
+    nr <- nrow(x)
+    nc <- ncol(x)
 
-  nr = nrow(x)
-  nc = ncol(x)
+    cat("<CENTER><TABLE border=0><TR>",
+        paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], names(x)),
+              collapse=""), "</TR>\n", sep="", file=con)
 
-  cat("<CENTER><TABLE border=0><TR>",
-      paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], names(x)), collapse=""),
-      "</TR>\n", sep="", file=con)
-
-  for(i in 1:nr) {
-    cat("<TR>", paste(paste("<TD BGCOLOR=\"", colors[2*(i%%2)+(1:nc)%%2+1],
-                            "\">", x[i,], "</TD>", sep=""), collapse=""),
-        "</TR>\n", sep="", file=con)
-         }
-  cat("</TABLE><CENTER>\n", file=con)
+    for(i in 1:nr) {
+        cat("<TR>", paste(paste("<TD BGCOLOR=\"", colors[2*(i%%2)+(1:nc)%%2+1],
+                                "\">", x[i,], "</TD>", sep=""), collapse=""),
+            "</TR>\n", sep="", file=con)
+    }
+    cat("</TABLE><CENTER>\n", file=con)
 }
 
 ##
- myUpdateProgress <- function(ti, tmax, si, smax){
-       updateProgress(ti/tmax*100, sub=sprintf("step %s of %s", si, smax), autoKill=!TRUE)
- }
+myUpdateProgress <- function(ti, tmax, si, smax){
+    updateProgress(ti/tmax*100, sub=sprintf("step %s of %s", si, smax), autoKill=!TRUE)
+}
 
 
 
 ##----------------------------------------------------------------------------
-writeReport = function(cellHTSlist,
-  outdir,
-  #outdir=file.path(getwd(), name(x)),
-  force=FALSE, map=FALSE, 
-  plotPlateArgs=FALSE,
-  imageScreenArgs=NULL, 
-  progressReport=interactive(),
-  posControls,
-  negControls) {
+writeReport <- function(cellHTSlist,
+                        outdir,
+                        ##outdir=file.path(getwd(), name(x)),
+                        force=FALSE, map=FALSE, 
+                        plotPlateArgs=FALSE,
+                        imageScreenArgs=NULL, 
+                        progressReport=interactive(),
+                        posControls,
+                        negControls) {
 
-##############################
-## NOTE: 'writeReport' can be called on different cellHTS objects at different preprocessing stages
-## Arguments:
-## 'cellHTSlist'  should be a list of cellHTS object(s) obtained for the same experimental data. Allowed components are:
-	## 'raw' - (mandatory) cellHTS object containing raw experiment data.
-        ## 'normalized' (mandatory only if component 'scored' is given)- cellHTS object containing normalized data.
-        ## 'scored' - cellHTS object comprising scored data.
-## e.g. cellHTSlist = list("raw" = xr, "normalized"=xn, "scored"=xsc)
+    ## ############################
+    ## NOTE: 'writeReport' can be called on different cellHTS objects at different preprocessing
+    ## stages
+    ## Arguments:
+    ## 'cellHTSlist'  should be a list of cellHTS object(s) obtained for the same experimental
+    ## data. Allowed components are:
+    ##   'raw' - (mandatory) cellHTS object containing raw experiment data.
+    ##   'normalized' (mandatory only if component 'scored' is given)- cellHTS object
+    ##    containing normalized data.
+    ##   'scored' - cellHTS object comprising scored data.
+    ## e.g. cellHTSlist = list("raw" = xr, "normalized"=xn, "scored"=xsc)
 
-allowedListNames <- c("raw", "normalized", "scored")
+    allowedListNames <- c("raw", "normalized", "scored")
 
-if(!is.list(cellHTSlist)) {
-   stop("Argument 'cellHTSlist' should be a list containing one or a maximum of 3 'cellHTS' objects.") 
-} else {
+    if(!is.list(cellHTSlist)) {
+        stop("Argument 'cellHTSlist' should be a list containing one or a maximum ",
+             "of 3 'cellHTS' objects.") 
+    } else {
+        
+        if(!all(sapply(cellHTSlist, class)=="cellHTS"))
+            stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
 
+        nm <- names(cellHTSlist)
+        if(!("raw" %in% nm))
+            stop("Argument 'cellHTSlist' should be a list containing at least one ",
+                 "component named 'raw' that corresponds to a 'cellHTS' object ",
+                 "containing unnormalized data.")
 
- if(!all(sapply(cellHTSlist, class)=="cellHTS")) stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
+        if(length(cellHTSlist)>3 | any(duplicated(nm)))
+            stop("Argument 'cellHTSlist' can only have a maximum of 3 components ",
+                 "named 'raw', 'normalized' and 'scored'!")
 
- nm <- names(cellHTSlist)
- if(!("raw" %in% nm)) stop("Argument 'cellHTSlist' should be a list containing at least one component named 'raw' that corresponds to a 'cellHTS' object containing unnormalized data.")
+        if(!all(nm %in% allowedListNames)) 
+            stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
+                         ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
+                         nm[!(nm %in% allowedListNames)]))
+    }
 
- if(length(cellHTSlist)>3 | any(duplicated(nm))) stop("Argument 'cellHTSlist' can only have a maximum of 3 components named 'raw', 'normalized' and 'scored'!")
-
- if(!all(nm %in% allowedListNames)) 
-     stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
-         ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
-                       nm[!(nm %in% allowedListNames)]))
-}
-
-xr <- cellHTSlist[["raw"]]
-xn <- cellHTSlist[["normalized"]]
-xsc <- cellHTSlist[["scored"]]
+    xr <- cellHTSlist[["raw"]]
+    xn <- cellHTSlist[["normalized"]]
+    xsc <- cellHTSlist[["scored"]]
 
 
 # now check whether the given components of 'cellHTSlist' are valid cellHTS objects:
@@ -595,11 +616,16 @@ if(all(is.null(names(dr)))) names(dr) <- namePos
                     w=7, h=7*pdim(xr)["nrow"]/pdim(xr)["ncol"]*ceiling(nrPlate/6)/6+0.5, psz=8,
                     fun = function() {
                      do.call(configurationAsScreenPlot, 
-                         args=list(x=xr, verbose=FALSE, posControls=unlist(posControls), negControls=negControls))
+                         args=list(x=xr, verbose=FALSE, posControls=unlist(posControls),
+                         negControls=negControls))
                      },
                     print=FALSE, isImageScreen=FALSE)
 # do plot with the legend
-makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8, fun=function(){ image(matrix(1:length(res)), axes=FALSE, col=res, add = !TRUE, ylab="", xlab="Color scale"); axis(1, at = seq(0,1,length=length(res)), tick = !TRUE, labels=names(res)) }, print=FALSE, isImageScreen=FALSE)
+makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8,
+         fun=function(){ image(matrix(1:length(res)), axes=FALSE, col=res,
+         add = !TRUE, ylab="", xlab="Color scale"); axis(1, at = seq(0,1,length=length(res)),
+                               tick = !TRUE, labels=names(res)) }, print=FALSE,
+         isImageScreen=FALSE)
 
    confTable = data.frame(matrix(data = NA, nrow = 2, ncol = 1))
    names(confTable) = "Plate configuration"
