@@ -47,7 +47,11 @@
     structure that annotates the second dimension is called \code{phenoData}.
     This is because we are using infrastructure
     (the \code{\link[Biobase:class.NChannelSet]{NChannelSet}} class) that
-    uses this unfortunate term for this purpose.
+    uses this unfortunate term for this purpose. The software provides
+    methodology for replicate summarization and scoring, however more
+    complicated experimental designs are not directly
+    supported. Multi-purpose tools like \code{\link[limma]{lmFit}} in the
+    \code{limma} package should be consulted.
     \item The (optional) third dimension corresponds to different
     channels (e.g. different luminescence reporters)    
   }
@@ -117,6 +121,16 @@ and \code{Flag}. Additional columns are \code{Sample} (when there are replicates
    represents a single channel. Columns in each matrix correspond to
    samples (or replicate), rows to features (probes). 
    Once created, \code{cellHTS} manages coordination of samples and channels.
+ }
+
+ \item{\code{plateData}:}{
+   A list of data frames, with number of rows of each frame equal to the
+   number of plates used in the assay and number of columns equal to the
+   number of samples. Each data frame in the list should contain
+   factorial annotation information relevant for the individual plates,
+   like experimental batches or varying types of micro-titre
+   plates. Currently, this information will be used for between-batch
+   normalization and quality assessment.
  }
 
  \item{\code{phenoData}:}{

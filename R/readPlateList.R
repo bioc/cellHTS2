@@ -100,6 +100,7 @@ readPlateList <- function(filename,
     names(intensityFiles) <- pd[, "Filename"]
 
     status <- character(nrow(pd))
+    batch <- as.data.frame(matrix(ncol=nrRep, nrow=nrPlate))
 
     for(i in seq_len(nrow(pd))) {
         if(verbose)
@@ -119,10 +120,13 @@ readPlateList <- function(filename,
                 intensityFiles[[i]] <- out[[2]]
                 xraw[pos, pd$Plate[i], pd$Replicate[i], channel[i]] <- out[[1]]$val
                 "OK"
-            }, warning=function(e) paste(class(e)[1], e$message, sep=": "),
-                                  error=function(e)   paste(class(e)[1], e$message, sep=": ")
+            },
+                                  warning=function(e) paste(class(e)[1], e$message, sep=": "),
+                                  error=function(e) paste(class(e)[1], e$message, sep=": ")
                                   ) ## tryCatch
-            
+            bt <- pd$Batch[i]
+            batch[pd$Plate[i], pd$Replicate[i]] <-
+                if(!is.null(bt)) bt else 1
         } ## else
     } ## for
 
@@ -165,14 +169,15 @@ readPlateList <- function(filename,
                phenoData=pdata,
                featureData=fdata,
                plateList=cbind(pd[,1L,drop=FALSE], status=I(status), pd[,-1L,drop=FALSE]),
-               intensityFiles=intensityFiles)
+               intensityFiles=intensityFiles,
+               plateData=list(Batch=batch))
 
     ## if there is a batch column in the platelist file we want to import it
-    if("Batch" %in% colnames(pd)){
-        bat <- pd$Batch[order(pd$Replicate, pd$Channel)]
-        dim(bat) <- c(max(plate(res)), ncol(res), length(channelNames(res)))
-        res@batch <- bat
-    }
+    ## if("Batch" %in% colnames(pd)){
+    ##         bat <- pd$Batch[order(pd$Replicate, pd$Channel)]
+    ##         dim(bat) <- c(max(plate(res)), ncol(res), length(channelNames(res)))
+    ##         res@batch <- bat
+    ##}
     
     ## output the possible errors that were encountered along the way:
     whHadProbs <- which(status!="OK")

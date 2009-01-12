@@ -1,7 +1,11 @@
 
 ## 23.6.2008, Brixen:
 
+* Keep code in the weird fake Vignette and set eval=FALSE
+
 * Drop the slot "state", it is not really useful.
+
+* Interactive links to various annotations (Doro knows what this is)
 
 * use consistent wording for columns of the NChannelSet 
   (instead of replicate, treatment). E.g.: "assay"
@@ -14,7 +18,7 @@
   - between sets of plates (i.e. rows) - see next item
 
 * We want a slot "plateData" which is a list of dataframes or 
-  AnnotatedDataframes. 
+  AnnotatedDataframes. #DONE#
   Each df has as many rows as plates, and as many columns as the 
   NChannelSet. One of the dfs, for example, can code for "batch". 
   And Florian wants to use "batch" in some of the diagnostic plots.
@@ -22,6 +26,9 @@
 * The writeReport should strongly encourage users to provide the
   history of the object being shown in the form of the R script with
   which they created it (i.e. writeReport ask .
+
+* store normalization and summarization methods and use this
+  information in the output.
 
 * check the enormous list of dependencies of the package, see which 
   ones we can remove.

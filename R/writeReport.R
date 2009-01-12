@@ -93,7 +93,7 @@ myUpdateProgress <- function(ti, tmax, si, smax){
 
 
 ##----------------------------------------------------------------------------
-writeReport <- function(cellHTSlist,
+writeReport <- function(cellHTSlist, raw, normalized, scored,
                         outdir,
                         ##outdir=file.path(getwd(), name(x)),
                         force=FALSE, map=FALSE, 
@@ -116,47 +116,67 @@ writeReport <- function(cellHTSlist,
     ## e.g. cellHTSlist = list("raw" = xr, "normalized"=xn, "scored"=xsc)
 
     allowedListNames <- c("raw", "normalized", "scored")
-
+    hasList <- !missing(cellHTSlist)
+    if(!hasList){
+        cellHTSlist <- list()
+        if(!missing(raw))
+            cellHTSlist$raw <- raw
+        if(!missing(normalized))
+            cellHTSlist$normalized <- normalized
+        if(!missing(scored))
+            cellHTSlist$scored <- scored
+    }else{
+        .Deprecated(msg=paste("The 'cellHTSlist' argument is deprecated.\nPlease provide all",
+                    "necessary cellHTS objects separately via the 'raw', 'normalized' and",
+                    "'scored' arguments`"))
+    }
     if(!is.list(cellHTSlist)) {
         stop("Argument 'cellHTSlist' should be a list containing one or a maximum ",
              "of 3 'cellHTS' objects.") 
     } else {
-        
         if(!all(sapply(cellHTSlist, class)=="cellHTS"))
             stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
-
         nm <- names(cellHTSlist)
         if(!("raw" %in% nm))
             stop("Argument 'cellHTSlist' should be a list containing at least one ",
                  "component named 'raw' that corresponds to a 'cellHTS' object ",
                  "containing unnormalized data.")
-
         if(length(cellHTSlist)>3 | any(duplicated(nm)))
             stop("Argument 'cellHTSlist' can only have a maximum of 3 components ",
                  "named 'raw', 'normalized' and 'scored'!")
-
         if(!all(nm %in% allowedListNames)) 
             stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
                          ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
                          nm[!(nm %in% allowedListNames)]))
     }
-
     xr <- cellHTSlist[["raw"]]
     xn <- cellHTSlist[["normalized"]]
     xsc <- cellHTSlist[["scored"]]
 
 
-# now check whether the given components of 'cellHTSlist' are valid cellHTS objects:
-  if(any(state(xr)[c("scored", "normalized")])) stop(sprintf("The component 'raw' of argument 'cellHTSlist' should be a 'cellHTS' object containing unnormalized data!\nPlease check its preprocessing state: %s", paste(names(state(xr)), "=", state(xr), collapse=", ")))
+    ## now check whether the given components of 'cellHTSlist' are valid cellHTS objects:
+    if(any(state(xr)[c("scored", "normalized")]))
+        stop(sprintf("The component 'raw' of argument 'cellHTSlist' should be a 'cellHTS' object ",
+                     "containing unnormalized data!\nPlease check its preprocessing state: %s",
+                     paste(names(state(xr)), "=", state(xr), collapse=", ")))
 
-   if(!is.null(xn)) {
-     if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]])) stop(sprintf("The component 'normalized' of 'cellHTSlist' should be a 'cellHTS' object containing normalized data!\nPlease check its preprocessing state: %s", paste(names(state(xn)), "=", state(xn), collapse=", ")))
+    if(!is.null(xn)) {
+        if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
+            stop(sprintf("The component 'normalized' of 'cellHTSlist' should be a 'cellHTS' ",
+                         "object containing normalized data!\nPlease check its preprocessing ",
+                         "state: %s", paste(names(state(xn)), "=", state(xn), collapse=", ")))
 
-   if(!compare2cellHTS(xr, xn)) stop("'cellHTS' objects contained in dat[['raw']] and dat[['normalized']] are not from the same experiment!")
-  }
+        if(!compare2cellHTS(xr, xn))
+            stop("'cellHTS' objects contained in dat[['raw']] and dat[['normalized']] are not ",
+                 "from the same experiment!")
+    }
 
-  if(!is.null(xsc)) {
-   if(!state(xsc)["scored"]) stop(sprintf("The component 'scored' of argument 'cellHTSlist' should be a 'cellHTS' object containing scored data!\nPlease check its preprocessing state: %s", paste(names(state(xsc)), "=", state(xsc), collapse=", ")))
+    if(!is.null(xsc)) {
+        if(!state(xsc)["scored"])
+            stop(sprintf("The component 'scored' of argument 'cellHTSlist' should be a ",
+                         "'cellHTS' object containing scored data!\nPlease check its ",
+                         "preprocessing state: %s", paste(names(state(xsc)), "=",
+                                                          state(xsc), collapse=", ")))
 
    if(!compare2cellHTS(xr, xsc)) stop("Difference across 'cellHTS' objects! The scored 'cellHTS' object given in dat[['scored']] was not calculated from the data stored in 'cellHTS' object indicated in 'dat[['raw']]'!")
 
