@@ -6,7 +6,9 @@
 
 * Keep code in the weird fake Vignette and set eval=FALSE
 
-* Drop the slot "state", it is not really useful.
+* Drop the slot "state", it is not really useful. FH: Why is that?
+  Seems to be useful for validity checking. We don't want to dig in
+  other slots to get this information if we don't have to...
 
 * Interactive links to various annotations (Doro knows what this is)
 
