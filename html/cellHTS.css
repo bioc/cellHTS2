@@ -1,0 +1,202 @@
+/* --- the bounding table and frame elements --- */
+body
+{
+    text-align:center;
+}
+
+table.border
+{
+    height:100%;
+    padding:0px; 
+    margin:0px;
+    margin-left:10px;
+    border-spacing:0px; 
+    empty-cells:show; 
+    border-collapse:collapse; 
+    font-family:Arial;
+    width:98%; 
+    
+}
+
+tr.border
+{
+    padding:0px; 
+    margin:0px;
+}
+
+td.border
+{
+    background-color:#6699cc; 
+    padding:0px; 
+    margin:0px;
+}
+
+td.corner
+{
+    background-repeat:no-repeat; 
+    background-image:url(bordercorner.gif); 
+    width:53px; 
+    height:75px; 
+    font-size:45px;
+}
+
+td.top
+{
+    height:75px; 
+    border-bottom:1px solid #336699;
+}
+
+div.header
+{
+    font-size:14px; 
+    color:white; 
+    padding-left:10px; 
+    float:left;
+}
+
+span.header
+{
+    font-size:23px;
+    font-weight:bold;
+    margin-left:5px;
+}
+
+div.timestamp
+{
+margin-left:30px;
+float:left;
+font-size: 10px;
+color:white;
+vertical-align:bottom;
+position:relative;
+top:25px;
+font-style:italic;
+}
+
+
+div.logo
+{
+    font-size:24px; 
+    color:white; 
+    padding-right:10px; 
+    float:right;
+}
+
+tr.middle
+{
+    vertical-align:top;
+}
+
+td.left
+{
+    border-right:1px solid #336699;
+}
+
+td.main
+{
+    background-color:white; 
+}
+
+div.main
+{
+    padding:20px;
+    padding-top:40px;
+    height:100%;
+}
+
+iframe.main
+{
+    height:100%;
+    width:100%;
+}
+
+
+/* --- the tabs --- */
+table.tab
+{
+    border-spacing:0px; 
+    border-collapse:collapse; 
+    white-space:nowrap; 
+    margin-left:1px;
+    float:left;
+}
+
+table#tab1
+{
+    margin-left:5px;
+}
+
+tr.tab
+{
+    padding:0px; 
+    margin:0px;
+}
+
+td.tab
+{
+    background-color:#6699cc;
+    padding:0px; 
+    margin:0px;
+}
+
+
+td.tab.left
+{
+    background-image:url(lefttab.gif);  
+    width:9px;
+    border:none;
+}
+
+td.tab.selected.left
+{
+    background-image:url(lefttabsel.gif); 
+}
+
+td.tab.middle
+{
+     height:24px; 
+     border-bottom:1px solid #336699;
+}
+
+td.tab.middle.selected
+{
+    background-color:#cccccc;
+    border-bottom:1px solid black;
+}
+
+td.tab.right
+{
+    background-image:url(righttab.gif); 
+    width:9px;
+}
+
+td.tab.selected.right
+{
+    background-image:url(righttabsel.gif); 
+}
+
+td.tab.spacer
+{
+    width:1px;
+    background-color:white;
+    border:none;
+    font-size:4px;
+}
+
+div.tab
+{
+    font-family:Arial; 
+    text-align:center; 
+    font-size:12px;
+}
+
+div.tab.unselected
+{
+    color:#4c698a; 
+}
+
+div.tab.unselected
+{
+    color:white; 
+}
+

@@ -1,51 +1,137 @@
 <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN">
-<html> <head>
-<title></title>
+<html>
+<head>
+<title>
+cellHTS2 experiment report
+</title>
+<LINK rel="stylesheet" href="cellHTS.css" type="text/css">
+<SCRIPT type="text/javascript" src="cellHTS.js"></SCRIPT>
 </head>
 
 <body>
-<h1></h1>
 
-<table style="border-spacing:0px; empty-cells:show; border-collapse:collapse; font-family:Arial;" width="100%" height="100%">
-  <tr>
-    <td style="background-repeat:no-repeat; background-image:url(bordercorner.png); background-color:#9fc2e9; padding:0px; margin:0px; width:53px; height:75px;"></td>
-    <td style="background-color:#9fc2e9; height:75px; border-bottom:1px solid #507ba5;">
-    <div style="font-size:20px; color:white; padding-left:20px; float:left;">Report for Experiment XYZ</div>
-    <div style="font-size:24px; color:white; padding-right:10px; float:right;">cellHTS2</div>
+<table class="border">
+  <tr class="border top">
+    <td class="border corner">
+      &nbsp&nbsp&nbsp&nbsp
+    </td>
+    <td class="border top">
+      <div class="header">
+	Report for Experiment XYZ
+      </div>
+      <div class="logo">
+	cellHTS2
+      </div>
     </td>
   </tr>
-  <tr style="vertical-align:top;">
-    <td style="background-color:#9fc2e9; border-right:1px solid #507ba5;">
-    </td>
-    <td style="background-color:white;">  
-      <table style="border-spacing:0px; border-collapse:collapse; white-space:nowrap;">
-	<tr>
-	  <td style="background-image:url(lefttab.png); padding:0px; margin:0px; width:9px;"></td>
-	  <td style="background-color:#9fc2e9; height:24px; border-bottom:1px solid #507ba5;">
-	  <div style="color:#4c698a; font-family:Arial; text-align:center; font-size:12px;" >
-	    <a href="http://www.google.de" target="content">Das ist ein tab</a>
-	  </div>
+  <tr class="border middle">
+    <td class="border left"></td>
+    <td class="main">
+      
+      <table class="tab" onCLick="toggleTabs('tab1',6, 'http://www.dkfz.de')">
+	<tr class="tab">
+	  <td class="tab left" id="tab1_1">
+	    &nbsp&nbsp
 	  </td>
-	  <td style="background-image:url(righttab.png); padding:0px; margin:0px; width:9px;"></td>
-	  <td style="width:0px;"></td>
-	  <td style="background-image:url(lefttab.png); padding:0px; margin:0px; width:9px;"></td>
-	  <td style="background-color:#9fc2e9; height:24px; border-bottom:1px solid #507ba5;">
-	  <div style="color:white; font-family:Arial; text-align:center; font-size:12px;" >
-	    <a href="http://www.spiegel.de" target="content">Das ist ein selektiertes tab</a>
-	  </div>
+	  <td class="tab middle" id="tab1_2">
+	    <div class="tab unselected" id="tab1_3">
+	      Plate List
+	    </div>
 	  </td>
-	  <td style="background-image:url(righttab.png); padding:0px; margin:0px; width:9px;"></td>
-	  <td style="width:0px;"></td>
-	  <td style="background-image:url(lefttab.png); padding:0px; margin:0px; width:9px;"></td>
-	  <td style="background-color:#9fc2e9; height:24px; border-bottom:1px solid #507ba5;">
-	  <div style="color:#4c698a; font-family:Arial; text-align:center; font-size:12px;" >
-	     <a href="http://www.dkfz.de" target="content">Das ist noch ein tab</a>
-	  </div>
+	  <td class="tab right" id="tab1_4">
+	    &nbsp&nbsp
 	  </td>
-	  <td style="background-image:url(righttab.png); padding:0px; margin:0px; width:9px;"></td>
 	</tr>
       </table>
-      <iframe src="http://www.google.de" width="100%" height="100%" name="content" frameborder="0">
+      
+      <table class="tab" onCLick="toggleTabs('tab2',6,'http://www.ard.de')">
+	<tr class="tab">
+	  <td class="tab selected left" id="tab2_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab selected middle" id="tab2_2">
+	    <div class="tab selected" id="tab2_3">
+	      Plate Configurations
+	    </div>
+	  </td>
+	  <td class="tab selected right" id="tab2_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+      
+      <table class="tab" onCLick="toggleTabs('tab3',6)">
+	<tr class="tab">
+	  <td class="tab left" id="tab3_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab middle" id="tab3_2">
+	  <div class="tab unselected" id="tab3_3">
+	    Plate Summaries
+	  </div>
+	  </td>
+	  <td class="tab right" id="tab3_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+
+       <table class="tab" onCLick="toggleTabs('tab4',6)">
+	<tr class="tab">
+	  <td class="tab left" id="tab4_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab middle" id="tab4_2">
+	  <div class="tab unselected" id="tab4_3">
+	    Screen Summary
+	  </div>
+	  </td>
+	  <td class="tab right" id="tab4_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+
+       <table class="tab" onCLick="toggleTabs('tab5',6)">
+	<tr class="tab">
+	  <td class="tab left" id="tab5_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab middle" id="tab5_2">
+	  <div class="tab unselected" id="tab5_3">
+	    Screen Description
+	  </div>
+	  </td>
+	  <td class="tab right" id="tab5_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+
+      <table class="tab" onCLick="toggleTabs('tab6',6)">
+	<tr class="tab">
+	  <td class="tab left" id="tab6_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab middle" id="tab6_2">
+	  <div class="tab unselected" id="tab6_3">
+	    Screen Results
+	  </div>
+	  </td>
+	  <td class="tab right" id="tab6_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+      
+      <div class="main">
+	<iframe class="main" src="http://www.google.de" name="main" frameborder="0"
+	noresize>
+	  <p>
+	    Your browser does not support iFrames. This page will not work for you.
+	  </p>
+	</iframe>
+      </div>
     </td>
   </tr>
 </table>
@@ -55,4 +141,5 @@
 
 
 
-</body> </html>
+</body>
+</html>
