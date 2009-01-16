@@ -1,0 +1,10 @@
+* Drop the slot "state", it is not really useful.
+
+* Can we drop the slot "batch"? It mostly seems to blow the object
+  structure and complicate the code. Perhaps batches are best dealt
+  with at the user level, because they can stratify the data in
+  infinitely many complicated ways.
+
+* The writeReport should strongly encourage users to provide the
+  history of the object being shown in the form of the R script with
+  which they created it.

@@ -1,0 +1,31 @@
+[Lab description]
+Experimenter name:
+Laboratory:
+Contact information:
+
+[Screen description]
+Screen: CellTiter
+Title: Example plates of a RNAi screen in Drosophila Kc167 cells
+Version: 0.1
+Date: 13 August 2007
+Screentype: RNA interference
+Organism: Drosophila melanogaster
+Celltype: Kc167
+Library: CellTiter, Promega
+Assay: Cell viability by ATP-luminescence
+Assaytype: homogenous
+Assaydescription:  Subset of a RNAi screen, consisting of the first three plates.
+
+[Publication description]
+Publicationtitle: Genome-wide RNAi analysis of growth and viability in Drosophila cells
+Reference: Science 303:832-5 (2004).
+PMIDs: 14764878
+URL: http://www.dkfz.de/signaling/viability
+License: 
+Abstract:
+
+[Files]
+plateList: KcCellTiter0607.txt KcCellTiter0707.txt
+annotation: 
+plateConf: Plateconf.txt
+screenLog: Screenlog.txt

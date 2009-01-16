@@ -1,0 +1,1 @@
+Wells: 384Plates: 3Plate	Well	Content*	*	Sample*	[A-B]01	Neg*	[A-P]02	Neg*	B02	PosSpike1	A03	PosBarcode1	A06	PosBarcode1	F19	PosBarcode1	F22	PosBarcode2	A07	PosBarcode2	A10	PosBarcode2	F23	PosBarcode3	A11	PosBarcode3	A14	PosBarcode3	H03	PosBarcode3	H06	PosBarcode

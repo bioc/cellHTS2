@@ -1,0 +1,4 @@
+Sample	Plate	Well	Flag	Comment
+1	3	K12	N/A	Contamination
+1	3	G14	N/A	Contamination
+2	1	M13	N/A	Contamination

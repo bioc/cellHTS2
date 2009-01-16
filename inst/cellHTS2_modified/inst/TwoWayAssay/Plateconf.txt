@@ -1,0 +1,10 @@
+Wells: 96
+Plates: 1
+Plate	Well	Content	Comment
+*	*	sample	
+*	[A,H]0[1-2]|D02|E01	mock	mock
+*	B01|G02	GFP	GFP
+*	B02|G01	empty	DDIT3
+*	C01|F02	AATK	up
+*	C02|F01	MAP2K6	down
+*	D01|E02	empty	CD14

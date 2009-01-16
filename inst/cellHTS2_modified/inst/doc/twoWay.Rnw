@@ -1,0 +1,350 @@
+%\VignetteIndexEntry{Supplement: enhancer-suppressor screens}
+%\VignetteKeywords{Two-way assays, cell based assays}
+%\VignettePackage{cellHTS2}
+
+\documentclass[11pt]{article}
+\usepackage{amsmath}
+\usepackage{color}
+\definecolor{darkblue}{rgb}{0.0,0.0,0.75}
+\usepackage[%
+baseurl={http://www.bioconductor.org},%
+pdftitle={Analysis of enhancer-suppressor screens},%
+pdfauthor={Ligia Bras},%
+pdfsubject={cellHTS2},%
+pdfkeywords={Bioconductor},%
+pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
+pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
+
+\newcommand{\Robject}[1]{\texttt{#1}}
+\newcommand{\Rpackage}[1]{\textit{#1}}
+\newcommand{\Rfunction}[1]{\textit{#1}}
+\newcommand{\Rclass}[1]{\textit{#1}}
+
+\newcommand{\myincfig}[3]{%
+  \begin{figure}[h] %[tp]
+    \begin{center}
+      \includegraphics[width=#2]{#1}
+      \caption{\label{#1}#3}
+    \end{center}
+  \end{figure}
+}
+
+\begin{document}
+
+%------------------------------------------------------------
+\title{Analysis of screens with enhancer and suppressor controls}
+%------------------------------------------------------------
+\author{L\'igia Br\'as, Michael Boutros and Wolfgang Huber}
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+This technical report is a supplement of the main vignette 
+\textit{End-to-end analysis of cell-based screens: from raw intensity readings
+to the annotated hit list} that is given as part of the \Rpackage{cellHTS2} 
+package. 
+%, and that accompanies the paper \textit{Analysis
+%of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
+%Wolfgang Huber~\cite{Boutros2006}. 
+
+The report explains how the 
+\Rpackage{cellHTS2} package can be used to document and analyse enhancer-suppressor screens (or \emph{two-way assays}), where we can have two types of effectors: \emph{activators} (or enhancers) and \emph{inhibitors} (or repressors). 
+In such cases, both type of effectors are used as positive controls, and they need to be considered indivually by the \Rpackage{cellHTS2} package.
+
+This text has been produced as a reproducible
+document~\cite{Gentleman2004RepRes}, containing the actual computer
+instructions, given in the language R, to produce all results, including the figures and 
+tables that are depicted here. To reproduce the computations shown here, 
+you will need an installation of R (version 2.3 or greater) 
+together with a recent version of the package
+\Rpackage{cellHTS2} and of some other add-on packages. Then, you can simply take the file
+\textit{twoWay.Rnw} in the \textit{doc} directory of the package,
+open it in a text editor, run it using the R command
+\Rfunction{Sweave}, and modify it according to your needs.
+
+We start by loading the package.
+%
+<<setup1, results=hide>>=
+library("cellHTS2")
+@ 
+%
+<<setup2, echo=FALSE, results=hide>>=
+## for debugging:
+options(error=recover)
+@ 
+
+
+%
+%------------------------------------------------------------
+\section{Assembling the data}
+\label{sec:assemble}
+%------------------------------------------------------------
+
+The example data set corresponds to one 96-well plate of an enhancer-suppressor screen performed with human cells. The screen was performed in duplicate, 
+and a luminescence-reporter was used in the assay.
+
+
+%------------------------------------------------------------
+\subsection{Reading the raw intensity files}
+%------------------------------------------------------------
+
+The set of available result files and the information about them (which plate,
+which replicate) is given in the \emph{plate list file}. 
+The first line of the plate list file for this data set is shown in 
+Table~\ref{tab:platelist}.
+\input{twoWay-platelist}
+
+The path for the raw data is defined below:
+%
+<<dataPath>>=
+experimentName = "TwoWayAssay"
+dataPath=system.file(experimentName, package="cellHTS2") 
+@ 
+%
+The input files are in the
+\Robject{\Sexpr{experimentName}} directory of the \Rpackage{cellHTS2}
+package. 
+
+The function \Rfunction{readPlateList} of \Rpackage{cellHTS2} package reads the plate list file, 
+and the intensity files, assembling the data into a single R object.
+In this example, the raw intensity files correspond to csv files, in which the first part 
+consists of data from the acquisition instrument, while the relevant data values are in the $12 \times 8$ 
+matrix at the end of the file. So, we need to give as argument to  
+\Rfunction{readPlateList}, a function suitable to import such data file format. 
+This function, which we named \Rfunction{importData}, is given in the same directory as the data files, in a R file with the same name, and needs to be sourced:
+%
+<<source import function>>=
+source(file.path(dataPath, "importData.R"))
+@ 
+%
+Finally, we call \Rfunction{readPlateList}:
+<<readPlateData, results=hide>>=
+x <- readPlateList("Platelist.txt", name=experimentName,
+  importFun=importData, path=dataPath)
+@ 
+%
+<<showX>>=
+x
+@ 
+%
+%% Create the tables with the first lines of the plate list file:
+%% it would have been nice to use the "xtable" package but it insists on 
+%%   adding row numbers, which we don't like.
+<<plateFileTable, results=hide, echo=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), selRows=1, 
+  "plate list", preName="twoWay")
+@ 
+
+%------------------------------------------------------------
+\subsection{Configuring and annotating the \Rpackage{cellHTS} object}
+%------------------------------------------------------------
+\input{twoWay-plateconfiguration} 
+\input{twoWay-geneID} 
+
+The \emph{plate configuration file} gives the information about the 
+content of the plate wells, which is used by the software to annotate the 
+measured data. The content of this file is shown in 
+Table~\ref{tab:plateconfiguration}.
+For the sample data, there is no 
+\emph{screen log file}, meaning that no measurements
+were marked to be flagged during the assay.
+Another file necessary for the configuration step 
+of the \Robject{cellHTS} object is the 
+\emph{screen description file}, which gives a 
+general description of the screen.
+%
+<<configure the data>>=
+x <- configure(x, descripFile = "Description.txt",
+    confFile="Plateconf.txt", path=dataPath)
+@ 
+%
+In this data set, instead of using the default names \emph{pos} and \emph{neg} for 
+positive and negative controls, respectively, we used the names of the target genes.
+Thus, the well annotation in this sample plate looks like 
+this~\footnote{Note that when reading the plate configuration file, the 
+\Rfunction{configure} function 
+puts the content of the column \emph{Content} 
+in lowercase. However, the orignal content of this column 
+(and the plate configuration file) is stored in slot \Robject{plateConf} of the \Robject{cellHTS} object - see 
+\Robject{plateConf(x)\$Content}.}:
+%
+<<well annottaion>>=
+table(wellAnno(x))
+@ 
+Here, \emph{AATK}, \emph{ATTK} and \emph{MAP2K6} are positive controls, whereas
+\emph{GFP} and \emph{mock} (mock transfection) correspond to negative controls. 
+We shall return to this issue in Section~\ref{sec:preprocess}, but now, we proceed to 
+the next step of data assemble, whereby we add the annotation information 
+to \Robject{x}. This information is in the \emph{screen annotation file}, and 
+Table~\ref{tab:geneID} shows the first 5 lines of this file.
+Besides the mandatory columns \emph{Plate}, \emph{Well} and \emph{GeneID}, 
+the file contains the optional column \emph{GeneSymbol}, whose content is used for
+the tooltips display in the HTML quality reports that will be produced later on.
+%
+<<annotate the data>>=
+x <- annotate(x, geneIDFile="GeneIDs.txt", path=dataPath)
+@ 
+%
+% Create the table for plateConf
+<<plateConfscreenLogTable, results=hide, echo=FALSE>>=
+cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
+    "plate configuration", selRows=NULL, preName="twoWay")
+@ 
+%% Create the table for screen annotation:
+<<geneIDsTable, results=hide, echo=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs.txt"), "gene ID", 
+  selRows = 3:6, preName="twoWay")
+@ 
+
+
+%------------------------------------------------------------
+\section{Data preprocessing and summarization of replicates}
+\label{sec:preprocess}
+%------------------------------------------------------------ 
+
+We can take a first look at the data by constructing the HTML quality reports 
+using the \Rfunction{writeReport} function. 
+For that, we must define the positive and negative controls needed when calling 
+this function.\\
+
+For an enhancer-suppressor screen, the argument \Robject{posControls} of 
+\Rfunction{writeReport} should be defined as a list with two components: 
+\emph{act} (for activator or enhancers) and \emph{inh} (for inhibitors or suppressors), 
+which should be defined as vectors of regular 
+expressions with the same length as the number of channels (in this case, length one).
+These arguments are passed to the \Rfunction{regexpr} function 
+for pattern matching within the well annotation (\Robject{wellAnno(x)}).\\
+
+In the example presented here, in the positive controls, we have 
+\emph{AATK} and \emph{ATTK} as enhancers, and \emph{MAP2K6} as 
+an inhibitor effector.
+The negative controls are \emph{GFP} and the mock transfection 
+(indicated as \emph{mock} in the plate configuration file).
+Thus, we define the negative and positive controls as follows:
+%
+<<define controls>>=
+negCtr <- "(?i)^GFP$|^mock$"
+posCtr <- list(act = "(?i)^AATK$|^ATTK$", inh = "(?i)^MAP2K6$")
+@ 
+%
+Finally, we construct the quality report pages for the raw data in a directory called \Robject{2Wraw}, in the working directory:
+%
+<<writeReport1Show, eval=FALSE>>=
+out <- writeReport(cellHTSlist=list("raw"=x), outdir="2Wraw",
+     posControls=posCtr, negControls=negCtr, 
+
+     plotPlateArgs=list(xrange=c(300, 4000)))
+@ 
+%
+<<writeReport1Do, echo=FALSE, results=hide>>=
+out <- writeReport(cellHTSlist=list("raw"=x), force=TRUE, outdir="2Wraw", 
+   posControls=posCtr, negControls=negCtr, 
+   plotPlateArgs=list(xrange=c(300, 4000)))
+@ 
+%
+After this function has finished, we can view the index page of
+the report:
+%
+<<browseReport1, eval=FALSE>>=
+browseURL(out)
+@ 
+%
+As can be seen in the HTML reports, the dynamic range for each replicate (and the respective average) 
+was calculated separately for the activators and inhibitors.\\
+
+Next, we normalize the data using a simple approach.
+First we $\log_2$ transformed to make the data scale additive. Then, for each replicate, 
+the plate intensity values at the negative control wells are taken 
+as a correction factor, so that each plate measurement is subtracted by it. 
+%
+<<normalization>>=
+xn <- normalizePlates(x, scale="multiplicative", log=TRUE, method ="negatives", 
+   varianceAdjust="none", negControls = negCtr)
+@ 
+%
+The normalized intensities are stored in the slot
+\Robject{assayData} of \Robject{xn}. This slot can be assessed as 
+an array with dimensions equal to the total number of features (product between the plate dimension and the total number of plates) x number of samples (or replicates) x number of channels (in this case, 1).
+%
+<<get the data as an array>>=
+xnorm <- Data(xn)
+dim(xnorm)
+@ 
+%
+
+Below, we call the function \Rfunction{scoreReplicates} to determine the 
+$z$-score values for each replicate, and the function \Rfunction{summarizeReplicates} 
+to summarize the replicate score values by taking the average. 
+A more conservative approach would be to consider the $z$-score value closest to zero between replicates (\Robject{summary}='closestToZero').
+%
+<<score and summarize replicates>>=
+xsc <- scoreReplicates(xn, sign="+", method="zscore") 
+xsc <- summarizeReplicates(xsc, summary="mean") 
+@ 
+%
+The resulting single $z$-score value per probe were stored again in the slot 
+\Robject{assayData} of \Robject{xsc}. Figure~\ref{twoWay-boxplotzscore} shows the boxplots of 
+the $z$-scores for the different types of probes (the "empty" wells were excluded from the plot).
+%
+<<boxplotzscore, fig=TRUE, include=FALSE, width=7, height=6>>=
+ylim <- quantile(Data(xsc), c(0.001, 0.999), na.rm=TRUE)
+wa = factor(as.character(wellAnno(xsc)), exclude="empty")   # to exclude "empty" wells
+boxplot(Data(xsc) ~ wa, col="lightblue", main="scores", outline=FALSE, ylim=ylim, xaxt="n")
+lab <- unique(plateConf(xsc)$Content)
+lab <- lab[match(levels(wa), tolower(lab))]
+axis(1, at=c(1:nlevels(wa)), labels=lab)
+@ 
+%
+\myincfig{twoWay-boxplotzscore}{0.8\textwidth}{Boxplots of $z$-scores 
+for the different types of probes.}
+%
+Now that the data have been normalized, scored and summarized between replicates, we call again 
+\Rfunction{writeReport} and use a web browser to view the resulting report:
+%
+
+<<report2Show, eval=FALSE, results=hide>>=
+out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
+outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
+   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)))
+@
+<<report2Do, results=hide, echo=FALSE, results=hide>>=
+out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
+outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
+   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)), force=TRUE)
+@
+<<browse2, eval=FALSE>>=
+browseURL(out)
+@ 
+%
+The quality reports have been created in the folder \Robject{2Wnormalized} 
+in the working directory. Now the report shows also controls-related plots, 
+distinguishing the two types of positive controls (enhancers and suppressors).
+Furthermore, the report shows the image plot with the final scored and summarized values 
+for the whole data set.
+Finally, we save the scored and summarized \Rclass{cellHTS} object to a file. 
+%
+<<savex>>=
+save(xsc, file=paste(experimentName, ".rda", sep=""))
+@ 
+% 
+
+
+%---------------------------------------------------------
+\section{Session info}
+%---------------------------------------------------------
+
+This document was produced using:
+
+<<sessionInfo, results=tex, print=TRUE>>=
+toLatex(sessionInfo())
+@ 
+
+%------------------------------------------------------------
+%Bibliography
+%------------------------------------------------------------
+\bibliography{cellhts}
+\bibliographystyle{plain}
+
+\end{document}
+
+

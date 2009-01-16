@@ -1,0 +1,31 @@
+[Lab description]
+Experimenter name:
+Laboratory:
+Contact information:
+
+[Screen description]
+Screen: p38 screen
+Title: Example data set for a two-way assay
+Version: 0.9
+Date: 07 Jul 2006
+Screentype: RNA interference
+Organism: Homo sapiens
+Celltype: Kc167
+Library: Dharmacon
+Assay: Luminescence-reporter assay
+Assaytype: Homogenous
+Assaydescription: Example data set for a two-way assay
+
+[Publication description]
+Publicationtitle: 
+Reference: 
+PMIDs: 
+URL: 
+License: 
+Abstract:
+
+[Files]
+plateList: Platelist.txt
+annotation: GeneIDs.txt
+plateConf: Plateconf.txt
+screenLog: 

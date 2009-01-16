@@ -1,0 +1,17 @@
+citHeader("To cite cellHTS2 in publications use:")
+
+citEntry(entry="article",  
+   author="Michael Boutros and Ligia P. Bras L and Wolfgang Huber",
+   title="Analysis of cell-based RNAi screens",
+   journal="Genome Biology",
+   year="2006",
+   volume="7",
+   number="7",
+   pages="R66",
+   textVersion = paste("Michael Boutros and Ligia P. Bras L and Wolfgang Huber.",
+    "Analysis of cell-based RNAi screens.",
+    "Genome Biology 7:7 R66 (2006)."))
+
+citFooter("We have invested a lot of time and effort in creating the cellHTS2 package,",
+          "please cite it when using it for data analysis.")
+

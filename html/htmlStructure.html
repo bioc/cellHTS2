@@ -10,134 +10,100 @@ cellHTS2 experiment report
 
 <body>
 
-<table class="border">
-  <tr class="border top">
-    <td class="border corner">
-      &nbsp&nbsp&nbsp&nbsp
-    </td>
-    <td class="border top">
-      <div class="header">
-	Report for Experiment XYZ
-      </div>
-      <div class="logo">
-	cellHTS2
-      </div>
+
+<table class="image">
+  <tr class="image tabs">
+    <td class="image tabs" colspan="2">
+      
+       <table class="tab" onCLick="toggleImage(1,2)">
+	<tr class="tab">
+	  <td class="tab selected left" id="tab1_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab selected middle" id="tab1_2">
+	    <div class="tab selected" id="tab1_3">
+	      Boxplot
+	    </div>
+	  </td>
+	  <td class="tab selected right" id="tab1_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+      
+      <table class="tab" onCLick="toggleImage(2,2)">
+	<tr class="tab">
+	  <td class="tab left" id="tab2_1">
+	    &nbsp&nbsp
+	  </td>
+	  <td class="tab middle" id="tab2_2">
+	  <div class="tab unselected" id="tab2_3">
+	    Controls
+	  </div>
+	  </td>
+	  <td class="tab right" id="tab2_4">
+	    &nbsp&nbsp
+	  </td>
+	</tr>
+      </table>
+      
     </td>
   </tr>
-  <tr class="border middle">
-    <td class="border left"></td>
-    <td class="main">
-      
-      <table class="tab" onCLick="toggleTabs('tab1',6, 'http://www.dkfz.de')">
-	<tr class="tab">
-	  <td class="tab left" id="tab1_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab middle" id="tab1_2">
-	    <div class="tab unselected" id="tab1_3">
-	      Plate List
-	    </div>
-	  </td>
-	  <td class="tab right" id="tab1_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
-      
-      <table class="tab" onCLick="toggleTabs('tab2',6,'http://www.ard.de')">
-	<tr class="tab">
-	  <td class="tab selected left" id="tab2_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab selected middle" id="tab2_2">
-	    <div class="tab selected" id="tab2_3">
-	      Plate Configurations
-	    </div>
-	  </td>
-	  <td class="tab selected right" id="tab2_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
-      
-      <table class="tab" onCLick="toggleTabs('tab3',6)">
-	<tr class="tab">
-	  <td class="tab left" id="tab3_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab middle" id="tab3_2">
-	  <div class="tab unselected" id="tab3_3">
-	    Plate Summaries
-	  </div>
-	  </td>
-	  <td class="tab right" id="tab3_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
 
-       <table class="tab" onCLick="toggleTabs('tab4',6)">
-	<tr class="tab">
-	  <td class="tab left" id="tab4_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab middle" id="tab4_2">
-	  <div class="tab unselected" id="tab4_3">
-	    Screen Summary
-	  </div>
-	  </td>
-	  <td class="tab right" id="tab4_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
-
-       <table class="tab" onCLick="toggleTabs('tab5',6)">
-	<tr class="tab">
-	  <td class="tab left" id="tab5_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab middle" id="tab5_2">
-	  <div class="tab unselected" id="tab5_3">
-	    Screen Description
-	  </div>
-	  </td>
-	  <td class="tab right" id="tab5_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
-
-      <table class="tab" onCLick="toggleTabs('tab6',6)">
-	<tr class="tab">
-	  <td class="tab left" id="tab6_1">
-	    &nbsp&nbsp
-	  </td>
-	  <td class="tab middle" id="tab6_2">
-	  <div class="tab unselected" id="tab6_3">
-	    Screen Results
-	  </div>
-	  </td>
-	  <td class="tab right" id="tab6_4">
-	    &nbsp&nbsp
-	  </td>
-	</tr>
-      </table>
-      
-      <div class="main">
-	<iframe class="main" src="http://www.google.de" name="main" frameborder="0"
-	noresize>
-	  <p>
-	    Your browser does not support iFrames. This page will not work for you.
-	  </p>
-	</iframe>
-      </div>
+  <tr class="image header" id="img1_1">
+    <td class="image header spacer">
+    </td>
+    <td class="image header">
+      <span class="image header">
+	Header image 1
+      </span>
+    </td>
+  </tr>  
+  <tr class="image" id="img1_2">
+    <td class="image caption">
+      <span class="image caption">
+	Caption image 1
+      </span>
+    </td>
+    <td class="image main">
+       <img class="image" src="img2.png"">
+    </td>
+  </tr>
+  <tr class="image pdf" id="img1_3">
+    <td class="image pdf" colspan="2">
+      <span class="image pdf" onClick="linkToPdf('http://www.google.de');">
+        pdf
+      </span>
+    </td>
+  </tr>
+  
+  <tr class="image header invisible" id="img2_1">
+    <td class="image header spacer">
+    </td>
+    <td class="image header">
+      <span class="image header">
+        Header image 2
+      </span>
+    </td>
+  </tr>
+  <tr class="image invisible" id="img2_2">
+    <td class="image caption">
+      <span class="image caption">
+        Caption image 2
+      </span>
+    </td>
+    <td class="image main invisible">
+       <img class="image" src="img1.png">
+    </td>
+  </tr>
+  <tr class="image pdf invisible" id="img2_3">
+    <td class="image pdf" colspan="2">
+      <span class="image pdf" onClick="linkToPdf('http://www.google.de');">
+        pdf
+      </span>
     </td>
   </tr>
 </table>
-
-
-
 
 
 

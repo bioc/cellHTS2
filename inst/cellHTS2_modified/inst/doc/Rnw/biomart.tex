@@ -1,0 +1,146 @@
+\begin{Schunk}
+\begin{Sinput}
+> library("biomaRt")
+\end{Sinput}
+\end{Schunk}
+%
+By default, the \Rpackage{biomaRt} package will query the webservice at\newline 
+http://www.ebi.ac.uk/biomart/martservice.  Let us check
+which BioMart databases it covers:
+%
+\begin{Schunk}
+\begin{Sinput}
+> listMarts()
+\end{Sinput}
+\begin{Soutput}
+                          name
+1                      ensembl
+2     compara_mart_homology_46
+3  compara_mart_pairwise_ga_46
+4  compara_mart_multiple_ga_46
+5                          snp
+6             genomic_features
+7                         vega
+8                      uniprot
+9                          msd
+10        ENSEMBL_MART_ENSEMBL
+11                 wormbase176
+12                       dicty
+13                    rgd_mart
+14                   SSLP_mart
+15          pepseekerGOLD_mart
+16                       pride
+17       Pancreatic_Expression
+                                                version
+1                             ENSEMBL 46 GENES (SANGER)
+2                          ENSEMBL 46 HOMOLOGY (SANGER)
+3               ENSEMBL 46 PAIRWISE ALIGNMENTS (SANGER)
+4               ENSEMBL 46 MULTIPLE ALIGNMENTS (SANGER)
+5                        ENSEMBL 46 VARIATION  (SANGER)
+6                  ENSEMBL 46 GENOMIC FEATURES (SANGER)
+7                                     VEGA 21  (SANGER)
+8                               UNIPROT PROTOTYPE (EBI)
+9                                   MSD PROTOTYPE (EBI)
+10                                       GRAMENE (CSHL)
+11                                      WORMBASE (CSHL)
+12                             DICTYBASE (NORTHWESTERN)
+13                                      RGD GENES (MCW)
+14                     RGD MICROSATELLITE MARKERS (MCW)
+15                 PEPSEEKER (UNIVERSITY OF MANCHESTER)
+16                                          PRIDE (EBI)
+17 PANCREATIC EXPRESSION DATABASE (INSTITUTE OF CANCER)
+\end{Soutput}
+\end{Schunk}
+%
+In this example, we use the Ensembl database~\cite{Ensembl2006}, from
+which we select the \textit{D. melanogaster} dataset.
+%
+\begin{Schunk}
+\begin{Sinput}
+> mart <- useMart("ensembl", dataset = "dmelanogaster_gene_ensembl")
+\end{Sinput}
+\end{Schunk}
+% 
+We can query the available gene attributes and filters for the
+selected dataset using the following functions.
+\begin{Schunk}
+\begin{Sinput}
+> attrs <- listAttributes(mart)
+> filts <- listFilters(mart)
+\end{Sinput}
+\end{Schunk}
+%
+In the BioMart system~\cite{Kasprzyk2004}, a \emph{filter} is a
+property that can be used to select a gene or a set of genes (like the
+``where'' clause in an SQL query), and an \emph{attribute} is a
+property that can be queried (like the ``select'' clause in an SQL
+query). We use the \Rfunction{getBM} function of the package
+\Rpackage{biomaRt} to obtain the gene annotation from Ensembl.
+%
+\begin{Schunk}
+\begin{Sinput}
+> myGetBM = function(att) getBM(attributes = c("ensembl_gene_id", 
++     att), filter = "ensembl_gene_id", values = unique(geneAnno(xsc)), 
++     mart = mart)
+\end{Sinput}
+\end{Schunk}
+% 
+For performance reasons, we split up our query in three subqueries,
+which corresponds to different areas in the BioMart schema, and then
+assemble the results together in R.  Alternatively, it would also be
+possible to submit a single query for all of the attributes, but then
+the result table will be enormous due to the 1:many mapping
+especially from gene ID to GO categories~\cite{GO}.
+%
+\begin{Schunk}
+\begin{Sinput}
+> bm1 <- myGetBM(c("chromosome_name", "start_position", "end_position", 
++     "description"))
+> bm2 <- myGetBM(c("flybasename_gene"))
+> bm3 = myGetBM(c("go", "go_description"))
+\end{Sinput}
+\end{Schunk}
+%
+There are only a few CG-identifiers for which we were not able to
+obtain chromosomal locations: 
+%
+\begin{Schunk}
+\begin{Sinput}
+> unique(setdiff(geneAnno(xsc), bm1$ensembl_gene_id))
+\end{Sinput}
+\begin{Soutput}
+ [1] NA        "CG7245"  "CG32253" "CG6735"  "CG31314" "CG31085" "CG15509"
+ [8] "CG15388" "CG15389" "CG5061"  "CG5074"  "CG31722" "CG31756" "CG4110" 
+[15] "CG15280" "CG31766" "CG11169" "CG13596" "CG18510" "CG12557" "CG14493"
+[22] "CG5719"  "CG14499" "CG14501" "CG4383"  "CG13904" "CG1211"  "CG13289"
+[29] "CG13290" "CG7973"  "CG7867"  "CG6112"  "CG13444" "CG18648" "CG13459"
+[36] "CG5571"  "CG31350" "CG6989"  "CG18553" "CG32469" "CG11676" "CG12600"
+[43] "CG7552"  "CG12537" "CG14559" "CG15507" "CG15781" "CG15348" "CG15349"
+[50] "CG5652"  "CR33460" "CR33465" "CG30322" "CR33258"
+\end{Soutput}
+\end{Schunk}
+%
+Below, we add the results
+to the dataframe \Robject{featureData} of \Robject{xsc}. 
+Since the tables \Robject{bm1},
+\Robject{bm2}, and \Robject{bm3} contain zero, one or several rows for
+each gene ID, but in \Robject{featureData} we want exactly one row per
+gene ID, the function \Rfunction{oneRowPerId} does the somewhat tedious
+task of reformatting the tables: multiple entries are collapsed
+into a single comma-separated string, and empty rows are inserted
+where necessary.
+%
+\begin{Schunk}
+\begin{Sinput}
+> id <- geneAnno(xsc)
+> bmAll <- cbind(oneRowPerId(bm1, id), oneRowPerId(bm2, id), oneRowPerId(bm3, 
++     id))
+> bdgpbiomart <- cbind(fData(xsc), bmAll)
+> fData(xsc) <- bdgpbiomart
+> fvarMetadata(xsc)[names(bmAll), "labelDescription"] <- sapply(names(bmAll), 
++     function(i) sub("_", " ", i))
+\end{Sinput}
+\end{Schunk}
+
+%% This is how the object is then saved in the data subdirectory of the package:
+

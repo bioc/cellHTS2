@@ -2,6 +2,8 @@
 body
 {
     text-align:center;
+    padding:0px;
+    margin:0px;
 }
 
 table.border
@@ -10,11 +12,12 @@ table.border
     padding:0px; 
     margin:0px;
     margin-left:10px;
+    margin-top:10px;
     border-spacing:0px; 
     empty-cells:show; 
     border-collapse:collapse; 
     font-family:Arial;
-    width:98%; 
+    width:99%; 
     
 }
 
@@ -108,6 +111,7 @@ iframe.main
 {
     height:100%;
     width:100%;
+    text-align:center;
 }
 
 
@@ -200,3 +204,76 @@ div.tab.unselected
     color:white; 
 }
 
+
+
+/* --- image stacks --- */
+tr.invisible
+{
+    display:none;
+}
+
+table.image
+{
+    border:1px solid #336699;
+    font-family:Arial;
+    font-weight:bold;
+    border-spacing:0px; 
+    border-collapse:collapse; 
+    background-color:#6699cc;
+}
+
+td.image
+{
+    background-color:#6699cc;
+    text-align:center;
+}
+
+td.image.main
+{
+    padding-right:25px;
+}
+
+td.image.tabs
+{
+    background-color:white;
+    padding-bottom:5px;
+    vertical-align:top;
+}
+
+td.image.caption
+{
+    color:white;
+    font-size:20px;
+}
+
+span.image.caption
+{
+    margin-left:10px;
+    margin-right:10px;
+}
+
+td.image.header
+{
+    color:white;
+    font-size:24px;
+    padding-top:10px;
+    padding-bottom:10px;
+}
+
+td.image.pdf
+{
+    text-align:right;
+    height:25px;
+}
+
+span.image.pdf
+{
+    color:white;
+    margin-right:35px;
+    font-size:12px;
+}
+
+span.image.pdf:hover
+{
+    color:#4c698a;
+}
