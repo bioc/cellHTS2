@@ -1,19 +1,26 @@
-##
-myImageMap <- function(object, tags, imgname) {		
-	if(!is.matrix(object)||ncol(object)!=4)
-		stop("'object' must be a matrix with 4 columns.")
-	len <- lapply(tags, length)
-	if(any(len!=nrow(object))) stop(sprintf("Elements of the list 'tag' must have a length equal to the number of rows of 'object' (%g).", nrow(object)))
-	mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_") 
-	outin <- paste("<img src=\"", imgname, "\" usemap=\"#", mapname, "\" border=\"2\" alt=\"\"/>\n", "<map name=\"", mapname, "\" id=\"",mapname," \">\n", sep="")    
-	stopifnot(names(tags) == c("title", "href"))
-	out <- lapply(1:nrow(object), function(i) { 
-				paste(paste("<area shape=\"rect\" coords=\"", paste(object[i,], collapse=","),"\"", sep=""), paste(" ", paste(names(tags), "=\"",c(tags[["title"]][i], tags[["href"]][i]),"\"", sep=""), collapse=" "), " alt = \"\"/>\n", sep="")
-			}) 	
-	## add all together:
-	out <- paste(unlist(out), collapse="")
-	out <- paste(outin, out, "</map>",sep="") 	
-} #myImageMap
+## Create a HTML image map from a matrix of (rectangular) coordinates
+myImageMap <- function(object, tags, imgname)
+{		
+    if(!is.matrix(object)||ncol(object)!=4)
+        stop("'object' must be a matrix with 4 columns.")
+    len <- lapply(tags, length)
+    if(any(len != nrow(object)))
+        stop(sprintf("Elements of the list 'tag' must have a length equal to the number of rows of 'object' (%g).",
+                     nrow(object)))
+    mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_") 
+    outin <- paste("<img src=\"", imgname, "\" usemap=\"#", mapname, "\" border=\"2\" alt=\"\"/>\n", "<map name=\"",
+                   mapname, "\" id=\"",mapname," \">\n", sep="")    
+    stopifnot(names(tags) == c("title", "href"))
+    out <- lapply(1:nrow(object), function(i) { 
+        paste(paste("<area shape=\"rect\" coords=\"", paste(object[i,], collapse=","),"\"", sep=""),
+              paste(" ", paste(names(tags), "=\"",c(tags[["title"]][i], tags[["href"]][i]),"\"", sep=""), collapse=" "),
+              " alt = \"\"/>\n", sep="")
+    }) 	
+    ## add all together:
+    out <- paste(unlist(out), collapse="")
+    out <- paste(outin, out, "</map>",sep="")
+    return(out)
+}
 
 
 

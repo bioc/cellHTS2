@@ -50,3 +50,6 @@ setGeneric("nbatch", def=function(object) standardGeneric("nbatch"))
 setGeneric("compare2cellHTS", def=function(x,y) standardGeneric("compare2cellHTS"))
 
 setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
+
+#if(!isGeneric("lines"))
+#    setGeneric("lines", useAsDefault=lines)

@@ -7,10 +7,11 @@ writeHtml.header <- function(con)
     <title>
       cellHTS2 Experiment Report
     </title>
-    <LINK rel=\"stylesheet\" href=\"cellHTS.css\" type=\"text/css\">
-    <SCRIPT type=\"text/javascript\" src=\"cellHTS.js\"></SCRIPT>
-  </head>
-  <body>", con)
+    <link rel=\"stylesheet\" href=\"cellHTS.css\" type=\"text/css\">
+    <script type=\"text/javascript\" src=\"cellHTS.js\"></script>
+   </head>
+  <body>
+     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", con)
 }
 
 
@@ -154,12 +155,12 @@ setClass("chtsModule",
          htmlFun="function",
          funArgs="list"))
 ## constructor
-chtsModule <- function(cellHTSList, url=file.path(outdir, guid()), htmlFun=function(...){},
+chtsModule <- function(cellHTSList, title="anonymous", url=file.path(outdir, guid()), htmlFun=function(...){},
                        funArgs=list(cellHTSList=cellHTSList), outdir=".")
 {
     if(! "cellHTSList" %in% names(funArgs))
         funArgs$cellHTSList <- cellHTSList
-    new("chtsModule", url=url, htmlFun=htmlFun, funArgs=funArgs)
+    new("chtsModule", url=url, htmlFun=htmlFun, funArgs=funArgs, title=title)
 }
 
 
@@ -171,11 +172,12 @@ setMethod("writeHtml",
       {
           if(missing(con))
           {
-              if(!file.exists(basename(x@url)))
-                  dir.create(basename(x@url), recursive=TRUE, showWarnings=FALSE)
+              if(!file.exists(dirname(x@url)))
+                  dir.create(dirname(x@url), recursive=TRUE, showWarnings=FALSE)
               con <- file(x@url, open="w")
           }
-          on.exit(close(con))
+          if(!is.null(con))
+              on.exit(close(con))
           alist <- x@funArgs
           if(! "cellHTSList" %in% names(alist))
           {
@@ -183,15 +185,15 @@ setMethod("writeHtml",
                   stop("Argument 'cellHTSList' has to be supplied, either as part of the argument ",
                        "list or as a separate parameter.")
               alist$cellHTSList <- cellHTSList
-              alist$module <- x
-              alist$con <- con
               if(!all(is(alist@cellHTSList, "cellHTS")))
                   stop("The 'cellHTSList' has to be a list of cellHTS objects.")
           }
+          alist$module <- x
+          alist$con <- con
           tmp <- do.call(x@htmlFun, args=alist)
-          res <- list(title=x@title, url=x@url)
+          res <- data.frame(title=if(!length(x@title)) NA else x@title, url=basename(x@url))
           if(!is.null(tmp) && is.list(tmp) %% names(tmp) %in% c("id", "total", "class"))
-              res <- c(res, tmp)
+              res <- cbind(res, tmp)
           return(invisible(res))
       })
 
@@ -230,19 +232,42 @@ chtsImage <- function(x)
                      
 
 
-## create HTML for chtsImage objects. If there are multiple images in the object, a tab navigation structure
-## is created. If there is a link to a pdf version, this will also be created
+## coerce chtsImage to data.frame
+setAs(from="chtsImage", to="data.frame", def=function(from)
+  {
+      st <- if(!length(from@shortTitle)) "foo" else from@shortTitle
+      ti <- if(!length(from@title)) NA else from@title
+      ca <- if(!length(from@caption)) NA else from@caption
+      fi <- if(!length(from@fullImage)) NA else from@fullImage
+      df <- data.frame(ID=seq_along(st), Title=I(ti), Caption=I(ca), FullImage=I(fi),
+                       Pdf=I(sapply(fi, function(y) ifelse(is.na(y), "", "pdf"))),
+                       Thumbnail=from@thumbnail, Class=c("", rep("invisible", length(st)-1)))
+       if(any(is.na(df)))
+           df[is.na(df)] <- ""
+      return(df)
+  })
+
+## Create HTML for chtsImage objects. If there are multiple images in the object, a tab navigation structure
+## is created. If there is a link to a pdf version, this will also be created.
+## The optional argument map will add an imageMap to the HTML code.
 setMethod("writeHtml",
           signature=signature("chtsImage"),
-          definition=function(x, con)
+          definition=function(x, con, map)
       {
           st <- x@shortTitle
+          if(!length(st))
+              st <- "foo"
           tabs <- data.frame(title=st, id=seq_along(st))
-          imgs <- data.frame(ID=seq_along(st), Title=I(x@title), Caption=I(x@caption), FullImage=I(x@fullImage),
-                             Pdf=I(sapply(x@fullImage, function(y) ifelse(is.na(y), "", "pdf"))),
-                             Thumbnail=x@thumbnail, Class=c("", rep("invisible", length(st)-1)))
-          if(any(is.na(imgs)))
-             imgs[is.na(imgs)] <- ""
+          imgs <- as(x, "data.frame")
+          if(missing(map))
+          {
+              map <- vector(mode="list", length=nrow(imgs))
+          }
+          else
+          {
+              if(length(map) != nrow(imgs))
+                  stop("The length of the imageMap list doesn't match the number of images.")
+          }
           writeLines("
           <table class=\"image\" align=\"center\">", con)
           if(nrow(tabs)>1){
@@ -282,7 +307,7 @@ setMethod("writeHtml",
                 </span>
               </td>
             <td class=\"image main\">
-              <img class=\"image\" src=\"%s\">
+              <img class=\"image\" src=\"%s\" %s>
             </td>
           </tr>
           <tr class=\"image pdf %s\" id=\"img%d_3\">
@@ -293,6 +318,7 @@ setMethod("writeHtml",
             </td>
           </tr>",  imgs[i, "Class"], imgs[i, "ID"], imgs[i, "Title"], imgs[i, "Class"],
                                  imgs[i, "ID"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
+                                 if(!is.null(map[[i]])) map[[i]] else "",
                                  imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]), con)
           }
           writeLines("

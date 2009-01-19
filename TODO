@@ -59,3 +59,5 @@
   each of these functions will in general consist of two functions,
     one for computing, one for rendering
   check hwriter package!!
+
+* standard deviations plot: wouldn't a standard error plot be more informative?
