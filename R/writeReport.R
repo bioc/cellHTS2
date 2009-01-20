@@ -1,98 +1,124 @@
 
 writehref <- function(x, url, con)
-  cat(sprintf("<A HREF=\"%s\">%s</A>", url, x), file=con)
+  				cat(sprintf("<A HREF=\"%s\">%s</A>", url, x), file=con)
 
 writeheader <- function(x, level, con)
-    cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s",
+    			cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s",
                       "</H%d></CENTER>\n\n", sep=""),
                 as.character(x), as.integer(level), as.character(x), as.integer(level)),
-        file=con)
+        		file=con)
 
 writeExperimentHeader <- function(xy, x, y, url, level, con)
-    cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER>",
+    			cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER>",
                       "<H%d>%s<A HREF=\"%s\">%s</A></H%d></CENTER>\n\n", sep=""),
                 as.character(xy), as.integer(level), as.character(x), url,  as.character(y),
                 as.integer(level)), file=con)
 
 writetail <- function(con)
-    cat(sprintf("<BR><HR>%s</HTML></HEAD>\n", date()), file=con)
+    			cat(sprintf("<BR><HR>%s</HTML></HEAD>\n", date())
+    			## is im html
+    			, file=con)
 
 
 ## ------------------------------------------------------------
+
 writeHTMLtable <- function(x, url, con,
-                           colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0"),
-                           center=FALSE, extra=NULL) {
+                           colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0")
+                           ## da machen wir unsere eigenen Farben rein
+                           ,
+                           ## woher kommen diese argumente?
+                           center=FALSE, extra=NULL) 
+                     {
+    					if(!is.data.frame(x))
+        				stop("'x' must be a data.frame")
+    					nr <- nrow(x)
+    					nc <- ncol(x)
+    					if(!missing(url)) 
+    					
+    					{
+        					if(! (is.matrix(url) && is.character(url) 
+        						  && nrow(url)==nr && ncol(url)==nc))
+            				stop("'url' must be a character matrix of the same size as 'x'")
+        					for(j in 1:nc)
+            				x[, j] <- 	ifelse(is.na(url[, j]), x[, j], 
+            							sprintf("<A HREF=\"%s\">%s</A>",
+                                        url[, j], x[, j]))
+    					}
 
-    if(!is.data.frame(x))
-        stop("'x' must be a data.frame")
-    nr <- nrow(x)
-    nc <- ncol(x)
-    if(!missing(url)) {
-        if(! (is.matrix(url) && is.character(url) && nrow(url)==nr && ncol(url)==nc))
-            stop("'url' must be a character matrix of the same size as 'x'")
-        for(j in 1:nc)
-            x[, j] <- ifelse(is.na(url[, j]), x[, j], sprintf("<A HREF=\"%s\">%s</A>",
-                                                              url[, j], x[, j]))
-    }
+						if(center) 
+						## was ist center? ein bestandteil des html-outputs?!?
+						cat("<CENTER>\n", file=con)
+  						if (!is.null(extra))
+  						## und extra auch?
+  						{
+      					nn <- (nc-1)/length(extra)
+       					cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]),
+           					paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn,
+                         	rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n",
+           					sep="", file=con)
+      						cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", 
+      							colors[(1:nc)%%2+1], colnames(x)), collapse=""),"</TR>\n", 
+      							sep="", file=con)
+  						} 
+  						else {
+      						cat("<TABLE border=0><TR>",
+          					paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], 
+          					colnames(x)), collapse=""),
+          					"</TR>\n", sep="", file=con) 
+ 					 	}
+ 					 	## häh?!? hier werden irgendwelche farben festgelegt? 
+ 					 	## und auf die länge von extra bezogen?
 
-
-  if(center) cat("<CENTER>\n", file=con)
-  if (!is.null(extra)){
-      nn <- (nc-1)/length(extra)
-       cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]),
-           paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn,
-                         rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n",
-           sep="", file=con)
-      cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1],
-                                colnames(x)), collapse=""),"</TR>\n", sep="", file=con)
-  } else {
-      cat("<TABLE border=0><TR>",
-          paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], colnames(x)),
-                collapse=""),
-          "</TR>\n", sep="", file=con) 
-  }
-
-    for(i in 1:nr)
-        ##     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
-        ##         colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
-        ##         "</TR>\n", sep="", file=con)
-        cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\">%s</TD>", colors[2*(i%%2)+(1)%%2+1],
-                                  x[i,1]), collapse=""),
-            paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
-                          colors[2*(i%%2)+(2:nc)%%2+1], x[i,-1]), collapse=""),
-            "</TR>\n", sep="", file=con)
-    cat("</TABLE>\n", file=con)
-    if(center) cat("</CENTER>\n", file=con)
-}
-#-----------------------------------------------------------------
+    					for(i in 1:nr)
+        				##     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
+        				##         colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
+	        			##         "</TR>\n", sep="", file=con)
+        				cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\">%s</TD>", 
+        				colors[2*(i%%2)+(1)%%2+1], x[i,1]), collapse=""),
+            			paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
+                         			colors[2*(i%%2)+(2:nc)%%2+1], x[i,-1]), collapse=""),
+            					"</TR>\n", sep="", file=con)
+    					cat("</TABLE>\n", file=con)
+    					if(center) cat("</CENTER>\n", file=con)
+					}
+					
+##-----------------------------------------------------------------
 
 
 
 writeHTMLtable4plots <- function(x, con, colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff",
-                                         "#e0e0f0")) {
-    nr <- nrow(x)
-    nc <- ncol(x)
+                                         "#e0e0f0")) 
+                                 {
+    								nr <- nrow(x)
+    								nc <- ncol(x)
 
-    cat("<CENTER><TABLE border=0><TR>",
-        paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], names(x)),
-              collapse=""), "</TR>\n", sep="", file=con)
+    								cat("<CENTER><TABLE border=0><TR>",
+        							paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], 
+        							names(x)),collapse=""), "</TR>\n", sep="", file=con)
 
-    for(i in 1:nr) {
-        cat("<TR>", paste(paste("<TD BGCOLOR=\"", colors[2*(i%%2)+(1:nc)%%2+1],
-                                "\">", x[i,], "</TD>", sep=""), collapse=""),
-            "</TR>\n", sep="", file=con)
-    }
-    cat("</TABLE><CENTER>\n", file=con)
-}
+    								for(i in 1:nr) 
+    								{
+        								cat("<TR>", paste(paste("<TD BGCOLOR=\"", 
+        									colors[2*(i%%2)+(1:nc)%%2+1], "\">", x[i,], 
+        									"</TD>", sep=""), collapse=""),
+            								"</TR>\n", sep="", file=con)
+    								}
+    								cat("</TABLE><CENTER>\n", file=con)
+								}
 
-##
-myUpdateProgress <- function(ti, tmax, si, smax){
-    updateProgress(ti/tmax*100, sub=sprintf("step %s of %s", si, smax), autoKill=!TRUE)
-}
+
+myUpdateProgress <- function(ti, tmax, si, smax)
+					## wo werden ti und si definiert?
+					{
+    				updateProgress(ti/tmax*100, sub=sprintf("step %s of %s", si, smax), autoKill=FALSE)
+					}
+## warum kommt das unten noch mal? Z311
 
 
 
 ##----------------------------------------------------------------------------
+
+
 writeReport <- function(cellHTSlist, raw, normalized, scored,
                         outdir,
                         ##outdir=file.path(getwd(), name(x)),
@@ -115,163 +141,212 @@ writeReport <- function(cellHTSlist, raw, normalized, scored,
     ##   'scored' - cellHTS object comprising scored data.
     ## e.g. cellHTSlist = list("raw" = xr, "normalized"=xn, "scored"=xsc)
 
-    allowedListNames <- c("raw", "normalized", "scored")
-    hasList <- !missing(cellHTSlist)
-    if(!hasList){
-        cellHTSlist <- list()
-        if(!missing(raw))
-            cellHTSlist$raw <- raw
-        if(!missing(normalized))
-            cellHTSlist$normalized <- normalized
-        if(!missing(scored))
-            cellHTSlist$scored <- scored
-    }else{
-        .Deprecated(msg=paste("The 'cellHTSlist' argument is deprecated.\nPlease provide all",
-                    "necessary cellHTS objects separately via the 'raw', 'normalized' and",
-                    "'scored' arguments`"))
-    }
-    if(!is.list(cellHTSlist)) {
-        stop("Argument 'cellHTSlist' should be a list containing one or a maximum ",
-             "of 3 'cellHTS' objects.") 
-    } else {
-        if(!all(sapply(cellHTSlist, class)=="cellHTS"))
-            stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
-        nm <- names(cellHTSlist)
-        if(!("raw" %in% nm))
-            stop("Argument 'cellHTSlist' should be a list containing at least one ",
-                 "component named 'raw' that corresponds to a 'cellHTS' object ",
-                 "containing unnormalized data.")
-        if(length(cellHTSlist)>3 | any(duplicated(nm)))
-            stop("Argument 'cellHTSlist' can only have a maximum of 3 components ",
-                 "named 'raw', 'normalized' and 'scored'!")
-        if(!all(nm %in% allowedListNames)) 
-            stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
-                         ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
-                         nm[!(nm %in% allowedListNames)]))
-    }
-    xr <- cellHTSlist[["raw"]]
-    xn <- cellHTSlist[["normalized"]]
-    xsc <- cellHTSlist[["scored"]]
+    				allowedListNames <- c("raw", "normalized", "scored")
+    				hasList <- !missing(cellHTSlist)
+    				if(!hasList){
+        				cellHTSlist <- list()
+        				if(!missing(raw))
+            			cellHTSlist$raw <- raw
+       					if(!missing(normalized))
+            			cellHTSlist$normalized <- normalized
+        				if(!missing(scored))
+            			cellHTSlist$scored <- scored
+    				}
+    				else {
+        				.Deprecated(msg=paste("The 'cellHTSlist' argument is deprecated.\n", 
+        				"Please provide all necessary cellHTS objects separately via the 'raw', ",
+        				 "'normalized' and 'scored' arguments`"))
+    				}
+    				if(!is.list(cellHTSlist)) {
+        				stop("Argument 'cellHTSlist' should be a list containing one or a maximum ",
+             			"of 3 'cellHTS' objects.") 
+    				} 
+    				else {
+        				if(!all(sapply(cellHTSlist, class)=="cellHTS"))
+            			stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
+            			
+        				nm <- names(cellHTSlist)       			
+        				if(!("raw" %in% nm))
+            			stop("Argument 'cellHTSlist' should be a list containing at least one ",
+                 		"component named 'raw' that corresponds to a 'cellHTS' object ",
+                 		"containing unnormalized data.")
+                 		
+        				if(length(cellHTSlist)>3 | any(duplicated(nm)))
+            			stop("Argument 'cellHTSlist' can only have a maximum of 3 components ",
+                 		"named 'raw', 'normalized' and 'scored'!")
+        				
+        				if(!all(nm %in% allowedListNames))         				
+            			stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
+                        	ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
+                        	nm[!(nm %in% allowedListNames)]))
+                        	## bin mir nicht sicher, ob ich wirklich weiß, wie der output aussieht
+    				}
+    				
+    				xr <- cellHTSlist[["raw"]]
+    				xn <- cellHTSlist[["normalized"]]
+    				xsc <- cellHTSlist[["scored"]]
 
 
-    ## now check whether the given components of 'cellHTSlist' are valid cellHTS objects:
-    if(any(state(xr)[c("scored", "normalized")]))
-        stop(sprintf("The component 'raw' of argument 'cellHTSlist' should be a 'cellHTS' object ",
-                     "containing unnormalized data!\nPlease check its preprocessing state: %s",
+    				## now check whether the given components of 'cellHTSlist' 
+    				## are valid cellHTS objects:
+    
+    				if(any(state(xr)[c("scored", "normalized")]))
+        			stop(sprintf("The component 'raw' of argument 'cellHTSlist' should be ",
+        			 "a 'cellHTS' object containing unnormalized data!\n",
+        			 "Please check its preprocessing state: %s",
                      paste(names(state(xr)), "=", state(xr), collapse=", ")))
 
-    if(!is.null(xn)) {
-        if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
-            stop(sprintf("The component 'normalized' of 'cellHTSlist' should be a 'cellHTS' ",
-                         "object containing normalized data!\nPlease check its preprocessing ",
-                         "state: %s", paste(names(state(xn)), "=", state(xn), collapse=", ")))
+    				if(!is.null(xn)) 
+    				{
+        				if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
+            			stop(sprintf("The component 'normalized' of 'cellHTSlist' ",
+            				"should be a 'cellHTS' object containing normalized data!\n",
+            				"Please check its preprocessing state: %s", 
+            				paste(names(state(xn)), "=", state(xn), collapse=", ")))
 
-        if(!compare2cellHTS(xr, xn))
-            stop("'cellHTS' objects contained in dat[['raw']] and dat[['normalized']] are not ",
-                 "from the same experiment!")
-    }
+        				if(!compare2cellHTS(xr, xn))
+            			stop("'cellHTS' objects contained in dat[['raw']] and dat[['normalized']] ",
+            				"are not from the same experiment!")
+    				}
 
-    if(!is.null(xsc)) {
-        if(!state(xsc)["scored"])
-            stop(sprintf("The component 'scored' of argument 'cellHTSlist' should be a ",
-                         "'cellHTS' object containing scored data!\nPlease check its ",
-                         "preprocessing state: %s", paste(names(state(xsc)), "=",
+    				if(!is.null(xsc)) 
+    				{
+        				if(!state(xsc)["scored"])
+            			stop(sprintf("The component 'scored' of argument 'cellHTSlist' should be a ",
+                         	"'cellHTS' object containing scored data!\nPlease check its ",
+                         	"preprocessing state: %s", paste(names(state(xsc)), "=",
                                                           state(xsc), collapse=", ")))
 
-   if(!compare2cellHTS(xr, xsc)) stop("Difference across 'cellHTS' objects! The scored 'cellHTS' object given in dat[['scored']] was not calculated from the data stored in 'cellHTS' object indicated in 'dat[['raw']]'!")
+   						if(!compare2cellHTS(xr, xsc)) stop("Difference across 'cellHTS' objects! ",
+   							"The scored 'cellHTS' object given in dat[['scored']] was not ",
+   							"calculated from the data stored in 'cellHTS' object indicated in ",
+   							 "'dat[['raw']]'!")
+   							 ## hmm, könnte doch eigentlich ne ähnliche fehlermedlung wie oben machen
 
-  # If 'scored' component was given, than 'normalized' component should also be available!
-  if(is.null(xn)) stop("Please add to 'cellHTSlist' list a component named 'normalized' corresponding to a cellHTS object containing the normalized data!") 
-  }
+  						## If 'scored' component was given, than 'normalized' component 
+  						## should also be available!
+  						
+  						if(is.null(xn)) 
+  						stop("Please add to 'cellHTSlist' list a component named 'normalized' ",
+  						 	"corresponding to a cellHTS object containing the normalized data!") 
+  					}
 
 ## --------------------------------------
 
 
-  ## consistency checks:
-  if (!is.logical(progressReport))
-    stop("'progressReport' must be a logical value.")
+ 					 ## consistency checks:
+ 					 
+ 					 
+  					if (!is.logical(progressReport))
+    				stop("'progressReport' must be a logical value.")
 
-  if (!is.logical(map))
-    stop("'map' must be a logical value.")
+  					if (!is.logical(map))
+    				stop("'map' must be a logical value.")
 
-  if(is.logical(plotPlateArgs)) {
-    if(plotPlateArgs)
-      plotPlateArgs <- list(map=map)
-  } else {
-    if(!is.list(plotPlateArgs)) {
-      stop("'plotPlateArgs' must either be logical or a list.") 
-     } else {
-      if(!all(names(plotPlateArgs) %in% c("sdcol", "sdrange", "xcol", "xrange", "map")))
-      stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are allowed for 'plotPlateArgs' list!")
-      plotPlateArgs$map = map
-     }
-  }
+  					if(is.logical(plotPlateArgs)) 
+  					{
+    					if(plotPlateArgs)
+      					plotPlateArgs <- list(map=map)
+  					} 
+  					else 
+  					{
+    					if(!is.list(plotPlateArgs)) 
+    					{
+      						stop("'plotPlateArgs' must either be logical or a list.") 
+     					} 
+     					else 
+     					{
+      						if(!all(names(plotPlateArgs) %in% 
+      							c("sdcol", "sdrange", "xcol", "xrange", "map")))
+      						stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are ",
+      						"allowed for 'plotPlateArgs' list!")
+      						plotPlateArgs$map = map
+     					}
+ 					 }
 
-  if(is.list(imageScreenArgs)) {
-    if(!("map" %in% names(imageScreenArgs)))
-      imageScreenArgs$map = map
-    if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno")))
-      stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for 'imageScreenArgs' list!")
+  					if(is.list(imageScreenArgs)) 
+  					{
+    					if(!("map" %in% names(imageScreenArgs)))
+    					
+      					imageScreenArgs$map = map
+    					if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno")))
+      					stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for ",
+      					"'imageScreenArgs' list!")
+  					} 
+  					else 
+  					{
+    					if(!is.null(imageScreenArgs)) 
+      					stop("'imageScreenArgs' must either be a list or NULL.") 
+      					else imageScreenArgs=list(map=map)
+  					}
 
-  } else {
-    if(!is.null(imageScreenArgs)) 
-      stop("'imageScreenArgs' must either be a list or NULL.") else imageScreenArgs=list(map=map)
-  }
-
-    # available data
-    xraw <- Data(xr)  ## xraw should always be given!
-    xnorm <- if(is.null(xn)) xn else Data(xn)
-#    scores <- if(is.null(xsc)) xsc else Data(xsc)
-
-
-  # dimensions 
-  d <- as.integer(dim(xraw))
-  nrWell    <- prod(pdim(xr))
-  nrPlate   <- max(plate(xr))
-  nrReplicate <- as.numeric(d[2])
-  nrChannel <- if(!is.null(xnorm)) as.integer(dim(xnorm)[3]) else d[3]  ## will be defined based on xnorm, if it exists
-
-  objState <- sapply(cellHTSlist, function(i) {
-                    if(!is.null(i)) state(i) }
-                    )
-
-overallState <- apply(objState, 1, any)
-#whConfigured <- colnames(objState)[objState["configured",]]
-whAnnotated <- colnames(objState)[objState["annotated",]]
+   					## available data
+    				xraw <- Data(xr)  ## xraw should always be given!
+    				xnorm <- if(is.null(xn)) xn else Data(xn)
+					##    scores <- if(is.null(xsc)) xsc else Data(xsc)
 
 
-  ## Progress bar 
+  					## dimensions 
+  					d <- as.integer(dim(xraw))
+  					nrWell    <- prod(pdim(xr))
+  					nrPlate   <- max(plate(xr))
+  					nrReplicate <- as.numeric(d[2])
+  					nrChannel <- 	if(!is.null(xnorm)) as.integer(dim(xnorm)[3]) 
+  									else d[3]  
+  					## will be defined based on xnorm, if it exists
+  					## why that? does it make a difference?
+
+  					objState <- sapply(cellHTSlist, function(i) 
+  										{
+                    					if(!is.null(i)) 
+                    					state(i) 
+                    					}
+            							)
+
+					overallState <- apply(objState, 1, any)
+					## whConfigured <- colnames(objState)[objState["configured",]]
+					whAnnotated <- colnames(objState)[objState["annotated",]]
+
+
+  ## Progress bar ----------------------------------------------------------------
   ## Rough estimation of the total computation time that the function will take
   ## 1 = one time unit
   ## Steps inside writeReport:
-  	# Step 1 - creating the output directory
-  	# Step 2 - Controls annotation (only if overallState["configured"]=TRUE)
-  	# Step 3 - QC per plate & channel (only if overallState(x)["configured"]=TRUE)
-  	# Step 4 - Add plate result files and write the overall QC results
-  	# Step 5 - Per experiment QC
-  	# Step 6 - topTable  (only if scored data are available)
-  	# Step 7 -  Screen-wide image plot (only if scored data are available)
+  	## Step 1 - creating the output directory
+  	## Step 2 - Controls annotation (only if overallState["configured"]=TRUE)
+  	## Step 3 - QC per plate & channel (only if overallState(x)["configured"]=TRUE)
+  	## Step 4 - Add plate result files and write the overall QC results
+  	## Step 5 - Per experiment QC
+  	## Step 6 - topTable  (only if scored data are available)
+  	## Step 7 - Screen-wide image plot (only if scored data are available)
 
-  if (progressReport){
-    timeCounter=0
-    timePerStep <- c(
-      step1 = 5,
-      step2 = 5,
-      step3 = nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 + plotPlateArgs$map else 0),
-      step4 = 0.2*sum(plateList(xr)$status=="OK") + 4*nrChannel*nrReplicate,
-      step5 = 10*nrChannel*nrReplicate, 
-      step6 = 20*nrChannel*nrReplicate,
-      step7 = nrPlate*(0.5 + imageScreenArgs$map)
-      )
+  					if (progressReport)
+  					{
+    					timeCounter=0
+    					timePerStep <- c(
+     									step1 = 5,
+      									step2 = 5,
+      									step3 = nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 + plotPlateArgs$map else 0),
+      									step4 = 0.2*sum(plateList(xr)$status=="OK") + 4*nrChannel*nrReplicate,
+      									step5 = 10*nrChannel*nrReplicate, 
+      									step6 = 20*nrChannel*nrReplicate,
+      									step7 = nrPlate*(0.5 + imageScreenArgs$map)
+      									)
 
-    steps2Do <- names(timePerStep)[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE, rep(overallState[["scored"]],2))]
-    totalTime <- sum(timePerStep[steps2Do])
-    nsteps <- length(steps2Do)
+    					steps2Do <- names(timePerStep)
+    									[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE, rep(overallState[["scored"]],2))]
+    									totalTime <- sum(timePerStep[steps2Do])
+    									nsteps <- length(steps2Do)
 
-    require("prada")
-#     progress(title="cellHTS is busy", message = sprintf("\nCreating HTML pages for '%s'. \nState: \n%s \n%s", name(x), 
-#              paste(paste(names(state(x))[1:2], state(x)[1:2], sep="="), collapse=", "), 
-#              paste(paste(names(state(x))[3:4], state(x)[3:4], sep="="), collapse=", ")), sub=sprintf("step %s of %s", 1, nsteps))
+    					require("prada")
+    					
+    					
+##     progress(title="cellHTS is busy", message = sprintf
+##							("\nCreating HTML pages for '%s'. \nState: \n%s \n%s", name(x), 
+##              paste(paste(names(state(x))[1:2], state(x)[1:2], sep="="), collapse=", "), 
+##              paste(paste(names(state(x))[3:4], state(x)[3:4], sep="="), collapse=", ")),
+## 							sub=sprintf("step %s of %s", 1, nsteps))
+
 
      progress(title="cellHTS2 is busy", message = sprintf("\nCreating HTML pages for '%s'. \nFound %s data.\nState:\n%s",       		name(xr), 
                 if(length(cellHTSlist)>1)  paste(paste(nm[-length(cellHTSlist)], collapse=", "), "and",  nm[length(cellHTSlist)],  collapse=" ") else nm ,
@@ -282,114 +357,147 @@ whAnnotated <- colnames(objState)[objState["annotated",]]
   }
 
 
+##------------------------------------------------------------
   ## Create the output directory
   ## See if output directory exists. If not, create. If yes, check if it is empty,
   ## and if not, depending on parameter 'force', throw an error or clean it up.
-  if(missing(outdir))
-    outdir = file.path(getwd(), name(xr))
+  
+  
+  			if(missing(outdir))
+    			outdir = file.path(getwd(), name(xr))
 
-  if(file.exists(outdir)){
-    if(!file.info(outdir)$isdir)
-      stop(sprintf("'%s' must be a directory.", outdir))
-    outdirContents = dir(outdir, all.files = TRUE)
-    outdirContents = setdiff(outdirContents, c(".", ".."))
-    if(  (length(outdirContents)>0L) && !force )
-      stop(paste(sprintf("The directory '%s' is not empty.", outdir),
-                 "Please empty the directory manually, or use the argument 'force=TRUE' to overwrite.\n", sep="\n"))
-  } else {
-    dir.create(outdir, recursive=TRUE)
-  }
+  			if(file.exists(outdir))
+  			{
+    			if(!file.info(outdir)$isdir)
+      			stop(sprintf("'%s' must be a directory.", outdir))
+    			outdirContents = dir(outdir, all.files = TRUE)
+    			outdirContents = setdiff(outdirContents, c(".", ".."))
+    			if(  (length(outdirContents)>0L) && !force )
+      			stop(paste(sprintf("The directory '%s' is not empty.", outdir),
+                 "Please empty the directory manually, or use the argument 'force=TRUE' ",
+                 "to overwrite.\n", sep="\n"))
+  			} 
+  			else 
+  			{
+    			dir.create(outdir, recursive=TRUE)
+  			}
 
-  indexFile = file.path(outdir, "index.html") 
-  con = file(indexFile, "w")
-  on.exit(close(con), add=TRUE)
+  			indexFile = file.path(outdir, "index.html") 
+  			con = file(indexFile, "w")
+  			on.exit(close(con), add=TRUE)
 
-  dir.create(file.path(outdir, "in"))
+  			dir.create(file.path(outdir, "in"))
 
+ 
   ## Create header for the HTML report & add description file if 'x' is configured
-  if(overallState["configured"]) {
-     nm = file.path("in", "Description.txt")
+  
+  			## macht Flo das neu?
+  			if(overallState["configured"]) 
+  			{
+     			nm = file.path("in", "Description.txt")
 
-     writeLines(screenDesc(xr), file.path(outdir, nm))
-     writeExperimentHeader(paste("Experiment report for ", name(xr)), "Experiment report for ", name(xr), nm, 1, con)
-  } else { 
-     writeheader(paste("Experiment report for", name(xr)), 1, con)
-  }
+     			writeLines(screenDesc(xr), file.path(outdir, nm))
+     			writeExperimentHeader(paste("Experiment report for ", 
+     				name(xr)), "Experiment report for ", name(xr), nm, 1, con)
+  			} 
+  			else 
+  			{ 
+     			writeheader(paste("Experiment report for", name(xr)), 1, con)
+  			}
 
-
-  if(progressReport){
-   #stepNr = 1
-   timeCounter <- timeCounter + timePerStep["step1"]
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step1", steps2Do)+1, nsteps)
-  }
-
-
- ## initializations
- twoWay <- FALSE
- wAnno = as.character(wellAnno(xr))
-
-
-  ## the overview table of the plate result files in the experiment,
-  ##   plus the (possible) urls for each table cell
-  exptab = plateList(xr)
-  url = matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
-  colnames(url) = colnames(exptab)
-  qmHaveBeenAdded = FALSE
+			## woll'n wir das noch?
+  			if(progressReport)
+  			{
+   				## stepNr = 1
+   				timeCounter <- timeCounter + timePerStep["step1"]
+   				## print cumulative time for last step and print number of next step:
+   				myUpdateProgress(timeCounter, totalTime, match("step1", steps2Do)+1, nsteps)
+  			}
 
 
-## -------------------------
- if(overallState["configured"]) {
+ 			## initializations
+ 			twoWay <- FALSE
+ 			wAnno = as.character(wellAnno(xr))
 
-  if(progressReport) {
-    timeCounter=timeCounter+2
-    updateProgress(100*timeCounter/totalTime, autoKill = !TRUE)
-  }
+
+  			## the overview table of the plate result files in the experiment,
+  			## plus the (possible) urls for each table cell
+  			
+  			exptab = plateList(xr)
+  			url = matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
+  			colnames(url) = colnames(exptab)
+  			qmHaveBeenAdded = FALSE
+
+
+## ---------------------------------------
+
+ 			if(overallState["configured"]) 
+ 			{
+				if(progressReport) 
+					{
+    					timeCounter=timeCounter+2
+    					updateProgress(100*timeCounter/totalTime, autoKill = FALSE)
+  					}
 
   ##   -------  Step 2) Controls annotation ---------------
-  if (!missing(posControls)) {
-     ## checks, determine assay type and name of positive controls if assay is one-way
-     namePos <- checkPosControls(posControls, nrChannel, wAnno, plateConf(xr)$Content)
-     twoWay <- namePos$twoWay
-     namePos <- namePos$namePos 
+  	
+  			if (!missing(posControls)) 
+  			{
+     		
+     		## checks, determine assay type and name of positive controls if assay is one-way
+     			namePos <- checkPosControls(posControls, nrChannel, wAnno, plateConf(xr)$Content)
+     			twoWay <- namePos$twoWay
+     			namePos <- namePos$namePos 
+  			}
+  			else
+  			{
+  				## if !missing
+    			## assumes the screen is a one-way assay
+    			posControls <- as.vector(rep("^pos$", nrChannel))
+    			namePos <- "pos"
+  			}
 
-  }else{## if !missing
-    ## assumes the screen is a one-way assay
-    posControls <- as.vector(rep("^pos$", nrChannel))
-    namePos <- "pos"
-  }
-
-  if (!missing(negControls)) 
-     checkControls(y=negControls, len=nrChannel, name="negControls") #check
-  else  
-     negControls <- as.vector(rep("^neg$", nrChannel))
-  #---------------------------------------------------------------------------------------------
-
-
-
-  if(progressReport){
-   #stepNr = 2
-   timeCounter <- timeCounter + timePerStep["step2"]
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1, nsteps)
-  }
-
+  			if (!missing(negControls)) 
+     		checkControls(y=negControls, len=nrChannel, name="negControls") 
+     		
+     		##check
+  			else  
+     		negControls <- as.vector(rep("^neg$", nrChannel))
+  
+  ##---------------------------------------------------------------------------------------------
 
 
-    ## Define the bins for the histograms (channel-dependent)
-    brks = apply(if(overallState["normalized"]) { xnorm } else { xraw },
-      3, range, na.rm=TRUE)
-    brks = apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10))) 
-    if(!is(brks, "list")) brks=split(brks, col(brks))
-    ## put as list also for the case ch=1 or for the case when brks have equal length for each channel 
+
+  			if(progressReport)
+  			{
+   			## stepNr = 2
+   			timeCounter <- timeCounter + timePerStep["step2"]
+   			## print cumulative time for last step and print number of next step:
+   			myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1, nsteps)
+  			}
 
 
-   ## Correct wellAnno information:
-     ## ... by taking into account the wells that were flagged in the screen log file, 
-     ## or even by the user manually in xraw. Besides the categories in wellAnno(x), it contains the category "flagged".
-   xrawWellAnno = getArrayCorrectWellAnno(xr)
-   # put as array with dimensions nrWells x nrPlates x nrReplicates x nrChannels
-   xrawWellAnno = array(xrawWellAnno, dim=c("Wells"=nrWell, "Plates"=nrPlate, nrReplicate, dim(xrawWellAnno)[3])) # don't use variable 'nrChannel' because it may be different when defined based on xnorm data!
+
+    		## Define the bins for the histograms (channel-dependent)
+    		brks = apply(if(overallState["normalized"]) { xnorm } else { xraw },
+      						3, range, na.rm=TRUE)
+    		brks = apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10))) 
+    		if(!is(brks, "list")) brks=split(brks, col(brks))
+    		## put as list also for the case ch=1 or for the case when brks have equal 
+    		## length for each channel 
+
+
+   			## Correct wellAnno information:
+     		## ... by taking into account the wells that were flagged in the screen log file, 
+     		## or even by the user manually in xraw. Besides the categories in wellAnno(x), 
+     		## it contains the category "flagged".
+     		
+   			xrawWellAnno = getArrayCorrectWellAnno(xr)
+   			## put as array with dimensions nrWells x nrPlates x nrReplicates x nrChannels
+   			xrawWellAnno = array(xrawWellAnno, 
+   								dim=c("Wells"=nrWell, "Plates"=nrPlate, nrReplicate, 												dim(xrawWellAnno)[3])) 
+   			## don't use variable 'nrChannel' because it may be different when defined based 
+   			## on xnorm data!
 
   ## Create geneAnnotation info for the image maps:
   if(overallState["annotated"]){

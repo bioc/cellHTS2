@@ -95,7 +95,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
 	
 	for(i in seq_len(nrow(pd))) {
 		if(verbose) {
-			print("\rReading ", i, ": ", pd$Filename[i], sep="")
+			print(sprintf("\rReading %d :  %s", i, pd$Filename[i]))
 		}
 		ff = grep(pd[i, "Filename"], dfiles, ignore.case=TRUE)
 		
@@ -124,7 +124,7 @@ readPlateList = function(filename, path=dirname(filename), name, importFun, verb
 	} ## for
 	
 	if(verbose) {
-		print("\rRead", nrow(pd), "plates.\n\n")
+		print(sprintf("\rRead %d plates.\n", nrow(pd)))
 	}
 	
 	## ----  Store the data as a "cellHTS" object ----
