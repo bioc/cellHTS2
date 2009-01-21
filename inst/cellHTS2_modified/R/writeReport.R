@@ -4,13 +4,42 @@
 ##   timeCounter: the total elapsed time
 ##   additionalTime: the amount of time that is to be added to the total elapsed time
 ##   tmax: the total time needed to finish the report
-myUpdateProgress <- function(timeCounter, tmax, si, smax, additionalTime)
+myUpdateProgress <- function(time, currentStep, additionalTime=time$timePerStep[currentStep])
 {
-    timeCounter <- timeCounter + additionalTime
-    cat(sprintf("\r%d%% done (step %d of %d)", min(floor(timeCounter/tmax*100), 100),
-                min(si, smax), smax))
-    return(invisible(timeCounter))
+    if(!is.na(additionalTime))
+        time$timeCounter <- time$timeCounter + additionalTime
+    time$currentStep <- match(currentStep, time$steps2Do)
+    cat(sprintf("\r%d%% done (step %s of %d)", min(floor(time$timeCounter/time$totalTime*100), 100),
+                as.character(min(time$currentStep, time$nsteps)), time$nsteps))
+    return(invisible(time))
 }
+
+
+
+## A list containing the rough estimation of the total computation time for the writeReport function
+## and the current ellapsed time, 1=one time unit	
+createProgressList <- function(nrReplicate, nrChannel, nrPlate, plotPlateArgs, xr, overallState){
+    progress <- list()
+    progress$timeCounter <- 0
+    progress$timePerStep <- c(
+                              step0=0,
+                              step1=15,
+                              step2=nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 +
+                              plotPlateArgs$map else 0),
+                              step3=0.1*sum(plateList(xr)$status=="OK") + 2*nrChannel*nrReplicate,
+                              step4=8*nrChannel*nrReplicate, 
+                              step5=20*nrChannel*nrReplicate,
+                              step6=nrPlate*(0.5),
+                              step7=5
+                              )				
+    progress$steps2Do <- names(progress$timePerStep)[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE,
+                                                       rep(overallState[["scored"]],2))]
+    progress$totalTime <- sum(progress$timePerStep[progress$steps2Do])
+    progress$nsteps <- length(progress$steps2Do)
+    progress$currentStep <- 1
+    return(progress)
+}
+
 
 
 
@@ -300,34 +329,18 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     qmHaveBeenAdded <- FALSE		
     plotPlateArgs <- plotPlateArgsVerification(plotPlateArgs, map)
     imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map)
-	
-    ## Progress bar : Rough estimation of the total computation time that the function
-    ##                will take, 1=one time unit	
-    timeCounter <- 0
-    timePerStep <- c(
-                     step1=15,
-                     step2=nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 +
-                              plotPlateArgs$map else 0),
-                     step3=0.1*sum(plateList(xr)$status=="OK") + 2*nrChannel*nrReplicate,
-                     step4=8*nrChannel*nrReplicate, 
-                     step5=20*nrChannel*nrReplicate,
-                     step6=nrPlate*(0.5),
-                     step7=5
-                     )				
-    steps2Do <- names(timePerStep)[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE,
-                                     rep(overallState[["scored"]],2))]
-    totalTime <- sum(timePerStep[steps2Do])
-    nsteps <- length(steps2Do)
+
+    ## Set up the progress report and status output
+    progress <- createProgressList(nrReplicate, nrChannel, nrPlate, plotPlateArgs,
+                                   xr, overallState)
     dname <- if(length(cellHTSlist)>1) paste(paste(nm[-length(cellHTSlist)],
                                                    collapse=", "), "and",
                                              nm[length(cellHTSlist)],  collapse=" ") else nm 
     cat(sprintf("cellHTS2 is busy creating HTML pages for '%s'. \nFound %s data.\nState:\n%s\n",
-                name(xr), dname, paste(paste("configured", overallState[["configured"]],
-                                             sep="="),
-                                       paste("annotated", overallState[["annotated"]],
-                                             sep="="),
-                               sep=", ")))
-    timeCounter <-  myUpdateProgress(0, totalTime, 1, nsteps, 0)
+                name(xr), dname, paste(paste("configured", overallState[["configured"]], sep="="),
+                                       paste("annotated", overallState[["annotated"]], sep="="),
+                                       sep=", ")))
+    progress <-  myUpdateProgress(progress, "step0")
 
     ## Step 1 : Creating the output directory and write the screen description if present	
         outdir <- createOutputFolder(outdir, xr, force)	
@@ -335,9 +348,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     {
         nm <- file.path("in", "Description.txt")
         writeLines(screenDesc(xr), file.path(outdir, nm))
-        timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step1", steps2Do)+1,
-                                        nsteps, timePerStep["step1"])		
-	
+        progress <-  myUpdateProgress(progress, "step1")
+        
         ## Step 2 : Controls annotation
         ## check, determine assay type and name of positive controls if assay is one-way
         if (!missing(posControls))
@@ -492,10 +504,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                     length(plotPlateArgs$sdrange) <- dim(dat)[3]
                 } 
             }	
-        } 			
-        timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1,
-                                        nsteps, timePerStep["step2"])			
-   	
+        }
+                   	
         ##  Step 3 : QC per plate & channel
 	## writes a report for each Plate, and prepare argument for the writing of the table
         ## with overall CQ results
@@ -595,11 +605,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
             }## if length w			
             ## update the progress bar each time a plate is completed. Once the computation
             ## has been done for every Plate, step 3 is completed
-            timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do),
-                                            nsteps, timePerStep["step2"]/nrPlate)
+            progress <- myUpdateProgress(progress, "step2", progress$timePerStep["step2"]/nrPlate)
         }## for p plates				
-        timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1,
-                                        nsteps, 0)			
     }	
 	
     ## step 4 : write the raw data intensity  files and also the main script into the
@@ -607,8 +614,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     writeIntensityFiles(outdir, xr)  
     saveMainScript(mainScriptFile, outputFile=file.path(outdir,
                                    file.path("in", "mainScript.txt"))) 	
-    timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do),
-                                    nsteps, 0.2*length(which(plateList(xr)$status=="OK")))
+    progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
 		
     ## steps 5, 6, 7 :
     ## saving javascript file for mouseover bubbles
@@ -623,8 +629,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## the necessary HTML code is 'writeHtml.plateList'.
     wh <- which(plateList(xr)$status=="OK")
     nm <- file.path("in", names(intensityFiles(xr)))
-    for(w in wh)
-        url[w, "Filename"] <- nm[w]
+    url[wh, "Filename"] <- nm[wh]
     plateList.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(), url=url,
@@ -639,18 +644,15 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                funArgs=list(nrPlate=nrPlate, posControls=posControls,
                                negControl=negControls))
     tab <- rbind(tab, writeHtml(plateConf.module))
-    timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do)+1,
-                                    nsteps, timePerStep["step4"])
+    progress <- myUpdateProgress(progress, "step4")
 
     ## The 'Plate Summaries' module: boxplots of raw and normalized data as well as controls plots.
     ## The workhorse function to produce the necessary HTML code is 'writeHtml.experimentQC'.
     experimentQC.module <- chtsModule(cellHTSlist, url=file.path(outdir, "experimentQC.html"),
-                                     htmlFun=writeHtml.experimentQC, title="Plate Summaries",
+                                      htmlFun=writeHtml.experimentQC, title="Plate Summaries",
                                       funArgs=list(allControls=allControls, allZfac=allZfac))
     tab <- rbind(tab, writeHtml(experimentQC.module))
-    timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step5", steps2Do)+1,
-                                    nsteps, timePerStep["step5"])
-		
+    		
     ## The 'Screen Summary' module: an image plot of the results for the whole screen, possibly
     ## with an underlying HTML imageMap to allow for drill-down to the quality report page of
     ## the respective plates. The workhorse function to produce the necessary HTML code is
@@ -660,18 +662,17 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                      funArgs=list(nrPlate=nrPlate, imageScreenArgs=imageScreenArgs,
                                      overallState=overallState))
     tab <- rbind(tab, writeHtml(screenSummary.module))
-    timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do)+1,
-                                    nsteps, timePerStep["step5"]+timePerStep["step6"])
+    progress <- myUpdateProgress(progress, "step5")
 
-    ## The 'Screen Results module': currently an ASCII table of the screening results. FIXME: Later
-    ## this is supposed to be a sortable HTML table and a link to a downloadable ASCII version. The
-    ## workhorse function to produce the necessary HTML code is 'writeHtml.screenResults'.
-    screenResults.module <- chtsModule(cellHTSlist, url=file.path(outdir, "topTable.txt"),
+    ## The 'Screen Results module': a downloadable ASCII table of the screening results and
+    ## a sortable HTML table. The workhorse function to produce the necessary HTML code is
+    ## 'writeHtml.screenResults'.
+    screenResults.module <- chtsModule(cellHTSlist, url=file.path(outdir, "screenResults.html"),
                                        htmlFun=writeHtml.screenResults, title="Screen Results",
                                        funArgs=list(file=file.path(outdir, "topTable.txt"),
                                        verbose=FALSE, overallState=overallState))
-    tab <- rbind(tab, writeHtml(screenResults.module, con=NULL))
-
+    tab <- rbind(tab, writeHtml(screenResults.module))
+    progress <- myUpdateProgress(progress, "step6")
     
     ## The 'Screen Description module': currently an ASCII file of the screen description. FIXME: Later
     ## this is supposed to be formatted HTML output The workhorse function to produce the necessary HTML
@@ -680,17 +681,15 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                            htmlFun=writeHtml.screenDescription, title="Screen Description",
                                            funArgs=list(overallState=overallState))
     tab <- rbind(tab, writeHtml(screenDescription.module, con=NULL))
-    timeCounter <- myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do)+1,
-                                    nsteps, timePerStep["step7"])	
-
+    
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
     indexFile <- file.path(outdir, "index.html")
-    con <- file(file.path(dirname(indexFile), "index2.html"), open="w")
+    con <- file(indexFile, open="w")
     on.exit(close(con))
     writeHTML.mainpage(title=name(xr), tabs=tab, con=con)
-    myUpdateProgress(totalTime, totalTime, match("step7", steps2Do), nsteps, 0) 
-
+    progress <- myUpdateProgress(progress, "step7")
+    
     ## finally, return indexFile
     cat(sprintf("\rReport was successfully generated in folder %s\n", indexFile))
     return(invisible(indexFile))

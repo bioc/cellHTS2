@@ -1,59 +1,6 @@
-## Add the screen plot with plate configuration in the html report
-## (only based on the content of plate configuration file! No updates based on screen log file.)
-writeHtml.plateConf <- function(cellHTSList, module, nrPlate, posControls, negControls, con)
-{
-    outdir <- dirname(module@url)
-    xr <- cellHTSList$raw
-    if(state(xr)[["configured"]])
-    {
-        ## Create a data.frame for the screen plot with plate configuration
-        res <- makePlot(outdir, con=con, name="configurationAsScreenPlot", w=7,
-                        h=7*pdim(xr)["nrow"]/pdim(xr)["ncol"]*ceiling(nrPlate/6)/6+0.5,
-                        psz=8,
-                        fun=function()
-                    {
-                        do.call("configurationAsScreenPlot", 
-                                args=list(x=xr, verbose=FALSE,
-                                posControls=unlist(posControls),
-                                negControls=negControls))
-                    },
-                        print=FALSE, isImageScreen=FALSE)
-        img2 <- chtsImage(data.frame(thumbnail="configurationAsScreenPlot.png",
-                                     fullImage="configurationAsScreenPlot.pdf"))
-	
-        ## do plot with the legend	
-        makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8,
-                 fun=function()
-             {
-                 image(matrix(1:length(res)), axes=FALSE,
-                       col=res, add=FALSE, ylab="", xlab="Color scale")
-                 axis(1, at=seq(0,1,length=length(res)), tick=FALSE,
-                      labels=names(res))
-             },
-                 print=FALSE, isImageScreen=FALSE)
-        img1 <- chtsImage(data.frame(thumbnail="colLeg.png",
-                              title="Plate configuration"))
-        writeHtml.header(con)
-        writeHtml(img1, con)
-        writeHtml(img2, con)
-        writeHtml.trailer(con)
-    }
-}
-
-
-##  Write the per experiment QC plots in the html report
-writeHtml.experimentQC <- function(cellHTSList, module, con, allControls, allZfac)
-{
-    outdir <- dirname(module@url)
-    xn <- cellHTSList$normalized
-    xr <- cellHTSList$raw
-    plotTable <- QMexperiment(xr, xn, outdir, con, allControls, allZfac)		
-    writeHTMLtable4plots(plotTable, con=con)
-}
-
-
-
-## write imageScreenImage in the HTML report if overallState[["scored"]] == TRUE 
+## The workhorse function for the 'Screen Summary' module: an image plot of the results
+## for the whole screen, possibly with an underlying HTML imageMap to allow for drill-down
+## to the quality report page of the respective plates.
 writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overallState,
                                   nrPlate, con)
 {
@@ -83,9 +30,8 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
 
 
 
-
-## This function is used to split the Screen-wide image plot of the scored values into several areas
-## so that clicking on a plate will lead to the quality report of the plate.
+## This function is used to split the Screen-wide image plot of the scored values into rectangle
+## areas for a HTML imageMap in order that clicking on a plate will link to its quality report.
 screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
                            imageScreenArgs=imageScreenArgs)
 {			
@@ -141,34 +87,4 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
 } 
 
 
-
-## Workhorse function for the 'Screen Results' module. Currently this simply writes the topTable
-## into an ASCII file. FIXME: We want nice (sortable) HTML as well.
-writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=interactive(), overallState, ...)
-{
-     if(overallState["configured"])
-         getTopTable(cellHTSList, file=file, verbose=verbose)
-     return(invisible(NULL))
-}
-
-
-
-writeHtml.screenDescription <- function(cellHTSList, module, overallState, ...)
-{
-    if(overallState["configured"])
-    {
-        xr <- cellHTSList$raw
-        fname <- module@url
-        writeLines(screenDesc(xr), fname)
-    }
-    return(invisible(NULL))
-}
-
-
-
-writeHtml.plateList <- function(cellHTSList, module, exptab, url, center, glossary, con, ...)
-{
-    writeHTMLtable(exptab, url=url, con=con, center=center, glossary=glossary)
-    return(invisible(NULL))
-}
 

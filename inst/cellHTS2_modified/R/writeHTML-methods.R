@@ -9,6 +9,7 @@ writeHtml.header <- function(con)
     </title>
     <link rel=\"stylesheet\" href=\"cellHTS.css\" type=\"text/css\">
     <script type=\"text/javascript\" src=\"cellHTS.js\"></script>
+    <script src=\"sorttable.js\"></script>
    </head>
   <body>
      <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", con)
@@ -106,7 +107,8 @@ writeHTML.mainpage <- function(title, tabs, con)
     }
     writeLines(sprintf("
           <div class=\"main\">
-	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\"noresize>
+	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\" noresize id=\"ifr\"
+              onload=\"this.style.height = ifr.document.body.scrollHeight + 5\">
 	      <p>
 	        Your browser does not support iFrames. This page will not work for you.
 	      </p>
@@ -252,7 +254,7 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
 ## The optional argument map will add an imageMap to the HTML code.
 setMethod("writeHtml",
           signature=signature("chtsImage"),
-          definition=function(x, con, map)
+          definition=function(x, con, map, additionalCode)
       {
           st <- x@shortTitle
           if(!length(st))
@@ -267,6 +269,15 @@ setMethod("writeHtml",
           {
               if(length(map) != nrow(imgs))
                   stop("The length of the imageMap list doesn't match the number of images.")
+          }
+           if(missing(additionalCode))
+          {
+              additionalCode <- vector(mode="list", length=nrow(imgs))
+          }
+          else
+          {
+              if(length(additionalCode) != nrow(imgs))
+                  stop("The length of the additional code list doesn't match the number of images.")
           }
           writeLines("
           <table class=\"image\" align=\"center\">", con)
@@ -308,6 +319,7 @@ setMethod("writeHtml",
               </td>
             <td class=\"image main\">
               <img class=\"image\" src=\"%s\" %s>
+              %s
             </td>
           </tr>
           <tr class=\"image pdf %s\" id=\"img%d_3\">
@@ -319,7 +331,9 @@ setMethod("writeHtml",
           </tr>",  imgs[i, "Class"], imgs[i, "ID"], imgs[i, "Title"], imgs[i, "Class"],
                                  imgs[i, "ID"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
                                  if(!is.null(map[[i]])) map[[i]] else "",
-                                 imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]), con)
+                                 if(!is.null(additionalCode[[i]])) additionalCode[[i]] else "",
+                                 imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]),
+                         con)
           }
           writeLines("
         </table>", con)

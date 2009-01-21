@@ -18,7 +18,7 @@ table.border
     border-collapse:collapse; 
     font-family:Arial;
     width:99%; 
-    
+        
 }
 
 tr.border
@@ -103,15 +103,16 @@ td.main
 div.main
 {
     padding:20px;
-    padding-top:40px;
+    padding-top:60px;
     height:100%;
 }
 
 iframe.main
 {
-    height:100%;
-    width:100%;
+    height:98%;
+    width:98%;
     text-align:center;
+    scrolling:no;
 }
 
 
@@ -276,4 +277,43 @@ span.image.pdf
 span.image.pdf:hover
 {
     color:#4c698a;
+}
+
+
+/* --- some module-specific stuff --- */
+table.plateConfModule.legend
+{
+    border:none;
+    padding-top:5px;
+    text-align:center;
+    font-family:Arial;
+    color:white;
+    background-color:#6699cc;
+    border-spacing:0px;
+    font-size:10px;
+}
+
+td.plateConfModule.legend
+{
+    border: 2px solid #6699cc;
+    width:30px;
+}
+
+
+/* Sortable tables */
+table.sortable
+{
+    border:1px solid gray;
+}
+
+table.sortable td
+{
+    border:none;
+}
+
+table.sortable thead {
+    background-color:#eee;
+    color:#666666;
+    font-weight: bold;
+    cursor: default;
 }
