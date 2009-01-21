@@ -67,7 +67,7 @@ configurationAsScreenPlot <- function(x, verbose=interactive(), posControls, neg
     fill <- if(length(wellCols)>1) wellCols else rep(wellCols, 2)
     zrange <- if(length(wellCols)>1) range(mtW) else c(0, 1)
     plotScreen(ldat, zrange=zrange, fill=fill, #na.fill="yellow", 
-               nx=pdim(x)[["ncol"]], ny=pdim(x)[["nrow"]], main="Plate configuration",
+               nx=pdim(x)[["ncol"]], ny=pdim(x)[["nrow"]], main=" ",
                ncol=ifelse(max(plate(x)) < 6L, max(plate(x)), 6L))
     ## put correct names (name given in the conf file)
     aux <- sapply(names(wellCols), function(i)

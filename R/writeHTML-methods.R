@@ -1,7 +1,11 @@
 ## Set up cellHTS HTML pages including all necessary javascript and css links
 writeHtml.header <- function(con)
 {
-    writeLines("<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">
+    doc <- c("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\
+\"http://www.w3.org/TR/html4/loose.dtd\">",
+             "\"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">")
+    writeLines(sprintf("
+%s
 <html>
   <head>
     <title>
@@ -11,8 +15,8 @@ writeHtml.header <- function(con)
     <script type=\"text/javascript\" src=\"cellHTS.js\"></script>
     <script src=\"sorttable.js\"></script>
    </head>
-  <body>
-     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", con)
+   <body onload=\"if (parent.adjustIFrameSize) parent.adjustIFrameSize(window);\">
+     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", doc[1]), con)
 }
 
 
@@ -107,8 +111,8 @@ writeHTML.mainpage <- function(title, tabs, con)
     }
     writeLines(sprintf("
           <div class=\"main\">
-	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\" noresize id=\"ifr\"
-              onload=\"this.style.height = ifr.document.body.scrollHeight + 5\">
+	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\" noresize id=\"main\"
+              scrolling=\"no\" marginwidth=\"0\ marginheight=\"0\">
 	      <p>
 	        Your browser does not support iFrames. This page will not work for you.
 	      </p>
@@ -340,27 +344,3 @@ setMethod("writeHtml",
           return(invisible(NULL))
       })
 
-
-
-
-tabs <- data.frame(title=c("Plate List", "Plate Configuration", "Plate Summaries", "Screen Summary",
-                   "Screen Description", "Screen Results", "Doro's tab"),
-                   url=c(rep(c("http://www.ard.de", "testImgs.html", "http://www.dkfz.de"),2), "http://www.google.de"))
-con <- file("test.html", open="w")
-writeHTML.mainpage(title="a first test", tabs=tabs, con=con)
-close(con)
-
-
-myImg <- chtsImage(data.frame(thumbnail=c("img2.png", "img1.png"),
-                              title=c("Boxplot of raw and normalized values", "Controls after normalization"),
-                              shortTitle=c("Boxplot", "Controls"),
-                              fullImage=c("img2.pdf", "img1.pdf"),
-                              caption=c("Replicate 1<br>Left:raw, right:normalized", NA)))
-
-
-
-con <- file("testImgs.html", open="w")
-writeHtml.header(con)
-writeHtml(myImg, con)
-writeHtml.trailer(con)
-close(con)

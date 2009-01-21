@@ -64,15 +64,48 @@ span.header
     margin-left:5px;
 }
 
+
+div.methods
+{
+    float:left;
+    color:white;
+    font-size:11px;
+    margin-left:40px;
+    position:relative;
+    top:5px;
+}
+
+
+table.methods
+{
+    border-spacing:0px; 
+    border-collapse:collapse;     
+}
+
+
+td.methods.description
+{
+    font-weight:bold;
+    text-align:right;
+}
+
+
+td.methods.content
+{
+    text-align:left;
+    padding-left:5px;
+    font-size:10px;
+}
+
 div.timestamp
 {
-margin-left:30px;
+margin-left:170px;
 float:left;
 font-size: 10px;
 color:white;
 vertical-align:bottom;
 position:relative;
-top:25px;
+top:40px;
 font-style:italic;
 }
 
@@ -304,6 +337,9 @@ td.plateConfModule.legend
 table.sortable
 {
     border:1px solid gray;
+    font-family:Arial;
+    font-size:12px;
+    
 }
 
 table.sortable td
@@ -316,4 +352,9 @@ table.sortable thead {
     color:#666666;
     font-weight: bold;
     cursor: default;
+}
+
+div.download a
+{
+    border:none;
 }

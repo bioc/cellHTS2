@@ -5,6 +5,8 @@ writeHtml.experimentQC <- function(cellHTSList, module, con, allControls, allZfa
     outdir <- dirname(module@url)
     xn <- cellHTSList$normalized
     xr <- cellHTSList$raw
-    plotTable <- QMexperiment(xr, xn, outdir, con, allControls, allZfac)		
+    plotTable <- QMexperiment(xr, xn, outdir, con, allControls, allZfac)
+    writeHtml.header(con)
     writeHTMLtable4plots(plotTable, con=con)
+    writeHtml.trailer(con)
 }
