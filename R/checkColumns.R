@@ -1,6 +1,6 @@
 ## Sanity checking of mandatory column names and types in a data frame 
-checkColumns <- function(x, name, mandatory, numeric) {
-
+checkColumns <- function(x, name, mandatory, numeric)
+{
     ## one or more mandatory column are missing
     missingColumns <- setdiff(mandatory, colnames(x))
     if(length(missingColumns)>0L)
@@ -8,11 +8,13 @@ checkColumns <- function(x, name, mandatory, numeric) {
                    paste("'", missingColumns, "'", collapse=", ", sep=""),
                    ifelse(length(missingColumns)>1, " are", " is"),
                    " missing from ", name, "\n", sep=""))
-
+    
     ## one or more mandatory columns are not numeric
-    for(j in intersect(numeric, colnames(x))) {
+    for(j in intersect(numeric, colnames(x)))
+    {
         if(!is.numeric(x[,j]))
-            stop(sprintf("The column '%s' in file %s must be 'numeric', but it is of class '%s'.\n",
+            stop(sprintf("The column '%s' in file %s must be 'numeric', but it is ",
+                         "of class '%s'.\n",
                          j, name, class(x[,j])))
         wna <- which(is.na(x[,j]))
         if(length(wna)>0L) {

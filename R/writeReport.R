@@ -1,848 +1,696 @@
-
-writehref <- function(x, url, con)
-  				cat(sprintf("<A HREF=\"%s\">%s</A>", url, x), file=con)
-
-writeheader <- function(x, level, con)
-    			cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER><H%d>%s",
-                      "</H%d></CENTER>\n\n", sep=""),
-                as.character(x), as.integer(level), as.character(x), as.integer(level)),
-        		file=con)
-
-writeExperimentHeader <- function(xy, x, y, url, level, con)
-    			cat(sprintf(paste("<HTML><HEAD><TITLE>%s</TITLE></HEAD>\n<BODY><CENTER>",
-                      "<H%d>%s<A HREF=\"%s\">%s</A></H%d></CENTER>\n\n", sep=""),
-                as.character(xy), as.integer(level), as.character(x), url,  as.character(y),
-                as.integer(level)), file=con)
-
-writetail <- function(con)
-    			cat(sprintf("<BR><HR>%s</HTML></HEAD>\n", date())
-    			## is im html
-    			, file=con)
-
-
-## ------------------------------------------------------------
-
-writeHTMLtable <- function(x, url, con,
-                           colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff", "#e0e0f0")
-                           ## da machen wir unsere eigenen Farben rein
-                           ,
-                           ## woher kommen diese argumente?
-                           center=FALSE, extra=NULL) 
-                     {
-    					if(!is.data.frame(x))
-        				stop("'x' must be a data.frame")
-    					nr <- nrow(x)
-    					nc <- ncol(x)
-    					if(!missing(url)) 
-    					
-    					{
-        					if(! (is.matrix(url) && is.character(url) 
-        						  && nrow(url)==nr && ncol(url)==nc))
-            				stop("'url' must be a character matrix of the same size as 'x'")
-        					for(j in 1:nc)
-            				x[, j] <- 	ifelse(is.na(url[, j]), x[, j], 
-            							sprintf("<A HREF=\"%s\">%s</A>",
-                                        url[, j], x[, j]))
-    					}
-
-						if(center) 
-						## was ist center? ein bestandteil des html-outputs?!?
-						cat("<CENTER>\n", file=con)
-  						if (!is.null(extra))
-  						## und extra auch?
-  						{
-      					nn <- (nc-1)/length(extra)
-       					cat("<TABLE border=0><TR>", sprintf("<TH BGCOLOR=\"%s\"> </TH>", colors[1]),
-           					paste(sprintf("<TH colspan=%d align=center BGCOLOR=\"%s\">%s</TH>", nn,
-                         	rep(colors[1], length(extra)), extra), collapse=""), "</TR>\n",
-           					sep="", file=con)
-      						cat("<TR>", paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", 
-      							colors[(1:nc)%%2+1], colnames(x)), collapse=""),"</TR>\n", 
-      							sep="", file=con)
-  						} 
-  						else {
-      						cat("<TABLE border=0><TR>",
-          					paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], 
-          					colnames(x)), collapse=""),
-          					"</TR>\n", sep="", file=con) 
- 					 	}
- 					 	## häh?!? hier werden irgendwelche farben festgelegt? 
- 					 	## und auf die länge von extra bezogen?
-
-    					for(i in 1:nr)
-        				##     cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
-        				##         colors[2*(i%%2)+(1:nc)%%2+1], x[i,]), collapse=""),
-	        			##         "</TR>\n", sep="", file=con)
-        				cat("<TR>", paste(sprintf("<TD BGCOLOR=\"%s\">%s</TD>", 
-        				colors[2*(i%%2)+(1)%%2+1], x[i,1]), collapse=""),
-            			paste(sprintf("<TD BGCOLOR=\"%s\" align=center>%s</TD>",
-                         			colors[2*(i%%2)+(2:nc)%%2+1], x[i,-1]), collapse=""),
-            					"</TR>\n", sep="", file=con)
-    					cat("</TABLE>\n", file=con)
-    					if(center) cat("</CENTER>\n", file=con)
-					}
-					
-##-----------------------------------------------------------------
-
-
-
-writeHTMLtable4plots <- function(x, con, colors=c("#e0e0ff", "#d0d0f0", "#f0f0ff",
-                                         "#e0e0f0")) 
-                                 {
-    								nr <- nrow(x)
-    								nc <- ncol(x)
-
-    								cat("<CENTER><TABLE border=0><TR>",
-        							paste(sprintf("<TH BGCOLOR=\"%s\">%s</TH>", colors[(1:nc)%%2+1], 
-        							names(x)),collapse=""), "</TR>\n", sep="", file=con)
-
-    								for(i in 1:nr) 
-    								{
-        								cat("<TR>", paste(paste("<TD BGCOLOR=\"", 
-        									colors[2*(i%%2)+(1:nc)%%2+1], "\">", x[i,], 
-        									"</TD>", sep=""), collapse=""),
-            								"</TR>\n", sep="", file=con)
-    								}
-    								cat("</TABLE><CENTER>\n", file=con)
-								}
-
-
-myUpdateProgress <- function(ti, tmax, si, smax)
-					## wo werden ti und si definiert?
-					{
-    				updateProgress(ti/tmax*100, sub=sprintf("step %s of %s", si, smax), autoKill=FALSE)
-					}
-## warum kommt das unten noch mal? Z311
-
-
-
-##----------------------------------------------------------------------------
-
-
-writeReport <- function(cellHTSlist, raw, normalized, scored,
-                        outdir,
-                        ##outdir=file.path(getwd(), name(x)),
-                        force=FALSE, map=FALSE, 
-                        plotPlateArgs=FALSE,
-                        imageScreenArgs=NULL, 
-                        progressReport=interactive(),
-                        posControls,
-                        negControls) {
-
-    ## ############################
-    ## NOTE: 'writeReport' can be called on different cellHTS objects at different preprocessing
-    ## stages
-    ## Arguments:
-    ## 'cellHTSlist'  should be a list of cellHTS object(s) obtained for the same experimental
-    ## data. Allowed components are:
-    ##   'raw' - (mandatory) cellHTS object containing raw experiment data.
-    ##   'normalized' (mandatory only if component 'scored' is given)- cellHTS object
-    ##    containing normalized data.
-    ##   'scored' - cellHTS object comprising scored data.
-    ## e.g. cellHTSlist = list("raw" = xr, "normalized"=xn, "scored"=xsc)
-
-    				allowedListNames <- c("raw", "normalized", "scored")
-    				hasList <- !missing(cellHTSlist)
-    				if(!hasList){
-        				cellHTSlist <- list()
-        				if(!missing(raw))
-            			cellHTSlist$raw <- raw
-       					if(!missing(normalized))
-            			cellHTSlist$normalized <- normalized
-        				if(!missing(scored))
-            			cellHTSlist$scored <- scored
-    				}
-    				else {
-        				.Deprecated(msg=paste("The 'cellHTSlist' argument is deprecated.\n", 
-        				"Please provide all necessary cellHTS objects separately via the 'raw', ",
-        				 "'normalized' and 'scored' arguments`"))
-    				}
-    				if(!is.list(cellHTSlist)) {
-        				stop("Argument 'cellHTSlist' should be a list containing one or a maximum ",
-             			"of 3 'cellHTS' objects.") 
-    				} 
-    				else {
-        				if(!all(sapply(cellHTSlist, class)=="cellHTS"))
-            			stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
-            			
-        				nm <- names(cellHTSlist)       			
-        				if(!("raw" %in% nm))
-            			stop("Argument 'cellHTSlist' should be a list containing at least one ",
-                 		"component named 'raw' that corresponds to a 'cellHTS' object ",
-                 		"containing unnormalized data.")
-                 		
-        				if(length(cellHTSlist)>3 | any(duplicated(nm)))
-            			stop("Argument 'cellHTSlist' can only have a maximum of 3 components ",
-                 		"named 'raw', 'normalized' and 'scored'!")
-        				
-        				if(!all(nm %in% allowedListNames))         				
-            			stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s", 
-                        	ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""), 
-                        	nm[!(nm %in% allowedListNames)]))
-                        	## bin mir nicht sicher, ob ich wirklich weiß, wie der output aussieht
-    				}
-    				
-    				xr <- cellHTSlist[["raw"]]
-    				xn <- cellHTSlist[["normalized"]]
-    				xsc <- cellHTSlist[["scored"]]
-
-
-    				## now check whether the given components of 'cellHTSlist' 
-    				## are valid cellHTS objects:
-    
-    				if(any(state(xr)[c("scored", "normalized")]))
-        			stop(sprintf("The component 'raw' of argument 'cellHTSlist' should be ",
-        			 "a 'cellHTS' object containing unnormalized data!\n",
-        			 "Please check its preprocessing state: %s",
-                     paste(names(state(xr)), "=", state(xr), collapse=", ")))
-
-    				if(!is.null(xn)) 
-    				{
-        				if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
-            			stop(sprintf("The component 'normalized' of 'cellHTSlist' ",
-            				"should be a 'cellHTS' object containing normalized data!\n",
-            				"Please check its preprocessing state: %s", 
-            				paste(names(state(xn)), "=", state(xn), collapse=", ")))
-
-        				if(!compare2cellHTS(xr, xn))
-            			stop("'cellHTS' objects contained in dat[['raw']] and dat[['normalized']] ",
-            				"are not from the same experiment!")
-    				}
-
-    				if(!is.null(xsc)) 
-    				{
-        				if(!state(xsc)["scored"])
-            			stop(sprintf("The component 'scored' of argument 'cellHTSlist' should be a ",
-                         	"'cellHTS' object containing scored data!\nPlease check its ",
-                         	"preprocessing state: %s", paste(names(state(xsc)), "=",
-                                                          state(xsc), collapse=", ")))
-
-   						if(!compare2cellHTS(xr, xsc)) stop("Difference across 'cellHTS' objects! ",
-   							"The scored 'cellHTS' object given in dat[['scored']] was not ",
-   							"calculated from the data stored in 'cellHTS' object indicated in ",
-   							 "'dat[['raw']]'!")
-   							 ## hmm, könnte doch eigentlich ne ähnliche fehlermedlung wie oben machen
-
-  						## If 'scored' component was given, than 'normalized' component 
-  						## should also be available!
-  						
-  						if(is.null(xn)) 
-  						stop("Please add to 'cellHTSlist' list a component named 'normalized' ",
-  						 	"corresponding to a cellHTS object containing the normalized data!") 
-  					}
-
-## --------------------------------------
-
-
- 					 ## consistency checks:
- 					 
- 					 
-  					if (!is.logical(progressReport))
-    				stop("'progressReport' must be a logical value.")
-
-  					if (!is.logical(map))
-    				stop("'map' must be a logical value.")
-
-  					if(is.logical(plotPlateArgs)) 
-  					{
-    					if(plotPlateArgs)
-      					plotPlateArgs <- list(map=map)
-  					} 
-  					else 
-  					{
-    					if(!is.list(plotPlateArgs)) 
-    					{
-      						stop("'plotPlateArgs' must either be logical or a list.") 
-     					} 
-     					else 
-     					{
-      						if(!all(names(plotPlateArgs) %in% 
-      							c("sdcol", "sdrange", "xcol", "xrange", "map")))
-      						stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are ",
-      						"allowed for 'plotPlateArgs' list!")
-      						plotPlateArgs$map = map
-     					}
- 					 }
-
-  					if(is.list(imageScreenArgs)) 
-  					{
-    					if(!("map" %in% names(imageScreenArgs)))
-    					
-      					imageScreenArgs$map = map
-    					if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno")))
-      					stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for ",
-      					"'imageScreenArgs' list!")
-  					} 
-  					else 
-  					{
-    					if(!is.null(imageScreenArgs)) 
-      					stop("'imageScreenArgs' must either be a list or NULL.") 
-      					else imageScreenArgs=list(map=map)
-  					}
-
-   					## available data
-    				xraw <- Data(xr)  ## xraw should always be given!
-    				xnorm <- if(is.null(xn)) xn else Data(xn)
-					##    scores <- if(is.null(xsc)) xsc else Data(xsc)
-
-
-  					## dimensions 
-  					d <- as.integer(dim(xraw))
-  					nrWell    <- prod(pdim(xr))
-  					nrPlate   <- max(plate(xr))
-  					nrReplicate <- as.numeric(d[2])
-  					nrChannel <- 	if(!is.null(xnorm)) as.integer(dim(xnorm)[3]) 
-  									else d[3]  
-  					## will be defined based on xnorm, if it exists
-  					## why that? does it make a difference?
-
-  					objState <- sapply(cellHTSlist, function(i) 
-  										{
-                    					if(!is.null(i)) 
-                    					state(i) 
-                    					}
-            							)
-
-					overallState <- apply(objState, 1, any)
-					## whConfigured <- colnames(objState)[objState["configured",]]
-					whAnnotated <- colnames(objState)[objState["annotated",]]
-
-
-  ## Progress bar ----------------------------------------------------------------
-  ## Rough estimation of the total computation time that the function will take
-  ## 1 = one time unit
-  ## Steps inside writeReport:
-  	## Step 1 - creating the output directory
-  	## Step 2 - Controls annotation (only if overallState["configured"]=TRUE)
-  	## Step 3 - QC per plate & channel (only if overallState(x)["configured"]=TRUE)
-  	## Step 4 - Add plate result files and write the overall QC results
-  	## Step 5 - Per experiment QC
-  	## Step 6 - topTable  (only if scored data are available)
-  	## Step 7 - Screen-wide image plot (only if scored data are available)
-
-  					if (progressReport)
-  					{
-    					timeCounter=0
-    					timePerStep <- c(
-     									step1 = 5,
-      									step2 = 5,
-      									step3 = nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 + plotPlateArgs$map else 0),
-      									step4 = 0.2*sum(plateList(xr)$status=="OK") + 4*nrChannel*nrReplicate,
-      									step5 = 10*nrChannel*nrReplicate, 
-      									step6 = 20*nrChannel*nrReplicate,
-      									step7 = nrPlate*(0.5 + imageScreenArgs$map)
-      									)
-
-    					steps2Do <- names(timePerStep)
-    									[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE, rep(overallState[["scored"]],2))]
-    									totalTime <- sum(timePerStep[steps2Do])
-    									nsteps <- length(steps2Do)
-
-    					require("prada")
-    					
-    					
-##     progress(title="cellHTS is busy", message = sprintf
-##							("\nCreating HTML pages for '%s'. \nState: \n%s \n%s", name(x), 
-##              paste(paste(names(state(x))[1:2], state(x)[1:2], sep="="), collapse=", "), 
-##              paste(paste(names(state(x))[3:4], state(x)[3:4], sep="="), collapse=", ")),
-## 							sub=sprintf("step %s of %s", 1, nsteps))
-
-
-     progress(title="cellHTS2 is busy", message = sprintf("\nCreating HTML pages for '%s'. \nFound %s data.\nState:\n%s",       		name(xr), 
-                if(length(cellHTSlist)>1)  paste(paste(nm[-length(cellHTSlist)], collapse=", "), "and",  nm[length(cellHTSlist)],  collapse=" ") else nm ,
-                paste(paste("configured", overallState[["configured"]], sep=" = "), paste("annotated", overallState[["annotated"]], sep=" = "), sep=", ")),
-     sub=sprintf("step %s of %s", 1, nsteps))
-
-    on.exit(killProgress(), add=TRUE)
-  }
-
-
-##------------------------------------------------------------
-  ## Create the output directory
-  ## See if output directory exists. If not, create. If yes, check if it is empty,
-  ## and if not, depending on parameter 'force', throw an error or clean it up.
-  
-  
-  			if(missing(outdir))
-    			outdir = file.path(getwd(), name(xr))
-
-  			if(file.exists(outdir))
-  			{
-    			if(!file.info(outdir)$isdir)
-      			stop(sprintf("'%s' must be a directory.", outdir))
-    			outdirContents = dir(outdir, all.files = TRUE)
-    			outdirContents = setdiff(outdirContents, c(".", ".."))
-    			if(  (length(outdirContents)>0L) && !force )
-      			stop(paste(sprintf("The directory '%s' is not empty.", outdir),
-                 "Please empty the directory manually, or use the argument 'force=TRUE' ",
-                 "to overwrite.\n", sep="\n"))
-  			} 
-  			else 
-  			{
-    			dir.create(outdir, recursive=TRUE)
-  			}
-
-  			indexFile = file.path(outdir, "index.html") 
-  			con = file(indexFile, "w")
-  			on.exit(close(con), add=TRUE)
-
-  			dir.create(file.path(outdir, "in"))
-
- 
-  ## Create header for the HTML report & add description file if 'x' is configured
-  
-  			## macht Flo das neu?
-  			if(overallState["configured"]) 
-  			{
-     			nm = file.path("in", "Description.txt")
-
-     			writeLines(screenDesc(xr), file.path(outdir, nm))
-     			writeExperimentHeader(paste("Experiment report for ", 
-     				name(xr)), "Experiment report for ", name(xr), nm, 1, con)
-  			} 
-  			else 
-  			{ 
-     			writeheader(paste("Experiment report for", name(xr)), 1, con)
-  			}
-
-			## woll'n wir das noch?
-  			if(progressReport)
-  			{
-   				## stepNr = 1
-   				timeCounter <- timeCounter + timePerStep["step1"]
-   				## print cumulative time for last step and print number of next step:
-   				myUpdateProgress(timeCounter, totalTime, match("step1", steps2Do)+1, nsteps)
-  			}
-
-
- 			## initializations
- 			twoWay <- FALSE
- 			wAnno = as.character(wellAnno(xr))
-
-
-  			## the overview table of the plate result files in the experiment,
-  			## plus the (possible) urls for each table cell
-  			
-  			exptab = plateList(xr)
-  			url = matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
-  			colnames(url) = colnames(exptab)
-  			qmHaveBeenAdded = FALSE
-
-
-## ---------------------------------------
-
- 			if(overallState["configured"]) 
- 			{
-				if(progressReport) 
-					{
-    					timeCounter=timeCounter+2
-    					updateProgress(100*timeCounter/totalTime, autoKill = FALSE)
-  					}
-
-  ##   -------  Step 2) Controls annotation ---------------
-  	
-  			if (!missing(posControls)) 
-  			{
-     		
-     		## checks, determine assay type and name of positive controls if assay is one-way
-     			namePos <- checkPosControls(posControls, nrChannel, wAnno, plateConf(xr)$Content)
-     			twoWay <- namePos$twoWay
-     			namePos <- namePos$namePos 
-  			}
-  			else
-  			{
-  				## if !missing
-    			## assumes the screen is a one-way assay
-    			posControls <- as.vector(rep("^pos$", nrChannel))
-    			namePos <- "pos"
-  			}
-
-  			if (!missing(negControls)) 
-     		checkControls(y=negControls, len=nrChannel, name="negControls") 
-     		
-     		##check
-  			else  
-     		negControls <- as.vector(rep("^neg$", nrChannel))
-  
-  ##---------------------------------------------------------------------------------------------
-
-
-
-  			if(progressReport)
-  			{
-   			## stepNr = 2
-   			timeCounter <- timeCounter + timePerStep["step2"]
-   			## print cumulative time for last step and print number of next step:
-   			myUpdateProgress(timeCounter, totalTime, match("step2", steps2Do)+1, nsteps)
-  			}
-
-
-
-    		## Define the bins for the histograms (channel-dependent)
-    		brks = apply(if(overallState["normalized"]) { xnorm } else { xraw },
-      						3, range, na.rm=TRUE)
-    		brks = apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10))) 
-    		if(!is(brks, "list")) brks=split(brks, col(brks))
-    		## put as list also for the case ch=1 or for the case when brks have equal 
-    		## length for each channel 
-
-
-   			## Correct wellAnno information:
-     		## ... by taking into account the wells that were flagged in the screen log file, 
-     		## or even by the user manually in xraw. Besides the categories in wellAnno(x), 
-     		## it contains the category "flagged".
-     		
-   			xrawWellAnno = getArrayCorrectWellAnno(xr)
-   			## put as array with dimensions nrWells x nrPlates x nrReplicates x nrChannels
-   			xrawWellAnno = array(xrawWellAnno, 
-   								dim=c("Wells"=nrWell, "Plates"=nrPlate, nrReplicate, 												dim(xrawWellAnno)[3])) 
-   			## don't use variable 'nrChannel' because it may be different when defined based 
-   			## on xnorm data!
-
-  ## Create geneAnnotation info for the image maps:
-  if(overallState["annotated"]){
-       # follow the order 'scored' - 'normalized' - 'raw'
-       for(i in c("scored", "normalized", "raw")) {
-         if(i %in% whAnnotated) {
-           screenAnno <- fData(cellHTSlist[[i]]) 
-           break
-         }
-       }
-
-    geneAnnotation <- if ("GeneSymbol" %in% names(screenAnno))  screenAnno$GeneSymbol else screenAnno$GeneID
-
-  }else{##else if annotated
-    geneAnnotation <- well(xr)
-  }##else annotated
-
-
-       ## data
-       if(overallState["normalized"]) {
-          dat <- xnorm
-          whatDat = "normalized"
-        } else {
-          dat <- xraw
-          whatDat <- "unnormalized"
+## This functions updates the progress report. Arguments are
+##   si: integer indicating the current step
+##   smax: integer indicating the total number of steps
+##   timeCounter: the total elapsed time
+##   additionalTime: the amount of time that is to be added to the total elapsed time
+##   tmax: the total time needed to finish the report
+myUpdateProgress <- function(time, currentStep, additionalTime=time$timePerStep[currentStep])
+{
+    if(!is.na(additionalTime))
+        time$timeCounter <- time$timeCounter + additionalTime
+    time$currentStep <- match(currentStep, time$steps2Do)
+    cat(sprintf("\r%d%% done (step %s of %d)", min(floor(time$timeCounter/time$totalTime*100), 100),
+                as.character(min(time$currentStep, time$nsteps)), time$nsteps))
+    return(invisible(time))
+}
+
+
+
+## A list containing the rough estimation of the total computation time for the writeReport function
+## and the current ellapsed time, 1=one time unit	
+createProgressList <- function(nrReplicate, nrChannel, nrPlate, plotPlateArgs, xr, overallState){
+    progress <- list()
+    progress$timeCounter <- 0
+    progress$timePerStep <- c(
+                              step0=0,
+                              step1=15,
+                              step2=nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 +
+                              plotPlateArgs$map else 0),
+                              step3=0.1*sum(plateList(xr)$status=="OK") + 2*nrChannel*nrReplicate,
+                              step4=8*nrChannel*nrReplicate, 
+                              step5=20*nrChannel*nrReplicate,
+                              step6=nrPlate*(0.5),
+                              step7=5
+                              )				
+    progress$steps2Do <- names(progress$timePerStep)[c(TRUE, rep(overallState[["configured"]],2), TRUE, TRUE,
+                                                       rep(overallState[["scored"]],2))]
+    progress$totalTime <- sum(progress$timePerStep[progress$steps2Do])
+    progress$nsteps <- length(progress$steps2Do)
+    progress$currentStep <- 1
+    return(progress)
+}
+
+
+
+
+
+## cellHTSlist verification, stop if the verification fails, else return the list
+## FIXME: the 'cellHTSlist' argument is deprecated, however it is still referenced
+##        in many of the error messages. Needs to be fixed once 'cellHTSlist' is
+##        gone for good.
+cellHTSlistVerification <- function(xr, xn, xsc, cellHTSlist)
+{
+    ## The cellHTSlist argument is deprecated in favour of the new separate arguments
+    ## 'raw', 'normalized' and 'scored'
+    if(is.null(cellHTSlist))
+    {
+        cellHTSlist <- list()
+        if(!is(xr, "cellHTS"))
+            stop("Argument 'raw' has to be a cellHTS object.")
+        cellHTSlist$raw <- xr
+        if(!is.null(xn))
+        {
+            if(!is(xn, "cellHTS"))
+                stop("Argument 'normalized' has to be a cellHTS object or NULL.")
+            cellHTSlist$normalized <- xn
         }
-
-  ## which of the replicate plates has not just NA values
-  datPerPlate <- array(dat, dim=c("Wells"=nrWell, "Plates"=nrPlate, nrReplicate, nrChannel)) 
-  hasData <- apply(datPerPlate, 2:4, function(z) !all(is.na(z))) # nrPlates x nrReplicates x nrChannels
-
-  ##   -------  Get controls positions (for all plates) ---------------
-    allControls <- getControlsPositions(posControls, negControls, twoWay, namePos, nrChannel, wAnno)
-    actCtrls <- allControls$actCtrls
-    inhCtrls <- allControls$inhCtrls
-    posCtrls <- allControls$posCtrls
-    negCtrls <- allControls$negCtrls
-
-  ## get controls positions for each plate
-     act <- lapply(actCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
-     inh <- lapply(inhCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
-     neg <- lapply(negCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
-     pos <- vector("list", length=nrChannel)
-      for (ch in 1:nrChannel) {
-        notNull <- !sapply(posCtrls[[ch]], is.null)
-        if(any(notNull)) {
-          pp <- posCtrls[[ch]][notNull]
-          pos[[ch]] <- lapply(pp, ctrlsPerPlate, nrWell)
-          } 
-         }
-
-
-
-  ## -----------  Get per-plate dynamic range ----------
-  ## -----------  Get per-plate repeatability standard deviation (plate replicates) ----------
-  ## -----------  Get Z'-factor for each replicate and channel ---------- (needed as input for QMexperiment later on)
-  if(whatDat=="normalized") {
-     dr <- getDynamicRange(xn, verbose=FALSE, posControls=posControls, negControls=negControls)
-     repMeasures <- getMeasureRepAgreement(xn, corr.method="spearman")
-     allZfac <- getZfactor(xn, verbose=FALSE, posControls=posControls, negControls=negControls) 
-
-     #dr <- getDynamicRange(xn, verbose=FALSE, allControls=allControls, twoWay=twoWay, namePos=namePos) 
-     #allZfac <- getZfactor(xn, verbose=FALSE, allControls=allControls, twoWay=twoWay, namePos=namePos) 
-
-  } else { #use cellHTS object containing raw data
-     dr <- getDynamicRange(xr, verbose=FALSE, posControls=posControls, negControls=negControls)
-     repMeasures <- getMeasureRepAgreement(xr, corr.method="spearman")
-     allZfac <- getZfactor(xr, verbose=FALSE, posControls=posControls, negControls=negControls) 
-#      dr <- getDynamicRange(xr, verbose=FALSE, allControls=allControls, twoWay=twoWay, namePos=namePos)
-#      repMeasures <- getMeasureRepAgreement(xr, corr.method="spearman")
-#      allZfac <- getZfactor(xr, verbose=FALSE, allControls=allControls, twoWay=twoWay, namePos=namePos) 
- }
-
-if(all(is.null(names(dr)))) names(dr) <- namePos
-
-  ## Define well colors and comment on them.
-  ## (to avoid having the legend for 'pos' when we have 'inhibitors' and 'activators' or vice-versa)
-  wellTypeColor <- if(twoWay) c(neg="#2040FF", act="#E41A1C", inh="#FFFF00", sample="#000000", controls="#43FF00",
-                   other="#999999", empty="#FA00FF", flagged="#000000") else c(pos="#E41A1C", neg="#2040FF", sample="#000000", controls="#43FF00", other="#999999", empty="#FA00FF", flagged="#000000")
- 
-  ## assign common arguments for the plate plots
-  if(is.list(plotPlateArgs)) {
-    ## Currently, it does not allows to use different colors for different channels
-    if(is.null(plotPlateArgs$sdcol)) 
-      plotPlateArgs$sdcol = brewer.pal(9, "YlOrRd")
-    if(is.null(plotPlateArgs$xcol))
-      plotPlateArgs$xcol = rev(brewer.pal(9, "RdBu"))
-
-    ## set this argument as a list with the same length as the number of channels
-    if(is.null(plotPlateArgs$xrange)) { 
-      plotPlateArgs$xrange <- vector("list", length=dim(dat)[3])
-    } else {
-        if (!is.list(plotPlateArgs$xrange)) {
-          plotPlateArgs$xrange <- list(plotPlateArgs$xrange)
-	  length(plotPlateArgs$xrange)=dim(dat)[3]} 
+        if(!is.null(xsc))
+            if(!is(xsc, "cellHTS"))
+                stop("Argument 'scored' has to be a cellHTS object or NULL.")
+            cellHTSlist$scored <- xsc
     }
-
-    ## set this argument as a list with the same length as the number of channels
-    if(is.null(plotPlateArgs$sdrange)) {
-      plotPlateArgs$sdrange <- vector("list", length=dim(dat)[3])
-    } else {
-        if (!is.list(plotPlateArgs$sdrange)) {
-          plotPlateArgs$sdrange <- list(plotPlateArgs$sdrange)
-          length(plotPlateArgs$sdrange) = dim(dat)[3]
-        } 
+    else
+    {
+        .Deprecated(msg=paste("The 'cellHTSlist' argument is deprecated.\nPlease provide all",
+                    "necessary cellHTS objects separately via the 'raw', 'normalized' and",
+                    "'scored' arguments`"))
+        xr <- cellHTSlist[["raw"]]
+        xn <- cellHTSlist[["normalized"]]
+        xsc <- cellHTSlist[["scored"]] 
     }
+    ## cellHTSlist verifications
+    allowedListNames <- c("raw", "normalized", "scored")
+    if(!is.list(cellHTSlist))
+        stop("Argument 'cellHTSlist' should be a list containing one or a maximum of ",
+             "3 'cellHTS' objects.")
+    if(!all(sapply(cellHTSlist, is, "cellHTS")))
+        stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
+    nm <- names(cellHTSlist)
+    if(!("raw" %in% nm)) 
+        stop("Argument 'cellHTSlist' should be a list containing at least ",
+             "one component named 'raw' that corresponds to a 'cellHTS' object ",
+             "containing unnormalized data.")
+    if(length(cellHTSlist)>3 | any(duplicated(nm)))
+        stop("Argument 'cellHTSlist' can only have a maximum of 3 components named ",
+             "'raw', 'normalized' and 'scored'!")
+    if(!all(nm %in% allowedListNames))
+        stop(sprintf("Invalid named component%s in argument 'cellHTSlist': %s",
+                     ifelse(sum(!(nm %in% allowedListNames))>1, "s", ""),
+                     nm[!(nm %in% allowedListNames)]))
+    ## now check whether the given components of 'cellHTSlist' are valid cellHTS objects:	
+    if(any(state(xr)[c("scored", "normalized")]))
+        stop(sprintf(paste("The component 'raw' of argument 'cellHTSlist' should be a",
+                     "'cellHTS' object containing unnormalized data!\nPlease check",
+                     "its preprocessing state: %s"), paste(names(state(xr)), "=",
+                                                          state(xr), collapse=", ")))  
+    if(!is.null(xn))
+    {
+        if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
+            stop(sprintf(paste("The component 'normalized' of 'cellHTSlist' should be a",
+                               "'cellHTS' object containing normalized data!\nPlease check",
+                               "its preprocessing state: %s"), paste(names(state(xn)), "=",
+                                                              state(xn), collapse=", ")))
+        if(!compare2cellHTS(xr, xn))
+            stop("'cellHTS' objects contained in cellHTSlist[['raw']] and ",
+                 "cellHTSlist[['normalized']] are not from the same experiment!")
+    }
+    if(!is.null(xsc))
+    {
+        if(!state(xsc)["scored"])
+            stop(sprintf(paste("The component 'scored' of 'cellHTSlist' should be a",
+                               "'cellHTS' object containing scored data!\nPlease check",
+                               "its preprocessing state: %s"),
+                         paste(names(state(xsc)), "=", state(xsc), collapse=", ")))
+        if(!compare2cellHTS(xr, xsc))
+            stop("Difference across 'cellHTS' objects! The scored 'cellHTS' object given ",
+                 "in cellHTSlist[['scored']] was not calculated from the data stored in ",
+                 "the 'cellHTS' object in 'cellHTSlist[['raw']]'!")
+        if(is.null(xn))
+            stop("Please add to 'cellHTSlist' list a component named 'normalized' ",
+                 "corresponding to a cellHTS object containing the normalized data!") 
+    }
+    return(cellHTSlist)
+}
 
-  } #is.list(plotPlateArgs)
 
 
-  ##   -------  Step 3)  QC per plate & channel ---------------
-  allmt <- match(wAnno, names(wellTypeColor))
 
-   for(p in 1:nrPlate){
-      wh = with(plateList(xr), which(Plate==p & status=="OK"))
-      if(length(wh)>0) {
-        dir.create(file.path(outdir, p))
+## plotPlateArgs verification
+plotPlateArgsVerification <- function(plotPlateArgs, map)
+{
+    if(is.logical(plotPlateArgs))
+    {
+        if(plotPlateArgs)
+            plotPlateArgs <- list(map=map)
+    }
+    else
+    {
+        if(!is.list(plotPlateArgs))
+            stop("'plotPlateArgs' must either be logical or a list.") 
+        if(!all(names(plotPlateArgs) %in% c("sdcol", "sdrange", "xcol", "xrange", "map")))
+            stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are allowed for ",
+                 "'plotPlateArgs' list!")
+        plotPlateArgs$map <- map
+    }
+    return(plotPlateArgs)
+}
 
-        res <- QMbyPlate(platedat=datPerPlate[, p,,, drop=FALSE], 
-          pdim=pdim(xr), 
-          name=sprintf("Plate %d (%s)", p, whatDat),
-          basePath=outdir, 
-          subPath=p, 
-          genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 
-          mt=allmt[nrWell*(p-1)+(1:nrWell)],
-          plotPlateArgs=plotPlateArgs, 
-          brks = brks,
-          finalWellAnno = xrawWellAnno[,p,,, drop=FALSE], 
-          activators=act, inhibitors=inh, positives=pos, negatives=neg, 
-          isTwoWay=twoWay, namePos=namePos, wellTypeColor=wellTypeColor,
-          plateDynRange=lapply(dr, function(i) i[p,,,drop=FALSE]), 
-          plateWithData=hasData[p,,, drop=FALSE], repMeasures=repMeasures)
 
-        url[wh, "status"] = res$url
 
-        if(!qmHaveBeenAdded) {
-          if(twoWay){
-            TableNames = c(paste("Replicate dynamic range", c("(Activators)", "(Inhibitors)"), sep=" "), paste("Average dynamic range", c("(Activators)", "(Inhibitors)"), sep=" "), "Spearman rank correlation")
-          }else{## if twoWay
 
-            if(length(namePos)==1 && namePos=="pos") 
-              TableNames = c("Replicate dynamic range", "Average dynamic range", "Repeatability standard deviation", sprintf("Spearman rank correlation %s", ifelse(nrReplicate==2, "", "(min - max)")))
+## imageScreenArgs verification
+imageScreenArgsVerification <- function(imageScreenArgs, map)
+{	
+    if(is.list(imageScreenArgs))
+    {
+        if(!("map" %in% names(imageScreenArgs)))
+            imageScreenArgs$map=map
+        if(!("ar" %in% names(imageScreenArgs)))
+            imageScreenArgs$ar=1
+        if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno"))) 
+            stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for ",
+                 "'imageScreenArgs' list!")
+    }
+    else
+    {
+        if(!is.null(imageScreenArgs)) 
+            stop("'imageScreenArgs' must either be a list or NULL.")
+        imageScreenArgs <- list(map=map)
+    }	
+    return(imageScreenArgs)
+}
+
+
+
+
+## create Output folder after ensuring that there will not be accidental file deletion
+createOutputFolder <- function(outdir, xr, force)
+{
+    ## See if output directory exists. If not, create. If yes, check if it is empty,
+    ## and if not, depending on parameter 'force', throw an error or clean it up.	
+    if(missing(outdir))
+    {
+        if(force)
+            stop("To prevent accidental deletion of files, please specify 'outdir' ",
+                 "explicitely if you want to use the 'force=TRUE' option.")
+        outdir <- file.path(getwd(), name(xr))
+    }
+    if(file.exists(outdir))
+    {
+        if(!file.info(outdir)$isdir)
+            stop(sprintf("'%s' must be a directory.", outdir))
+        outdirContents <- dir(outdir, all.files=TRUE)
+        outdirContents <- setdiff(outdirContents, c(".", ".."))  
+        if(!force && length(outdirContents)>0)
+            stop(sprintf("'%s' is not empty.", outdir))
+    }
+    else
+    {
+        dir.create(outdir, recursive=TRUE, showWarnings=FALSE)
+    }
+    ## create "in" folder
+    dir.create(file.path(outdir, "in"), showWarnings=FALSE)
+    return(outdir)
+}
+
+
+
+
+##  Write raw data files from the cellHTS object back to disk
+writeIntensityFiles <- function(outdir, xr)
+{	
+    wh <- which(plateList(xr)$status=="OK")
+    nm <- file.path("in", names(intensityFiles(xr)))
+    for(w in wh)
+    {
+        txt <- intensityFiles(xr)[[w]]		
+        if(is.null(txt))
+            stop(sprintf(paste("CellHTS object is internally inconsistent, plate %d",
+                               "(%s) is supposedly OK but has no raw data file."),
+                         as.integer(w), nm[w]))
+        writeLines(txt, file.path(outdir, nm[w]))	
+    } 
+}
+
+
+
+
+## save the script for the whole experience in the 'in' folder of the compendia
+saveMainScript <- function(mainScriptFile, outputFile)
+{
+    if(is.na(mainScriptFile))
+    {
+        warning("The R script which produced this cellHTS2 report has not been provided ",
+                "via the 'mainScriptFile' argument.\nWe strongly recommend storing these ",
+                "scripts for future reference along with the report.", call.=FALSE)
+    }
+    else
+    {
+        file.copy(from=mainScriptFile, to=outputFile, overwrite=TRUE)
+    }
+}
+
+## This function produces the HTML report from the cellHTS object(s) in the output folder.
+## The entry point to the report is the file "index.html" and should be viewed with a web
+## browser
+## NOTE: 'writeReport' can be called on different cellHTS objects at different preprocessing
+## stages, and the output will differ
+## Arguments:
+##    cellHTSlist: should be a list of cellHTS object(s) obtained for the same experimental
+##                 data. Allowed components are:
+##                 'raw' - (mandatory) cellHTS object containing raw experiment data.
+##                 'normalized' (mandatory only if component 'scored' is given)- cellHTS object
+##                              containing normalized data.
+##                 'scored' - cellHTS object comprising scored data.
+##                 NOTE: the argument is deprecated, the list items should now be supplied
+##                       via separate arguments of the same names
+##                       e.g. writeReportraw=xr, normalized=xn, scored=xsc)
+##
+## Steps inside writeReport:
+##    Step 1 - creating the output directory
+##    Step 2 - Controls annotation (only if overallState["configured"]=TRUE)
+##    Step 3 - QC per plate & channel (only if overallState(x)["configured"]=TRUE)
+##    Step 4 - Add plate result files, main script, and write the overall QC results
+##             in the 'in' folder of the report' 
+##    Step 5 - Per experiment QC
+##    Step 6 - topTable  (only if scored data are available)
+##    Step 7 -  Screen-wide image plot (only if scored data are available)	
+writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, outdir,
+                        force=FALSE, map=FALSE, plotPlateArgs=FALSE, imageScreenArgs=NULL,
+                        posControls, negControls, mainScriptFile=NA)
+{
+    ## Verification of the arguments
+    ## We are very particular about the values in cellHTSlist
+    cellHTSlist <- cellHTSlistVerification(xr=raw, xn=normalized, xsc=scored,
+                                           cellHTSlist=cellHTSlist)
+    if (!is.logical(map))
+        stop("'map' must be a logical value.")
+    
+    ## Initialization
+    nm <- names(cellHTSlist)
+    xr <- cellHTSlist[["raw"]]
+    xn <- cellHTSlist[["normalized"]]
+    xsc <- cellHTSlist[["scored"]] 	
+    xraw <- Data(xr)  ## xraw should always be given!
+    xnorm <- if(is.null(xn)) xn else Data(xn)
+	
+    ## dimensions 
+    d <- as.integer(dim(xraw))
+    nrWell    <- prod(pdim(xr))
+    nrPlate   <- max(plate(xr))
+    nrReplicate <- as.numeric(d[2])
+    ## will be defined based on xnorm, if it exists
+    nrChannel <- if(!is.null(xnorm)) as.integer(dim(xnorm)[3]) else d[3] 
+    objState <- sapply(cellHTSlist, function(i){ if(!is.null(i))state(i)})	
+    overallState <- apply(objState, 1, any)
+    whAnnotated <- colnames(objState)[objState["annotated",]]
+
+    ## get appropriate data
+    if(overallState["normalized"])
+    {
+        dat <- xnorm
+        whatDat<-"normalized"
+    }
+    else
+    {
+        dat <- xraw
+        whatDat <- "unnormalized"
+    }		
+		
+    ## initializations
+    twoWay <- FALSE
+    wAnno <- as.character(wellAnno(xr))
+	
+    ## the overview table of the plate result files in the experiment,
+    ##  plus the (possible) urls for each table cell
+    exptab <- plateList(xr)
+    url <- matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
+    colnames(url) <- colnames(exptab)
+    qmHaveBeenAdded <- FALSE		
+    plotPlateArgs <- plotPlateArgsVerification(plotPlateArgs, map)
+    imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map)
+
+    ## Set up the progress report and status output
+    progress <- createProgressList(nrReplicate, nrChannel, nrPlate, plotPlateArgs,
+                                   xr, overallState)
+    dname <- if(length(cellHTSlist)>1) paste(paste(nm[-length(cellHTSlist)],
+                                                   collapse=", "), "and",
+                                             nm[length(cellHTSlist)],  collapse=" ") else nm 
+    cat(sprintf("cellHTS2 is busy creating HTML pages for '%s'. \nFound %s data.\nState:\n%s\n",
+                name(xr), dname, paste(paste("configured", overallState[["configured"]], sep="="),
+                                       paste("annotated", overallState[["annotated"]], sep="="),
+                                       sep=", ")))
+    progress <-  myUpdateProgress(progress, "step0")
+
+    ## Step 1 : Creating the output directory and write the screen description if present	
+        outdir <- createOutputFolder(outdir, xr, force)	
+    if(overallState["configured"])
+    {
+        nm <- file.path("in", "Description.txt")
+        writeLines(screenDesc(xr), file.path(outdir, nm))
+        progress <-  myUpdateProgress(progress, "step1")
+        
+        ## Step 2 : Controls annotation
+        ## check, determine assay type and name of positive controls if assay is one-way
+        if (!missing(posControls))
+        {
+            namePos <- checkPosControls(posControls, nrChannel, wAnno, plateConf(xr)$Content)
+            twoWay <- namePos$twoWay
+            namePos <- namePos$namePos 
+        }
+        else
+        {
+            ## this assumes the screen is a one-way assay
+            posControls <- as.vector(rep("^pos$", nrChannel))
+            namePos <- "pos"
+        }    
+        if (!missing(negControls))
+        {
+            checkControls(y=negControls, len=nrChannel, name="negControls")
+        }
+        else
+        {  
+            negControls <- as.vector(rep("^neg$", nrChannel))
+        }
+   
+        ## Define the bins for the histograms (channel-dependent)
+        brks <- apply(if(overallState["normalized"]) xnorm else xraw, 3, range, na.rm=TRUE)
+        brks <-apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10)))
+        ## Coerce to list also for the case ch=1 or for the case when brks have equal length
+        ## for each channel 
+        if(!is.list(brks))
+            brks <- split(brks, col(brks))
+    
+        ## Correct wellAnno information:
+        ## by taking into account the wells that were flagged in the screen log file, 
+        ## or even by the user manually in xraw. Besides the categories in wellAnno(x), it
+        ## contains the category "flagged".
+        xrawWellAnno <- getArrayCorrectWellAnno(xr)
+        ## coerce to array with dimensions nrWells x nrPlates x nrReplicates x nrChannels
+        ## don't use variable 'nrChannel' because it may be different when defined based
+        ## on xnorm data!
+        xrawWellAnno <- array(xrawWellAnno, dim=c("Wells"=nrWell, "Plates"=nrPlate,
+                                            nrReplicate, dim(xrawWellAnno)[3])) 
+        ## Create geneAnnotation info for the image maps:
+        geneAnnotation <- if(overallState["annotated"])
+        {
+            ## follow the order 'scored' - 'normalized' - 'raw'
+            for(i in c("scored", "normalized", "raw")) {
+                if(i %in% whAnnotated) {
+                    screenAnno <- fData(cellHTSlist[[i]]) 
+                    break
+                }
+            }      
+            if ("GeneSymbol" %in% names(screenAnno)) screenAnno$GeneSymbol else
+            screenAnno$GeneID
+        }
+        else
+        {
+            well(xr)
+        }
+        
+        ## which of the replicate plates has not just NA values
+        datPerPlate <- array(dat, dim=c("Wells"=nrWell, "Plates"=nrPlate, nrReplicate,
+                                  nrChannel))
+        ## nrPlates x nrReplicates x nrChannels		
+        hasData <- apply(datPerPlate, 2:4, function(z) !all(is.na(z))) 
+    
+        ## Get controls positions (for all plates)
+        allControls <- getControlsPositions(posControls, negControls, twoWay, namePos,
+                                            nrChannel, wAnno)
+        actCtrls <- allControls$actCtrls
+        inhCtrls <- allControls$inhCtrls
+        posCtrls <- allControls$posCtrls
+        negCtrls <- allControls$negCtrls		
+        
+        ## get controls positions for each plate
+        act <- lapply(actCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+        inh <- lapply(inhCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+        neg <- lapply(negCtrls, function(i) if(is.null(i)) NULL else ctrlsPerPlate(i, nrWell))
+        pos <- vector("list", length=nrChannel)
+        for (ch in 1:nrChannel)
+        {
+            notNull <- !sapply(posCtrls[[ch]], is.null)
+            if(any(notNull))
+            {
+                pp <- posCtrls[[ch]][notNull]
+                pos[[ch]] <- lapply(pp, ctrlsPerPlate, nrWell)
+            } 
+        }		
+		
+        ## Get per-plate dynamic range,  per-plate repeatability standard deviation
+        ## (plate replicates), Z'-factor for each replicate and channel (needed as input
+        ## for QMexperiment later on)
+        if(whatDat=="normalized")
+        {
+            dr <- getDynamicRange(xn, verbose=FALSE, posControls=posControls,
+                                  negControls=negControls)
+            repMeasures <- getMeasureRepAgreement(xn, corr.method="spearman")
+            allZfac <- getZfactor(xn, verbose=FALSE, posControls=posControls,
+                                  negControls=negControls) 
+        }
+        else
+        { ## use cellHTS object containing raw data
+            dr <- getDynamicRange(xr, verbose=FALSE, posControls=posControls,
+                                  negControls=negControls)
+            repMeasures <- getMeasureRepAgreement(xr, corr.method="spearman")
+            allZfac <- getZfactor(xr, verbose=FALSE, posControls=posControls,
+                                  negControls=negControls) 			
+        }		
+        if(all(is.null(names(dr))))
+            names(dr) <- namePos
+		
+        ## Define well colors and comment on them.
+        ## (to avoid having the legend for 'pos' when we have 'inhibitors' and 'activators'
+        ## or vice-versa)
+        wellTypeColor <- if(twoWay) c(neg="#2040FF", act="#E41A1C", inh="#FFFF00",
+                                      sample="#000000", controls="#43FF00",
+                                      other="#999999", empty="#FA00FF", flagged="#000000") else
+        c(pos="#E41A1C", neg="#2040FF", sample="#000000", controls="#43FF00", other="#999999",
+          empty="#FA00FF", flagged="#000000")
+        
+        ## assign common arguments for the plate plots
+        if(is.list(plotPlateArgs))
+        {
+            ## Currently, it does not allows to use different colors for different channels
+            if(is.null(plotPlateArgs$sdcol)) 
+                plotPlateArgs$sdcol <- brewer.pal(9, "YlOrRd")
+            if(is.null(plotPlateArgs$xcol))
+                plotPlateArgs$xcol <- rev(brewer.pal(9, "RdBu"))
+			
+            ## set this argument as a list with the same length as the number of channels
+            if(is.null(plotPlateArgs$xrange))
+            { 
+                plotPlateArgs$xrange <- vector("list", length=dim(dat)[3])
+            }
             else
-              TableNames = c(sprintf("Replicate dynamic range (%s)", namePos), 
-              sprintf("Average dynamic range (%s)", namePos), "Repeatability standard deviation", 
-              sprintf("Spearman rank correlation %s", ifelse(nrReplicate==2, "", "(min - max)")))
-          }## else twoWay
-          url = cbind(url,  matrix(as.character(NA), nrow=nrow(url), ncol=length(TableNames)))
+            {
+                if (!is.list(plotPlateArgs$xrange))
+                {
+                    plotPlateArgs$xrange <- list(plotPlateArgs$xrange)
+                    length(plotPlateArgs$xrange) <- dim(dat)[3]} 
+            }
+            
+            ## set this argument as a list with the same length as the number of channels
+            if(is.null(plotPlateArgs$sdrange))
+            {
+                plotPlateArgs$sdrange <- vector("list", length=dim(dat)[3])
+            }
+            else
+            {
+                if (!is.list(plotPlateArgs$sdrange))
+                {
+                    plotPlateArgs$sdrange <- list(plotPlateArgs$sdrange)
+                    length(plotPlateArgs$sdrange) <- dim(dat)[3]
+                } 
+            }	
+        }
+                   	
+        ##  Step 3 : QC per plate & channel
+	## writes a report for each Plate, and prepare argument for the writing of the table
+        ## with overall CQ results
+        allmt <- match(wAnno, names(wellTypeColor))		
+        for(p in 1:nrPlate)
+        {
+            wh <- with(plateList(xr), which(Plate==p & status=="OK"))
+            if(length(wh)>0) {
+                dir.create(file.path(outdir, p), showWarnings=FALSE)
+                ## QMbyPlate also writes the QC report for the current plate with making res
+                res <- QMbyPlate(platedat=datPerPlate[, p,,, drop=FALSE], 
+                                 pdim=pdim(xr), 
+                                 name=sprintf("Plate %d (%s)", p, whatDat),
+                                 basePath=outdir, 
+                                 subPath=p, 
+                                 genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 
+                                 mt=allmt[nrWell*(p-1)+(1:nrWell)],
+                                 plotPlateArgs=plotPlateArgs, 
+                                 brks=brks,
+                                 finalWellAnno=xrawWellAnno[,p,,, drop=FALSE], 
+                                 activators=act, inhibitors=inh, positives=pos, negatives=neg, 
+                                 isTwoWay=twoWay, namePos=namePos, wellTypeColor=wellTypeColor,
+                                 plateDynRange=lapply(dr, function(i) i[p,,,drop=FALSE]), 
+                                 plateWithData=hasData[p,,, drop=FALSE],repMeasures=repMeasures)
+                url[wh, "status"] <- res$url				
+                if(!qmHaveBeenAdded)
+                {
+                    TableNames <-
+                        if(twoWay)
+                        {
+                            c(paste("Replicate dynamic range",
+                                    c("(Activators)", "(Inhibitors)"), sep=" "),
+                              paste("Average dynamic range",
+                                    c("(Activators)", "(Inhibitors)"), sep=" "),
+                              "Spearman rank correlation")
+                        }
+                        else
+                        {
+                            if(length(namePos)==1 && namePos=="pos")
+                            { 
+                                c("Replicate dynamic range",
+                                  "Average dynamic range", "Repeatability standard deviation",
+                                  sprintf("Spearman rank correlation %s",
+                                          ifelse(nrReplicate==2, "", "(min - max)")))
+                            }
+                            else
+                            {
+                                c(sprintf("Replicate dynamic range (%s)", namePos), 
+                                  sprintf("Average dynamic range (%s)", namePos),
+                                  "Repeatability standard deviation", 
+                                  sprintf("Spearman rank correlation %s",
+                                          ifelse(nrReplicate==2, "", "(min - max)")))
+                            }
+                        }
+                    url <- cbind(url,  matrix(as.character(NA), nrow=nrow(url),
+                                              ncol=length(TableNames)))
+                    for(j in TableNames)
+                        exptab[, j] <- rep("", nrow(exptab))
+                    qmHaveBeenAdded <- TRUE
+                }
+                whh <- split(wh, exptab$Channel[wh])
+                for(ch in 1:length(res$qmsummary))
+                { ## Channels
+                    resCh <- res$qmsummary[[ch]]
+                    whCh <- whh[[ch]]
+                    selrep <- exptab$Replicate[whCh]
+                    if(twoWay)
+                    {
+                        for (jj in 1:length(TableNames))
+                        {
+                            sel <- (unique((jj<3)*(selrep+nrReplicate*(jj-1))) +
+                                    (jj>2)*(nrReplicate*2 + jj-2))
+                            exptab[whCh, TableNames[jj]] <- resCh[sel]
+                        }
+                        ##"Replicate dynamic range (Activators)"
+                        ##"Replicate dynamic range (Inhibitors)"
+                        ##TableNames[3] "Average dynamic range (Activators)"
+                        ##TableNames[4] "Average dynamic range (Inhibitors)"
+                        ##TableNames[5] "Repeatability standard deviation"
+                        ##TableNames[6] "Spearman rank correlation"				
+                    }
+                    else
+                    { ##oneway
+                        for (jj in 1:(length(TableNames)-2))
+                        {
+                            ## exclude "Repeatability standard deviation" and "Spearman rank
+                            ## correlation"
+                            sel <- (unique((jj<(length(namePos)+1))*
+                                           (selrep + (nrReplicate+1)*(jj-1))) +
+                                    (jj>length(namePos))*(nrReplicate + 1)*(jj-length(namePos)))
+                            exptab[whCh, TableNames[jj]] <- resCh[sel]
+                        }
+                        exptab[whCh, TableNames[length(TableNames)-1]] <- resCh[length(resCh)-1]
+                        exptab[whCh, TableNames[length(TableNames)]] <- resCh[length(resCh)]
+                    }## else twoWay
+                }## for channel
+            }## if length w			
+            ## update the progress bar each time a plate is completed. Once the computation
+            ## has been done for every Plate, step 3 is completed
+            progress <- myUpdateProgress(progress, "step2", progress$timePerStep["step2"]/nrPlate)
+        }## for p plates				
+    }	
+	
+    ## step 4 : write the raw data intensity  files and also the main script into the
+    ## "in" folder
+    writeIntensityFiles(outdir, xr)  
+    saveMainScript(mainScriptFile, outputFile=file.path(outdir,
+                                   file.path("in", "mainScript.txt"))) 	
+    progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
+		
+    ## steps 5, 6, 7 :
+    ## saving javascript file for mouseover bubbles
+    cpfiles <- dir(system.file("templates", package="cellHTS2"), full=TRUE)
+    file.copy(from=cpfiles, to=outdir, overwrite=TRUE)
+    ## saving the glossary as a web page. createGlossary() returns a glossary with all
+    ## the definitions 	
+    saveHtmlGlossary(createGlossary(), file.path(outdir,'glossary.html'))	
 
-          for (j in TableNames) exptab[, j] = rep("", nrow(exptab))
-          qmHaveBeenAdded = TRUE
-        }## if !qmHaveBeenAdded
-        whh = split(wh, exptab$Channel[wh])
-       
-        for(ch in 1:length(res$qmsummary)) { # Channels
-          resCh = res$qmsummary[[ch]]
-          whCh = whh[[ch]]
-          selrep= exptab$Replicate[whCh]
-          if(twoWay){
-            for (jj in 1:length(TableNames))
-               exptab[whCh, TableNames[jj]] = resCh[unique((jj<3)*(selrep+nrReplicate*(jj-1))) + (jj>2)*(nrReplicate*2 + jj-2)] 
-                #"Replicate dynamic range (Activators)"
-                #"Replicate dynamic range (Inhibitors)"
-                #TableNames[3] "Average dynamic range (Activators)"
-                #TableNames[4] "Average dynamic range (Inhibitors)"
-                #TableNames[5] "Repeatability standard deviation"
-                #TableNames[6] "Spearman rank correlation"
+    ## The 'Plate List' module: this is a matrix of quality metrics for the different
+    ## plates and linked per plate quality reports. The workhorse function to produce
+    ## the necessary HTML code is 'writeHtml.plateList'.
+    wh <- which(plateList(xr)$status=="OK")
+    nm <- file.path("in", names(intensityFiles(xr)))
+    url[wh, "Filename"] <- nm[wh]
+    plateList.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateList.html"),
+                                   htmlFun=writeHtml.plateList, title="Plate List",
+                                   funArgs=list(center=TRUE, glossary=createGlossary(), url=url,
+                                   exptab=exptab))
+    tab <- writeHtml(plateList.module)
+		
+    ## The 'Plate Configuration' module: this is an array of image plots indicating the
+    ## plate layout (controls, samples, flagged wells). The workhorse function to produce
+    ## the necessary HTML code is 'writeHtml.plateConf'.
+    plateConf.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateConf.html"),
+                               htmlFun=writeHtml.plateConf, title="Plate Configuration",
+                               funArgs=list(nrPlate=nrPlate, posControls=posControls,
+                               negControl=negControls))
+    tab <- rbind(tab, writeHtml(plateConf.module))
+    progress <- myUpdateProgress(progress, "step4")
 
-          }else{ #oneway
+    ## The 'Plate Summaries' module: boxplots of raw and normalized data as well as controls plots.
+    ## The workhorse function to produce the necessary HTML code is 'writeHtml.experimentQC'.
+    experimentQC.module <- chtsModule(cellHTSlist, url=file.path(outdir, "experimentQC.html"),
+                                      htmlFun=writeHtml.experimentQC, title="Plate Summaries",
+                                      funArgs=list(allControls=allControls, allZfac=allZfac))
+    tab <- rbind(tab, writeHtml(experimentQC.module))
+    		
+    ## The 'Screen Summary' module: an image plot of the results for the whole screen, possibly
+    ## with an underlying HTML imageMap to allow for drill-down to the quality report page of
+    ## the respective plates. The workhorse function to produce the necessary HTML code is
+    ## 'writeHtml.screenSummary'.
+    screenSummary.module <- chtsModule(cellHTSlist, url=file.path(outdir, "screenImage.html"),
+                                     htmlFun=writeHtml.screenSummary, title="Screen Summary",
+                                     funArgs=list(nrPlate=nrPlate, imageScreenArgs=imageScreenArgs,
+                                     overallState=overallState))
+    tab <- rbind(tab, writeHtml(screenSummary.module))
+    progress <- myUpdateProgress(progress, "step5")
 
-            for (jj in 1:(length(TableNames)-2)) #exclude "Repeatability standard deviation" and "Spearman rank correlation"
-              exptab[whCh, TableNames[jj]] = resCh[unique((jj<(length(namePos)+1))*(selrep + (nrReplicate+1)*(jj-1))) + (jj>length(namePos))*(nrReplicate + 1)*(jj-length(namePos))]
-
-            exptab[whCh, TableNames[length(TableNames)-1]] = resCh[length(resCh)-1]
-            exptab[whCh, TableNames[length(TableNames)]] = resCh[length(resCh)]
-          }## else twoWay
-        }## for channel
-      }## if length w
-
-    # update the progress bar each time a plate is completed:
-    if(progressReport){
-      #stepNr = 3
-      timeCounter <- timeCounter + timePerStep["step3"]/nrPlate
-      myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do), nsteps)
-    }
-
-   }## for p plates
-
-
- # after completing all plates:
- if(progressReport){
-   #stepNr = 3
-   #timeCounter <- timeCounter + timePerStep[paste("step",stepNr,sep="")]/nrPlate
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step3", steps2Do)+1, nsteps)
-  }
-}## if configured
-
-
-  ##   -------  Step 4) Add plate result files and write with overall QC results -------------
-  ##  Report pages per plate result file 
-  wh = which(plateList(xr)$status=="OK")
-  nm = file.path("in", names(intensityFiles(xr)))
-  for(w in wh) {
-    txt = intensityFiles(xr)[[w]]
-    if(is.null(txt))
-      stop(sprintf("CellHTS object is internally inconsistent, plate %d (%s) is supposedly OK but has no raw data file.",
-                   as.integer(w), nm[w]))
-    writeLines(txt, file.path(outdir, nm[w]))
-    url[w, "Filename"] = nm[w]
-
-   ### time for step4 : 0.2*sum(x@plateList$status=="OK") + 4*nrChannel*nrReplicate
-
-   # update progress bar each time w is updated:
-   if(progressReport){
-     #stepNr = 4
-     timeCounter <- timeCounter + 0.2
-     myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do), nsteps)
-   }
- 
-  } # for w
-
-
-  # write table with overall CQ results
-  cat("<CENTER>", file=con)
-  writeHTMLtable(exptab, url=url, con=con)
-  cat("</CENTER><BR><BR>", file=con)
-
-# End of step 4 - update progress bar
- if(progressReport){
-   #stepNr = 4
-   timeCounter <- timeCounter + 4*nrChannel*nrReplicate
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step4", steps2Do)+1, nsteps)
-  }
-
-
-##   ----------------------
-## Add the screen plot with plate configuration 
-## (only based on the content of plate configuration file! No updates based on screen log file.)
-  if(state(xr)[["configured"]]) {
-    ## Create a data.frame for the screen plot with plate configuration
-    res <- makePlot(outdir, con=con, name="configurationAsScreenPlot",
-                    w=7, h=7*pdim(xr)["nrow"]/pdim(xr)["ncol"]*ceiling(nrPlate/6)/6+0.5, psz=8,
-                    fun = function() {
-                     do.call(configurationAsScreenPlot, 
-                         args=list(x=xr, verbose=FALSE, posControls=unlist(posControls),
-                         negControls=negControls))
-                     },
-                    print=FALSE, isImageScreen=FALSE)
-# do plot with the legend
-makePlot(outdir, con=con, name="colLeg", w=5, h=2, psz=8,
-         fun=function(){ image(matrix(1:length(res)), axes=FALSE, col=res,
-         add = !TRUE, ylab="", xlab="Color scale"); axis(1, at = seq(0,1,length=length(res)),
-                               tick = !TRUE, labels=names(res)) }, print=FALSE,
-         isImageScreen=FALSE)
-
-   confTable = data.frame(matrix(data = NA, nrow = 2, ncol = 1))
-   names(confTable) = "Plate configuration"
-
-#   wellLeg <- paste(sprintf("<FONT COLOR=\"%s\">%s</FONT>", res, names(res)), collapse=", ")
-#   wellLeg <- sprintf("<CENTER><em>Color legend: </em><br> %s</CENTER><BR>\n", wellLeg)
-#   confTable[1, 1] = sprintf("%s<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER>\n",
-#                 wellLeg, "configurationAsScreenPlot.pdf", "configurationAsScreenPlot.png")
-  confTable[1,1] <- sprintf("<CENTER><IMG SRC=\"%s\"/></CENTER>\n", "colLeg.png")
-
-  confTable[2,1] <- sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER>\n", "configurationAsScreenPlot.pdf", "configurationAsScreenPlot.png")
-
-   cat("<CENTER>", file=con)
-   cat("</CENTER><BR><BR>", file=con)
-   writeHTMLtable4plots(confTable, con=con)
-   cat("<BR><BR>", file=con)
-  }
-
-
-  ##   -------  Step 5)  Per experiment QC ---------------
-  plotTable = QMexperiment(xr, xn, outdir, con, allControls, allZfac)
-
- 
- if(progressReport){
-   #stepNr = 5
-   timeCounter <- timeCounter + timePerStep["step5"]
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step5", steps2Do)+1, nsteps)
-  }
-
-
-
-
-  if(overallState[["scored"]]) {
-
-    if(overallState["annotated"]) ttInfo = "Table of scored <BR> and annotated probes" else ttInfo = "Table of scored probes"
-
-    ##   -------  Step 6)  topTable ---------------
-    out <- getTopTable(cellHTSlist, file=file.path(outdir, "topTable.txt"), verbose=FALSE)
-
-
-    if(progressReport){
-       #stepNr = 6
-       timeCounter <- timeCounter + timePerStep["step6"]
-       # print cumulative time for last step and print number of next step:
-       myUpdateProgress(timeCounter, totalTime, match("step6", steps2Do)+1, nsteps)
-    }
-
-  ##   -------  Step 7)  Screen-wide image plot ---------------
-    res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=8,
-                    fun = function(map=imageScreenArgs$map)
-                      do.call(imageScreen, args=append(list(object=xsc, map=map), imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
-                    print=FALSE, isImageScreen=TRUE)
-
-    count = nrow(plotTable)
-    plotTable = rbind(plotTable, rep("", length=prod(ncol(plotTable)* 2))) 
-    plotTable[count + 1, 2] = "<H3 align=center>Screen-wide image plot of the scored values</H3>"
-    plotTable[count + 2, 1] = sprintf("<CENTER><A HREF=\"topTable.txt\"><em>%s</em></A></CENTER><BR>\n", ttInfo)
-
-    if (is.null(res)) {
-
-      plotTable[count + 2, 2] = sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER><BR>\n", "imageScreen.pdf", "imageScreen.png")
-    }else{
-
-      # Update with first part of step 7 - update progress bar
-      if(progressReport){
-        #stepNr = 7
-        timeCounter <- timeCounter + nrPlate*0.5
-        # print cumulative time for last step and print number of next step:
-        myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do), nsteps)
-      }
-
-      res <- myImageMap(object=res$obj, tags=res$tag, "imageScreen.png")
-      plotTable[count + 2, 2] = paste("<BR><CENTER>", res, "</CENTER><BR><CENTER>",
-              "<A HREF=\"imageScreen.pdf\">enlarged version</A></CENTER>\n", sep="")
-    }
-
-  } ## if scored
-
-  writeHTMLtable4plots(plotTable, con=con)
-
-
- if(progressReport){
-   #stepNr = 7
-   timeCounter <- totalTime #timeCounter + timePerStep["step7"]
-   # print cumulative time for last step and print number of next step:
-   myUpdateProgress(timeCounter, totalTime, match("step7", steps2Do), nsteps)
-  }
-
-  writetail(con)
-  return(indexFile)
+    ## The 'Screen Results module': a downloadable ASCII table of the screening results and
+    ## a sortable HTML table. The workhorse function to produce the necessary HTML code is
+    ## 'writeHtml.screenResults'.
+    screenResults.module <- chtsModule(cellHTSlist, url=file.path(outdir, "screenResults.html"),
+                                       htmlFun=writeHtml.screenResults, title="Screen Results",
+                                       funArgs=list(file=file.path(outdir, "topTable.txt"),
+                                       verbose=FALSE, overallState=overallState))
+    tab <- rbind(tab, writeHtml(screenResults.module))
+    progress <- myUpdateProgress(progress, "step6")
+    
+    ## The 'Screen Description module': currently an ASCII file of the screen description. FIXME: Later
+    ## this is supposed to be formatted HTML output The workhorse function to produce the necessary HTML
+    ## code is 'writeHtml.screenDescription'.
+    screenDescription.module <- chtsModule(cellHTSlist, url=file.path(outdir, "Description.txt"),
+                                           htmlFun=writeHtml.screenDescription, title="Screen Description",
+                                           funArgs=list(overallState=overallState))
+    tab <- rbind(tab, writeHtml(screenDescription.module, con=NULL))
+    
+    ## Create the main navgation page from the tab data.frame. This includes the basic screen information
+    ## as well as the tabs to navigate to the different modules.
+    indexFile <- file.path(outdir, "index.html")
+    con <- file(indexFile, open="w")
+    on.exit(close(con))
+    writeHTML.mainpage(title=name(xr), tabs=tab, con=con)
+    progress <- myUpdateProgress(progress, "step7")
+    
+    ## finally, return indexFile
+    cat(sprintf("\rReport was successfully generated in folder %s\n", indexFile))
+    return(invisible(indexFile))
 }

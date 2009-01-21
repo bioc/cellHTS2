@@ -11,7 +11,8 @@ setGeneric("pdim", def=function(object) standardGeneric("pdim"))
 
 setGeneric("position", def=function(object) standardGeneric("position"))
 
-setGeneric("annotate", def=function(object, geneIDFile, path=dirname(geneIDFile)) standardGeneric("annotate"))
+setGeneric("annotate", def=function(object, geneIDFile, path=dirname(geneIDFile))
+           standardGeneric("annotate"))
 
 setGeneric("geneAnno", def=function(object) standardGeneric("geneAnno"))
 
@@ -31,9 +32,11 @@ setGeneric("screenDesc", def=function(object) standardGeneric("screenDesc"))
 
 setGeneric("intensityFiles", def=function(object) standardGeneric("intensityFiles"))
 
-setGeneric("configure", def=function(object, descripFile, confFile, logFile, path) standardGeneric("configure"))
+setGeneric("configure", def=function(object, descripFile, confFile, logFile, path)
+           standardGeneric("configure"))
 
-setGeneric("writeTab", def=function(object, file=paste(name(object), "txt", sep=".")) standardGeneric("writeTab"))
+setGeneric("writeTab", def=function(object, file=paste(name(object), "txt", sep="."))
+           standardGeneric("writeTab"))
 
 setGeneric("name", def=function(object) standardGeneric("name"))
 
@@ -50,3 +53,6 @@ setGeneric("nbatch", def=function(object) standardGeneric("nbatch"))
 setGeneric("compare2cellHTS", def=function(x,y) standardGeneric("compare2cellHTS"))
 
 setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
+
+#if(!isGeneric("lines"))
+#    setGeneric("lines", useAsDefault=lines)
