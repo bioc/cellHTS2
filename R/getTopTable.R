@@ -17,13 +17,10 @@ getArrayCorrectWellAnno <- function(x)
 
 
 
-
-## =================================================================================
 ## getTopTable function
 ## Function to obtain the topTable data.frame and export it as a txt file.
 getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
 {
-
     ## arguments:
     ## 'cellHTSlist' should be a list of cellHTS object(s) obtained from the same
     ## experimental data. Allowed components are:
@@ -36,10 +33,13 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
     optionalComps <- c("raw", "normalized") 
 
     ## A lot of sanity checking up front
-    if(!is.list(cellHTSlist)) {
+    if(!is.list(cellHTSlist))
+    {
         stop("Argument 'cellHTSlist' should be a list containing one or a ",
              "maximum of 3 'cellHTS' objects.") 
-    }else{
+    }
+    else
+    {
         if(!all(sapply(cellHTSlist, class)=="cellHTS"))
             stop("Argument 'cellHTSlist' should be a list of cellHTS objects!")
         nm <- names(cellHTSlist)
@@ -66,7 +66,8 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                            "a 'cellHTS' object containing scored data!\nPlease check its ",
                            "preprocessing state: %s"), paste(names(state(xsc)), "=",
                                                              state(xsc), collapse=", ")))
-    if(!is.null(xr)) {
+    if(!is.null(xr))
+    {
         if(any(state(xr)[c("normalized", "scored")]))
             stop(sprintf(paste("The component 'raw' of argument list 'cellHTSlist' ",
                                "should be a 'cellHTS' object containing raw data!",
@@ -78,7 +79,8 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                  "from the data stored in 'cellHTS' object indicated in ",
                  "'cellHTSlist[['raw']]'!")
     }
-    if(!is.null(xn)) {
+    if(!is.null(xn))
+    {
         if(!(state(xn)[["normalized"]] & !state(xn)[["scored"]]))
             stop(sprintf(paste("The component 'normalized' of argument list 'cellHTSlist' ",
                                "should be a 'cellHTS' object containing normalized data!",
@@ -89,8 +91,6 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                  "cellHTSlist[['normalized']] are not from the same experiment!")
     }
 
-    ## --------------------------------------
-
     xraw <- if(is.null(xr)) xr else Data(xr)
     xnorm <- if(is.null(xn)) xn else Data(xn)
     scores <- Data(xsc)
@@ -100,7 +100,7 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
     nrReplicate <- d[2]
     nrChannel <- d[3]
     wAnno <- wellAnno(xsc)
-
+    
 
     ## array with corrected wellAnno information (by taking into account the wells
     ## that were flagged in the screen log file, or even manually by the user).
@@ -116,30 +116,33 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                       finalWellAnno = as.vector(scoresWellAnno))
 
     ## add columns with 
-    if(!is.null(xraw)) {
+    if(!is.null(xraw))
+    {
         ## Checks whether the number of channels has changed after normalization
         originalNrCh <- dim(xraw)[3]
-
+        
         ## include also the raw values for each replicate and channel	 
         out[sprintf("raw_r%d_ch%d", rep(1:nrReplicate, originalNrCh),
                     rep(1:originalNrCh, each=nrReplicate))] <- sapply(1:originalNrCh, 
                                                                       function(i) xraw[,,i])
-
-
-        for(ch in 1:originalNrCh) {
+        for(ch in 1:originalNrCh)
+        {
             ## median between replicates (raw data) 
             if(nrReplicate>1) {
                 out[sprintf("median_ch%d", ch)] <- apply(out[sprintf("raw_r%d_ch%d",
                                                                      1:nrReplicate,
                                                                      rep(ch, nrReplicate))],
                                                          1, median, na.rm=TRUE)
-                if(nrReplicate==2) { 
+                if(nrReplicate==2)
+                { 
                     ## Difference between replicates (raw data)
                     out[sprintf("diff_ch%d", ch)] <- apply(out[sprintf("raw_r%d_ch%d",
                                                                        1:nrReplicate,
                                                                        rep(ch, nrReplicate))],
                                                            1, diff)
-                } else {
+                }
+                else
+                {
                     ## average between replicates (raw data)
                     out[sprintf("average_ch%d", ch)] <- apply(out[sprintf("raw_r%d_ch%d",
                                                                           1:nrReplicate,
@@ -148,11 +151,12 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                 } 
             }
         }## for ch
-
+        
         ## raw/plateMedian
         xrp <- array(as.numeric(NA), dim=dim(xraw))
         isSample <- (as.character(wAnno) == "sample")
-        for(p in 1:nrPlate) {
+        for(p in 1:nrPlate)
+        {
             indp <- (1:nrWell)+nrWell*(p-1)
             samples <- isSample[indp]
             xrp[indp,,] <- apply(xraw[indp,,,drop=FALSE], 2:3,
@@ -165,15 +169,17 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
                                function(i) signif(xrp[,,i], 3))
     }
 
-    if(!is.null(xnorm)){
+    if(!is.null(xnorm))
+    {
         ## Include the normalized values
         out[sprintf("normalized_r%d_ch%d", rep(1:nrReplicate, nrChannel),
                     rep(1:nrChannel, each=nrReplicate))] <-
                         sapply(1:nrChannel, 
                                function(i) round(xnorm[,,i], 3))
     }
-
-    if(state(xsc)[["annotated"]]) {
+    
+    if(state(xsc)[["annotated"]])
+    {
         n <- tolower(names(fData(xsc)))
         sel <- !(n %in% tolower(c("controlStatus", names(out))))
         out <- cbind(out, fData(xsc)[, sel, drop=FALSE])

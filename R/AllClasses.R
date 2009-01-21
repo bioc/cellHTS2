@@ -28,7 +28,7 @@ checkMandatoryColumns <- function(object, name, mandatory, numeric=NULL, factor=
 
     for(j in intersect(factor, objcolnames))
         if(!is.factor(obj[[j]]) || any(is.na(obj[[j]])))
-            return(sprintf(paste("Column %s in '%s' must a vector of factors and not"
+            return(sprintf(paste("Column %s in '%s' must be a vector of factors and not",
                                  "contain missing values."), j, name))
     
     for(j in intersect(character, objcolnames))

@@ -172,13 +172,6 @@ readPlateList <- function(filename,
                intensityFiles=intensityFiles,
                plateData=list(Batch=batch))
 
-    ## if there is a batch column in the platelist file we want to import it
-    ## if("Batch" %in% colnames(pd)){
-    ##         bat <- pd$Batch[order(pd$Replicate, pd$Channel)]
-    ##         dim(bat) <- c(max(plate(res)), ncol(res), length(channelNames(res)))
-    ##         res@batch <- bat
-    ##}
-    
     ## output the possible errors that were encountered along the way:
     whHadProbs <- which(status!="OK")
     if(length(whHadProbs)>0 & verbose) {

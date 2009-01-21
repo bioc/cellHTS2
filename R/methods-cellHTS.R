@@ -1,91 +1,98 @@
 #------------------------------------------------------------
 # methods related to the class 'cellHTS'
 #------------------------------------------------------------
-
 setMethod("initialize",
           signature(.Object="cellHTS"),
           function(.Object, assayData, phenoData, featureData,
-                   ...) {
-              mySlots <- slotNames(.Object)
-              dotArgs <- list(...)
-              isSlot <- names(dotArgs) %in% mySlots
-              if (missing(assayData)) {
-                  assayData <- do.call(assayDataNew, dotArgs[!isSlot],
-                                       envir=parent.frame())
-              }
-              if (missing(phenoData)) {
-                  phenoData <- annotatedDataFrameFrom(assayData, byrow=FALSE)
-                  ## add the mandatory columns: "plate" and "assay"
-                  pData(phenoData) <- data.frame(replicate=integer(), assay=character())
-                  varMetadata(phenoData) <- data.frame(
-                      labelDescription=I(c("Replicate number", "Biological assay")))
-               } 
+                   ...)
+      {
+          mySlots <- slotNames(.Object)
+          dotArgs <- list(...)
+          isSlot <- names(dotArgs) %in% mySlots
+          if (missing(assayData))
+          {
+              assayData <- do.call(assayDataNew, dotArgs[!isSlot],
+                                   envir=parent.frame())
+          }
+          if (missing(phenoData))
+          {
+              phenoData <- annotatedDataFrameFrom(assayData, byrow=FALSE)
+              ## add the mandatory columns: "plate" and "assay"
+              pData(phenoData) <- data.frame(replicate=integer(), assay=character())
+              varMetadata(phenoData) <-
+                  data.frame(labelDescription=I(c("Replicate number", "Biological assay")))
+          } 
 
-              if (is.null(varMetadata(phenoData)[["channel"]])) {
-                  varMetadata(phenoData)[["channel"]] <- 
-                      factor(rep("_ALL_", nrow(varMetadata(phenoData))),
-                             levels=c(assayDataElementNames(assayData), "_ALL_"))
-              }
-
-          if (missing(featureData)) {
-             featureData <- annotatedDataFrameFrom(assayData, byrow=TRUE)
-             pData(featureData) <- data.frame(plate=integer(), well=I(character()), controlStatus=factor(integer()))
-             varMetadata(featureData) <- data.frame(labelDescription=I(c("Plate number", "Well ID", "Well annotation")))
+          if (is.null(varMetadata(phenoData)[["channel"]]))
+          {
+              varMetadata(phenoData)[["channel"]] <- 
+                  factor(rep("_ALL_", nrow(varMetadata(phenoData))),
+                         levels=c(assayDataElementNames(assayData), "_ALL_"))
           }
 
-              ## ensure sample names OK -- all assayData with names;
-              ## phenoData with correct names from assayData
-              appl <-
-                  if (storageMode(assayData)=="list") lapply
-                  else eapply
-              assaySampleNames <-
-                  appl(assayData, function(elt) {
-                      cnames <- colnames(elt)
-                      if (is.null(cnames)) sampleNames(phenoData)
-                      else cnames
-                  })
-              sampleNames(assayData) <- assaySampleNames
-              sampleNames(phenoData) <- sampleNames(assayData)
-              do.call(callNextMethod,
-                      c(.Object,
-                        assayData = assayData, phenoData = phenoData, featureData=featureData,
-                        dotArgs[isSlot]))
+          if (missing(featureData))
+          {
+              featureData <- annotatedDataFrameFrom(assayData, byrow=TRUE)
+              pData(featureData) <- data.frame(plate=integer(), well=I(character()),
+                                               controlStatus=factor(integer()))
+              varMetadata(featureData) <-
+                  data.frame(labelDescription=I(c("Plate number", "Well ID", "Well annotation")))
+          }
+
+          ## ensure sample names OK -- all assayData with names;
+          ## phenoData with correct names from assayData
+          appl <- if (storageMode(assayData)=="list") lapply else eapply
+          assaySampleNames <- appl(assayData, function(elt) {
+              cnames <- colnames(elt)
+              if (is.null(cnames)) sampleNames(phenoData)
+              else cnames
           })
+          sampleNames(assayData) <- assaySampleNames
+          sampleNames(phenoData) <- sampleNames(assayData)
+          do.call(callNextMethod,
+                  c(.Object,
+                    assayData = assayData, phenoData = phenoData, featureData=featureData,
+                    dotArgs[isSlot]))
+      })
 
 
 
 setMethod("show",
           signature=signature(object="cellHTS"),
-          function(object) {
-              cat(class( object ), " (storageMode: ", storageMode(object), ")\n", sep="")
-              adim <- dim(object)
-              if (length(adim)>1)
-                  cat("assayData:",
-                      if (length(adim)>1)
-                      paste(adim[[1]], "features,",
-                            adim[[2]], "samples") else NULL,
-                      "\n")
-              cat("  element names:",
-                  paste(assayDataElementNames(object), collapse=", "), "\n")
-              Biobase:::.showAnnotatedDataFrame(phenoData(object),
-                                      labels=list(object="phenoData"))
-              Biobase:::.showAnnotatedDataFrame(featureData(object),
-                                      labels=list(
-                                        object="featureData",
-                                        sampleNames="featureNames",
-                                        varLabels="fvarLabels",
-                                        varMetadata="fvarMetadata"))
-              cat("experimentData: use 'experimentData(object)'\n")
-              cat("state: ", paste(paste(names(state(object)),state(object), sep=" = "), collapse="\n\t"), "\n") 
-              cat("Number of plates:", if(length(plate(object))) max(plate(object)), "", "\n")
-              cat("Plate dimension:", if(length(pdim(object))) paste(paste(names(pdim(object)), pdim(object), sep=" = "), collapse=", "), "\n")
-              cat("Number of batches:", nbatch(object), "\n")
-              cat("Well annotation:", paste(levels(wellAnno(object))), "\n")
-              pmids <- pubMedIds(object)
-              if (length(pmids) > 0 && all(pmids != ""))
-                  cat("  pubMedIds:", paste(pmids, sep=", "), "\n")
-              cat("Annotation:", annotation(object), "\n")
-          })
+          function(object)
+      {
+          cat(class( object ), " (storageMode: ", storageMode(object), ")\n", sep="")
+          adim <- dim(object)
+          if (length(adim)>1)
+              cat("assayData:",
+                  if (length(adim)>1)
+                  paste(adim[[1]], "features,",
+                        adim[[2]], "samples") else NULL,
+                  "\n")
+          cat("  element names:",
+              paste(assayDataElementNames(object), collapse=", "), "\n")
+          Biobase:::.showAnnotatedDataFrame(phenoData(object),
+                                            labels=list(object="phenoData"))
+          Biobase:::.showAnnotatedDataFrame(featureData(object),
+                                            labels=list(
+                                            object="featureData",
+                                            sampleNames="featureNames",
+                                            varLabels="fvarLabels",
+                                            varMetadata="fvarMetadata"))
+          cat("experimentData: use 'experimentData(object)'\n")
+          cat("state: ", paste(paste(names(state(object)),state(object), sep=" = "),
+                               collapse="\n\t"), "\n") 
+          cat("Number of plates:", if(length(plate(object))) max(plate(object)), "", "\n")
+          cat("Plate dimension:", if(length(pdim(object))) paste(paste(names(pdim(object)),
+                                                                       pdim(object), sep=" = "),
+                                                                 collapse=", "), "\n")
+          cat("Number of batches:", nbatch(object), "\n")
+          cat("Well annotation:", paste(levels(wellAnno(object))), "\n")
+          pmids <- pubMedIds(object)
+          if (length(pmids) > 0 && all(pmids != ""))
+              cat("  pubMedIds:", paste(pmids, sep=", "), "\n")
+          cat("Annotation:", annotation(object), "\n")
+      })
 
 
 ##----------------------------------------
@@ -97,124 +104,136 @@ setMethod("plate", signature(object="cellHTS"),
 
 # well
 setMethod("well", signature(object="cellHTS"),
-          function(object) {
-             w = fData(object)$"well" 
-             return(if(!length(w)) NULL else w)
-             }
-        )
+          function(object)
+      {
+          w <- fData(object)$"well" 
+          return(if(!length(w)) NULL else w)
+      }
+          )
 
 
 # plate dimension
 setMethod("pdim", signature(object="cellHTS"),
-          function(object) {
-             pdim=NULL
-             if(!is.null(well(object))) { 
-               let=substr(well(object), 1,1)
-               pdim=c("nrow"=max(match(let, LETTERS)),
-                      "ncol"=max(as.integer(substr(well(object), 2,3))))
-             }
-             return(pdim)
+          function(object)
+      {
+          pdim <- NULL
+          if(!is.null(well(object)))
+          { 
+              let <- substr(well(object), 1,1)
+              pdim <- c("nrow"=max(match(let, LETTERS)),
+                        "ncol"=max(as.integer(substr(well(object), 2,3))))
           }
-)
+          return(pdim)
+      })
 
 # well position
 setMethod("position", signature(object="cellHTS"),
-          function(object) 
-            if(!is.null(well(object))) 
-               return(convertWellCoordinates(well(object), pdim=pdim(object))$num)
-            else
-               return(NULL)
-)
+          function(object)
+      { 
+          if(!is.null(well(object))) 
+              return(convertWellCoordinates(well(object), pdim=pdim(object))$num)
+          else
+              return(NULL)
+      })
 
 
 # well annotation
 setMethod("wellAnno", signature(object="cellHTS"),
-          function(object) 
-             if(state(object)[["configured"]]) 
-                fData(object)$controlStatus
-             else
-                NULL
-)
+          function(object)
+      { 
+          if(state(object)[["configured"]]) 
+              fData(object)$controlStatus
+          else
+              NULL
+      })
 
 
 setMethod("geneAnno", signature(object="cellHTS"),
           function(object) 
-              if(state(object)[["annotated"]]) fData(object)$GeneID else NULL
-)
+          if(state(object)[["annotated"]]) fData(object)$GeneID else NULL
+          )
 
 ## the assayData is overriden each time new data are generated from the analysis.
 setMethod("Data", signature(object="cellHTS"),
-        function(object){
-             ch <- channelNames(object)
-             dat=NULL
-             if(length(ch)) {
-               dat <- array(NA, dim=c(dim(object), "Channels"=length(ch)))
-               #NB: we assume that sampleNames is identical across channels
-               dimnames(dat)=list(Features=featureNames(object), Sample=sampleNames(object)[[1]], Channels=ch)
-               dat[] <- sapply(ch, function(i) assayDataElement(object, i))
-             }
-             return(dat) 
-} 
-)
+          function(object)
+      {
+          ch <- channelNames(object)
+          dat=NULL
+          if(length(ch)) {
+              dat <- array(NA, dim=c(dim(object), "Channels"=length(ch)))
+                                        #NB: we assume that sampleNames is identical across channels
+              dimnames(dat)=list(Features=featureNames(object), Sample=sampleNames(object)[[1]],
+                      Channels=ch)
+              dat[] <- sapply(ch, function(i) assayDataElement(object, i))
+          }
+          return(dat) 
+      })
 
 
 setReplaceMethod("Data",
                  signature=signature(
-                   object="cellHTS",
-                   value="array"),
-                 function(object, value) {
-                      if(is.null(Data(object))) stop("'object' has no data! No replacement with 'value' can be made!")
-                      ch <- channelNames(object)
-                      # If 'value' is a matrix, set it as an array.
-                      if(inherits(value, "matrix"))  value <- array(value, dim=c(dim(value),1))
-                      d=c(dim(object), "Channels"=length(ch))
-                      if(any(dim(value)!=d)) stop(sprintf("'value' should be an array with dimensions 'Features x Samples x Channels' (%s).", paste(d, collapse=" x "))) 
-                      #NB: we assume that sampleNames is identical across channels
-                      if(is.null(dimnames(value))) dimnames(value) <- list(featureNames(object), sampleNames(object)[[1]], channelNames(object))
+                 object="cellHTS",
+                 value="array"),
+                 function(object, value)
+             {
+                 if(is.null(Data(object)))
+                     stop("'object' has no data! No replacement with 'value' can be made!")
+                 ch <- channelNames(object)
+                 ## If 'value' is a matrix, set it as an array.
+                 if(inherits(value, "matrix"))
+                     value <- array(value, dim=c(dim(value),1))
+                 d <- c(dim(object), "Channels"=length(ch))
+                 if(any(dim(value)!=d))
+                     stop(sprintf(paste("'value' should be an array with dimensions 'Features",
+                                        "x Samples x Channels' (%s)."), paste(d, collapse=" x "))) 
+                 ##NB: we assume that sampleNames is identical across channels
+                 if(is.null(dimnames(value)))
+                     dimnames(value) <- list(featureNames(object), sampleNames(object)[[1]],
+                                             channelNames(object))
+                 for(i in c(1:length(ch)))
+                     assayDataElement(object, ch[i]) <- matrix(value[,,i], nrow=d[1], ncol=d[2], 
+                                                               dimnames=dimnames(value)[1:2])
 
+                 if(any(dimnames(value)[[3]]!=channelNames(object)))
+                     channelNames(object) <- dimnames(value)[[3]]
+                 ## in case 'value' had different sample names in it.
+                 sampleNames(phenoData(object)) <- sampleNames(object)[[1]] 
+                 featureNames(object) <- dimnames(value)[[1]]
 
-                      for(i in c(1:length(ch))) assayDataElement(object, ch[i]) <- matrix(value[,,i], nrow=d[1], ncol=d[2], 
-                           dimnames=dimnames(value)[1:2])
-
-                      if(any(dimnames(value)[[3]]!=channelNames(object))) channelNames(object) <- dimnames(value)[[3]]
-                      sampleNames(phenoData(object)) <- sampleNames(object)[[1]] #in case 'value' had different sample names in it.
-                      featureNames(object) <- dimnames(value)[[1]]
-
-                      #sampleNames(assayData(object)) <- sampleNames(phenoData(object))
-                      validObject(object)
-                      return(object)
-         } 
-          )
+                 ## sampleNames(assayData(object)) <- sampleNames(phenoData(object))
+                 validObject(object)
+                 return(object)
+             })
 
 ## accessors to see the overall state of the cellHTS object:
 setMethod("state", signature(object="cellHTS"),
-        function(object) object@state
-       )
+          function(object) object@state
+          )
 
 setMethod("plateList", signature(object="cellHTS"),
-         function(object) object@plateList
-  )
+          function(object) object@plateList
+          )
 
 setMethod("intensityFiles", signature(object="cellHTS"),
-         function(object) object@intensityFiles
-  )
+          function(object) object@intensityFiles
+          )
 
 setMethod("plateConf", signature(object="cellHTS"),
-         function(object) object@plateConf
-  )
+          function(object) object@plateConf
+          )
 
 setMethod("screenLog", signature(object="cellHTS"),
-         function(object) object@screenLog
-  )
+          function(object) object@screenLog
+          )
 
 setMethod("screenDesc", signature(object="cellHTS"),
-        function(object) object@screenDesc
-)
+          function(object) object@screenDesc
+          )
 
 
 
 setMethod("plateEffects", signature(object="cellHTS"),
-           function(object){
+          function(object){
               list(rowcol=slot(object, "rowcol.effects"),
                   overall = slot(object, "overall.effects")) 
  })

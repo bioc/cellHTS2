@@ -1,8 +1,7 @@
 importFrom("methods", "show")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
-
-importFrom("graphics", "lines", "plot")
+importFrom("prada", "devDims", "plotPlate", "lines")
 
 exportClasses("cellHTS", "ROC")
 
@@ -16,7 +15,7 @@ export("oneRowPerId",
        "getDynamicRange",
        "getMeasureRepAgreement",
        "getTopTable",
-       "getZfactor",
+       "getZfactor",       
        "imageScreen",
        "normalizePlates",
        "plotSpatialEffects",
@@ -28,7 +27,7 @@ export("oneRowPerId",
        "summarizeChannels",
        "summarizeReplicates",
        "templateDescriptionFile",
-       "writeReport",
+       "writeReport",      
        "write.tabdel")
 
 exportMethods("annotate",
