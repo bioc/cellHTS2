@@ -630,10 +630,13 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     wh <- which(plateList(xr)$status=="OK")
     nm <- file.path("in", names(intensityFiles(xr)))
     url[wh, "Filename"] <- nm[wh]
+
+	sorted.exptab <- exptab[order(exptab["Plate"], exptab["Channel"], exptab["Replicate"] ), ]
+
     plateList.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(), url=url,
-                                   exptab=exptab))
+                                   exptab=sorted.exptab))
     tab <- writeHtml(plateList.module)
 		
     ## The 'Plate Configuration' module: this is an array of image plots indicating the
