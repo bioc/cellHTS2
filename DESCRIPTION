@@ -36,8 +36,7 @@ Collate: AllClasses.R
 	 plateConfModule.R
 	 plateListModule.R
 	 plateSummariesModule.R
-	 plotSpatialEffects.R  
-         QMbyPlate.R  
+	 plotSpatialEffects.R   
 	 QMexperiment.R  
 	 readHTAnalystData.R	
 	 readPlateList.R  
