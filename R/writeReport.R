@@ -687,7 +687,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     indexFile <- file.path(outdir, "index.html")
     con <- file(indexFile, open="w")
     on.exit(close(con))
-    writeHTML.mainpage(title=name(xr), tabs=tab, con=con)
+    writeHtml.mainpage(title=name(xr), tabs=tab, con=con)
     progress <- myUpdateProgress(progress, "step7")
     
     ## finally, return indexFile

@@ -354,7 +354,27 @@ table.sortable thead {
     cursor: default;
 }
 
+div.download
+{
+    float:left;
+    padding:3px;
+    color:#666666;
+    font-size:9px;
+}
+
 div.download a
 {
+    color:lightgray;
+    text-decoration:none;
+}
+
+div.download img
+{
     border:none;
+    width:25px;    
+}
+
+div.download a:hover
+{
+    color:darkblue;
 }

@@ -5,8 +5,10 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
 {
      if(overallState["configured"]){
          out <- getTopTable(cellHTSList, file=file, verbose=verbose)
+         rownames(out) <- NULL
          writeHtml.header(con)
-         writeLines(sprintf("<div class=\"download\"><a href=\"%s\"><img src=\"textfileIcon.jpg\"></a></div>",
+         writeLines(sprintf(paste("<div class=\"download\"><a href=\"%s\" target=\"_new\"><img",
+                                  "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
                             basename(file)), con)
          writeLines("<center>", con)
          hwrite(out, table.class="sortable", border=FALSE, page=con)

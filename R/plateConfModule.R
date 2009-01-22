@@ -36,4 +36,5 @@ writeHtml.plateConf <- function(cellHTSList, module, nrPlate, posControls,
                        style="width:30px; border: 1px solid #6699cc;"), con=con)
         writeHtml.trailer(con)
     }
+    return(invisible(NULL))
 }

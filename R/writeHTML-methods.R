@@ -4,8 +4,7 @@ writeHtml.header <- function(con)
     doc <- c("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\
 \"http://www.w3.org/TR/html4/loose.dtd\">",
              "\"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">")
-    writeLines(sprintf("
-%s
+    out <-sprintf("%s
 <html>
   <head>
     <title>
@@ -16,7 +15,10 @@ writeHtml.header <- function(con)
     <script src=\"sorttable.js\"></script>
    </head>
    <body onload=\"if (parent.adjustIFrameSize) parent.adjustIFrameSize(window);\">
-     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", doc[1]), con)
+     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", doc[1])
+    if(!missing(con))
+        writeLines(out, con)
+    return(invisible(out))
 }
 
 
@@ -24,9 +26,12 @@ writeHtml.header <- function(con)
 ## Closing HTML code
 writeHtml.trailer <- function(con)
 {
-    writeLines("
- </body>
-</html>", con)
+    out <-
+"  </body>
+</html>"
+    if(!missing(con))
+        writeLines(out, con)
+    return(invisible(out)) 
 }
 
 
@@ -38,17 +43,17 @@ writeHtml.trailer <- function(con)
 ##        of clicking the tab
 ##   con: a connection object
 ##   class: the css class of the tag, one in 'selected' or 'unselected'
-writeHTML.tab <- function(title, id, total, url, class="unselected", image=FALSE, con)
+writeHtml.tab <- function(title, id, total, url, class="unselected", image=FALSE, con)
 {
-    if(!image)
-        writeLines(sprintf("
+    out <- if(!image)
+        sprintf("
           <table class=\"tab\" id=\"tab%d\" onCLick=\"toggleTabs('%d',%d,'%s')\">",
-                           id, id, total, url), con)
+                id, id, total, url)
     else
-        writeLines(sprintf("
+        sprintf("
           <table class=\"tab\" id=\"tab%d\" onCLick=\"toggleImages('%d',%d)\">",
-                           id, id, total), con)
-    writeLines(sprintf("
+                id, id, total)
+    out <- c(out, sprintf("
             <tr class=\"tab\">
               <td class=\"tab left %s\" id=\"tab%d_1\">
                 &nbsp&nbsp
@@ -62,7 +67,10 @@ writeHTML.tab <- function(title, id, total, url, class="unselected", image=FALSE
                 &nbsp&nbsp
               </td>
             </tr>
-          </table>", class, id, class, id, class, id, title, class, id), con)
+          </table>", class, id, class, id, class, id, title, class, id))
+    if(!missing(con))
+        writeLines(out, con)
+    return(invisible(out)) 
 }
 
 
@@ -72,10 +80,10 @@ writeHTML.tab <- function(title, id, total, url, class="unselected", image=FALSE
 ## The following mandatory arguments have to be set
 ##   title: the experiment title
 ##   tabs: a data frame with all necessary values for the tabs. Each row will be supplied as
-##         argument list to 'writeHTML.tab' via 'do.call'. The con, class, id and total arguments don't
+##         argument list to 'writeHtml.tab' via 'do.call'. The con, class, id and total arguments don't
 ##         have to be supplied again, they are taken from the function arguments or initialized
 ##   con: a connection object
-writeHTML.mainpage <- function(title, tabs, con)
+writeHtml.mainpage <- function(title, tabs, methods, con)
 {
     writeHtml.header(con)
     writeLines(sprintf("
@@ -88,6 +96,11 @@ writeHTML.mainpage <- function(title, tabs, con)
           <div class=\"header\">
 	    Report for Experiment <span class=\"header\">%s</span>
           </div>
+	  <div class=\"methods\">
+	    <table class=\"methods\">
+	       %s
+	    </table>
+	  </div>
           <div class=\"timestamp\">
             generated %s
           </div>
@@ -98,7 +111,17 @@ writeHTML.mainpage <- function(title, tabs, con)
       </tr>
       <tr class=\"border middle\">
         <td class=\"border left\"></td>
-        <td class=\"main\">", title, date()), con)
+        <td class=\"main\">", title,
+                       paste(sprintf("
+                  <tr>
+                    <td class=\"methods description\">
+		      %s 
+                    </td>
+                    <td class=\"methods content\">
+                      %s 
+                    </td>
+                  </tr>", names(methods), unlist(methods)), collapse="\n"),
+                       date()), con)
     if(is.null(tabs$class))
         tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
     for(i in seq_len(nrow(tabs))){
@@ -107,7 +130,7 @@ writeHTML.mainpage <- function(title, tabs, con)
         alist$total <- nrow(tabs)
         if(is.null(alist$id))
             alist$id <- i
-        do.call("writeHTML.tab", args=alist)
+        do.call("writeHtml.tab", args=alist)
     }
     writeLines(sprintf("
           <div class=\"main\">
@@ -149,12 +172,12 @@ guid <- function()
 ##            mandatory argument 'cellHTSList', the list of raw, and -if available- normalized and scored cellHTS
 ##            objects, con, a file connection to write to, and the chtsModule object itself.
 ##            The return value of the function can be a list of additional
-##            elements for the tabs data.frame which later serves as input to writeHTML.mainpage, i.e., everything
+##            elements for the tabs data.frame which later serves as input to writeHtml.mainpage, i.e., everything
 ##            except 'url' and 'title', which is directly taken from the chtsModule object.
 ##   funArgs: a list of values for additional function arguments. htmlFun will be called via 'do.call' and this list
 ## This should allow for simple extension of the report. In order to keep the code easier to read and understand,
 ## the computations and image generation in htmlFun should be kept separated from the rendering of HTML. Use the
-## chtsImage class and its associated writeHTML method for all images to guarantee a similar look and feel.
+## chtsImage class and its associated writeHtml method for all images to guarantee a similar look and feel.
 setClass("chtsModule",
          representation=representation(title="character",
          url="character",
@@ -198,14 +221,14 @@ setMethod("writeHtml",
           alist$con <- con
           tmp <- do.call(x@htmlFun, args=alist)
           res <- data.frame(title=if(!length(x@title)) NA else x@title, url=basename(x@url))
-          if(!is.null(tmp) && is.list(tmp) %% names(tmp) %in% c("id", "total", "class"))
+          if(!is.null(tmp) && is.list(tmp) && names(tmp) %in% c("id", "total", "class"))
               res <- cbind(res, tmp)
           return(invisible(res))
       })
 
 
 
-## A class to hold information about images on cellHTS reports. The writeHTML method of the class will produce
+## A class to hold information about images on cellHTS reports. The writeHtml method of the class will produce
 ## the necessary HTML output, guaranteeing for a common look and feel. None of the slots except for the thumbnail
 ## are mandatory, and the HTML will be adapted to what is present. There is a notion of image stacks, and those can
 ## be supplied by the usual R vectorization (i.e. a vector of characters), in which case the HTML will provides the
@@ -222,6 +245,7 @@ setClass("chtsImage",
          caption="character",
          thumbnail="character",
          fullImage="character"))
+
 ## constructor
 chtsImage <- function(x)
 {
@@ -283,29 +307,30 @@ setMethod("writeHtml",
               if(length(additionalCode) != nrow(imgs))
                   stop("The length of the additional code list doesn't match the number of images.")
           }
-          writeLines("
-          <table class=\"image\" align=\"center\">", con)
+          out <- "
+          <table class=\"image\" align=\"center\">"
           if(nrow(tabs)>1){
               if(is.null(tabs$class))
                   tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
-              writeLines("
+              out <- c(out, "
             <tr class=\"image tabs\" align=\"center\">
-              <td class=\"image tabs\" colspan=\"2\">", con)
+              <td class=\"image tabs\" colspan=\"2\">")
               for(i in seq_len(nrow(tabs))){
                   alist <- as.list(tabs[i,])
-                  alist$con <- con
+                  if(!missing(con))
+                      alist$con <- con
                   alist$total <- nrow(tabs)
                   if(is.null(alist$id))
                       alist$id <- i
                   alist$image <- TRUE
-                  do.call("writeHTML.tab", args=alist)
+                  do.call("writeHtml.tab", args=alist)
               }
-              writeLines("    
+              out <- c(out, "    
               </td>
-            </tr>", con)
+            </tr>")
           }
           for(i in seq_len(nrow(imgs))){
-              writeLines(sprintf("   
+              out <- c(out, sprintf("   
             <tr class=\"image header %s\" id=\"img%d_1\">
               <td class=\"image header spacer\">
               </td>
@@ -336,11 +361,12 @@ setMethod("writeHtml",
                                  imgs[i, "ID"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
                                  if(!is.null(map[[i]])) map[[i]] else "",
                                  if(!is.null(additionalCode[[i]])) additionalCode[[i]] else "",
-                                 imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]),
-                         con)
+                                 imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]))
           }
-          writeLines("
-        </table>", con)
-          return(invisible(NULL))
+          out <- c(out, "
+        </table>")
+          if(!missing(con))
+              writeLines(out, con)
+          return(invisible(out))
       })
 
