@@ -37,6 +37,9 @@ scoreReplicates = function(object, sign="+", method="zscore", ...) {
 	
 	Data(object) <- sg*xnorm
 	validObject(object)
+
+	object@processingInfo[["scored"]] <- method
+
 	return(object)
 }
 ##=======================================================================
@@ -48,6 +51,7 @@ scoreReplicatesByzscore <- function(object){
 	xnorm <- Data(object)
 	samps <- (wellAnno(object)=="sample")
 	xnorm[] <- apply(xnorm, 2:3, function(v) (v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
+
 	return(xnorm)
 }
 ## ======================================================================
@@ -92,6 +96,7 @@ scoreReplicatesByNPI <- function(object, posControls, negControls){
 			}
 	}
 	
+
 	return(xnorm)
 }
 #
@@ -173,6 +178,9 @@ summarizeReplicates = function(object, summary="min") {
 	
 # NB - the state "scored" of the cellHTS object is only changed to TRUE after data scoring and replicate summarization.
 	z@state[["scored"]] <- TRUE
+
+	z@processingInfo[["summarized"]] <-  summary
+
 	validObject(z)
 	return(z)
 }

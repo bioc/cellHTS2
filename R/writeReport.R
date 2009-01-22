@@ -681,13 +681,21 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                            htmlFun=writeHtml.screenDescription, title="Screen Description",
                                            funArgs=list(overallState=overallState))
     tab <- rbind(tab, writeHtml(screenDescription.module, con=NULL))
+
+   getProInfo <- function(cellHTSlist)
+				{
+					n <- c("normalized", "summarized", "scored")
+					info <- cellHTSlist[[length(cellHTSlist)]]@processingInfo[n]
+					sel <- !sapply(info, is.null)
+					return(info[sel]) 
+				}
     
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
     indexFile <- file.path(outdir, "index.html")
     con <- file(indexFile, open="w")
     on.exit(close(con))
-    writeHtml.mainpage(title=name(xr), tabs=tab, con=con)
+    writeHtml.mainpage(title=name(xr), tabs=tab, methods=getProInfo(cellHTSlist), con=con)
     progress <- myUpdateProgress(progress, "step7")
     
     ## finally, return indexFile

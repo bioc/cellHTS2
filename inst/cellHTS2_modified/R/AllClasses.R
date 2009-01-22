@@ -106,36 +106,47 @@ validityROC <- function(object) {
 ## Class cellHTS (inherits from Biobase class 'NChannelSet'
 ##------------------------------------------------------------------------------
 
-setClass("cellHTS",  contains = "NChannelSet",
- representation( 
-    plateList = "data.frameOrNULL",
-    intensityFiles = "list",
-    state = "logical",
-    plateConf = "data.frameOrNULL",
-    screenLog = "data.frameOrNULL",
-    screenDesc = "character",
-    batch = "array",
-    rowcol.effects = "array",
-    overall.effects = "array"),
 
-         prototype = prototype(
-           new("VersionedBiobase",
-               versions=c(classVersion("NChannelSet"), cellHTS="1.0.0")),
-    plateList = data.frame(),
-    intensityFiles = list(),
-    state = c("configured"=FALSE, "normalized"=FALSE, "scored"=FALSE, 
-      "annotated" = FALSE),
-    plateConf = data.frame(),
-    screenLog = data.frame(),
-    screenDesc = "",
-    batch = array(dim=c(0,0,0)), 
-    #rowcol.effects = array(dim=c(0,0,0,0)),
-    #overall.effects = array(dim=c(1,0,0,0)) ),
-    rowcol.effects = array(dim=c(0,0,0)),
-    overall.effects = array(dim=c(0,0,0))
-    ),
-  validity=validityCellHTS
-) 
+
+setClass("cellHTS",  contains = "NChannelSet",
+				 representation( 
+								plateList = "data.frameOrNULL",
+								intensityFiles = "list",
+								state = "logical",
+								
+								processingInfo = "list",
+																
+								plateConf = "data.frameOrNULL",
+								screenLog = "data.frameOrNULL",
+								screenDesc = "character",
+								batch = "array",
+								rowcol.effects = "array",
+								overall.effects = "array"),
+				 
+				 prototype = prototype(
+									   new("VersionedBiobase",
+										   versions=c(classVersion("NChannelSet"), cellHTS="1.0.0")),
+									   plateList = data.frame(),
+									   intensityFiles = list(),
+									   state = c("configured"=FALSE, "normalized"=FALSE, "scored"=FALSE, 
+												 "annotated" = FALSE),
+									   
+										##processingInfo = list("normalization method" = NA , 
+											##				"summarization method" = NA, "scoring method" = NA),
+
+									   plateConf = data.frame(),
+									   screenLog = data.frame(),
+									   screenDesc = "",
+									   batch = array(dim=c(0,0,0)), 
+#rowcol.effects = array(dim=c(0,0,0,0)),
+#overall.effects = array(dim=c(1,0,0,0)) ),
+									   rowcol.effects = array(dim=c(0,0,0)),
+									   overall.effects = array(dim=c(0,0,0))
+									   ),
+				 validity=validityCellHTS
+		) 
+
+
 
 
 

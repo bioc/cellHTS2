@@ -71,7 +71,7 @@ writeHTML.tab <- function(title, id, total, url, class="unselected", image=FALSE
 ##         argument list to 'writeHTML.tab' via 'do.call'. The con, class, id and total arguments don't
 ##         have to be supplied again, they are taken from the function arguments or initialized
 ##   con: a connection object
-writeHTML.mainpage <- function(title, tabs, con)
+writeHTML.mainpage <- function(title, tabs, methods, con)
 {
     writeHtml.header(con)
     writeLines(sprintf("
@@ -84,6 +84,11 @@ writeHTML.mainpage <- function(title, tabs, con)
           <div class=\"header\">
 	    Report for Experiment <span class=\"header\">%s</span>
           </div>
+			<div class=\"methods\">
+				<table class=\"methods\">
+				  %s
+				</table>
+			</div>
           <div class=\"timestamp\">
             generated %s
           </div>
@@ -94,7 +99,15 @@ writeHTML.mainpage <- function(title, tabs, con)
       </tr>
       <tr class=\"border middle\">
         <td class=\"border left\"></td>
-        <td class=\"main\">", title, date()), con)
+        <td class=\"main\">", title, sprintf("
+                  <tr>
+                    <td class=\"methods description\">
+					  %s 
+                    </td>
+                    <td class=\"methods content\">
+                      %s 
+                    </td>
+                  </tr>", names(methods), unlist(methods)), date()), con)
     if(is.null(tabs$class))
         tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
     for(i in seq_len(nrow(tabs))){
@@ -341,26 +354,3 @@ setMethod("writeHtml",
       })
 
 
-
-
-tabs <- data.frame(title=c("Plate List", "Plate Configuration", "Plate Summaries", "Screen Summary",
-                   "Screen Description", "Screen Results", "Doro's tab"),
-                   url=c(rep(c("http://www.ard.de", "testImgs.html", "http://www.dkfz.de"),2), "http://www.google.de"))
-con <- file("test.html", open="w")
-writeHTML.mainpage(title="a first test", tabs=tabs, con=con)
-close(con)
-
-
-myImg <- chtsImage(data.frame(thumbnail=c("img2.png", "img1.png"),
-                              title=c("Boxplot of raw and normalized values", "Controls after normalization"),
-                              shortTitle=c("Boxplot", "Controls"),
-                              fullImage=c("img2.pdf", "img1.pdf"),
-                              caption=c("Replicate 1<br>Left:raw, right:normalized", NA)))
-
-
-
-con <- file("testImgs.html", open="w")
-writeHtml.header(con)
-writeHtml(myImg, con)
-writeHtml.trailer(con)
-close(con)

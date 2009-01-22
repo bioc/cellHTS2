@@ -283,6 +283,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## We are very particular about the values in cellHTSlist
     cellHTSlist <- cellHTSlistVerification(xr=raw, xn=normalized, xsc=scored,
                                            cellHTSlist=cellHTSlist)
+
+
     if (!is.logical(map))
         stop("'map' must be a logical value.")
     
@@ -684,10 +686,24 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
+
+	getProInfo <- function(cellHTSlist)
+				{
+					n <- c("normalized", "summarized", "scored")
+					info <- cellHTSlist[[length(cellHTSlist)]]@processingInfo[n]
+					sel <- !sapply(info, is.null)
+					return(info[sel]) 
+				}
+
+
+
+	## gets information on how data were normalized, summarized and scored
+	## when there is not only raw data availble
+
     indexFile <- file.path(outdir, "index.html")
     con <- file(indexFile, open="w")
     on.exit(close(con))
-    writeHTML.mainpage(title=name(xr), tabs=tab, con=con)
+    writeHTML.mainpage(title=name(xr), tabs=tab, methods=getProInfo(cellHTSlist), con=con)
     progress <- myUpdateProgress(progress, "step7")
     
     ## finally, return indexFile

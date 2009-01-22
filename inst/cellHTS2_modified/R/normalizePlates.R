@@ -76,7 +76,11 @@ normalizePlates = function(object, scale="additive", log = FALSE, method="median
 	## 3. Variance adjustment (optional):
 	if(varianceAdjust!="none") object <- adjustVariance(object, method=varianceAdjust)	
 	object@state[["normalized"]] = TRUE
+
+	object@processingInfo[["normalized"]] <- method
+
 	validObject(object)
+	
 	return(object)
 }
 

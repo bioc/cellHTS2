@@ -37,6 +37,7 @@ scoreReplicates = function(object, sign="+", method="zscore", ...) {
 
   Data(object) <- sg*xnorm
   validObject(object)
+  object@processingInfo[["scored"]] <- method
   return(object)
 }
 ##=======================================================================
@@ -173,6 +174,7 @@ z <- object
 
 # NB - the state "scored" of the cellHTS object is only changed to TRUE after data scoring and replicate summarization.
   z@state[["scored"]] <- TRUE
+  z@processingInfo[["summarized"]] <-  summary
   validObject(z)
   return(z)
 }
