@@ -332,7 +332,7 @@ count = 1
 
 		## old code
 		else 
-			 { ## if nrRep=<2
+			 { ## if nrRep<2
 			 	plotTable[count + 1, ch+1] = hwrite(paste(nrRep," replicate(s): scatterplot omitted"), 
 									center = TRUE, br = TRUE)   
 			 }
