@@ -36,8 +36,6 @@ Collate: AllClasses.R
 	 plateConfModule.R
 	 plateListModule.R
 	 plateSummariesModule.R
-	 plotSpatialEffects.R  
-         readHTAnalystData.R	
 	 plotSpatialEffects.R   
 	 readHTAnalystData.R	
 	 readPlateList.R  
