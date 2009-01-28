@@ -1,11 +1,44 @@
 ## The workhorse function for the 'Plate List' module: this is a matrix of quality metrics
 ## for the different plates and linked per plate quality reports. 
-writeHtml.plateList <- function(cellHTSList, module, exptab, url, center, glossary, con, ...)
+writeHtml.plateList <- function(cellHTSList, module, exptab, links, center, glossary,
+                                outdir, htmldir, con, ...)
 {
+    ## Copy the original intensity files for the compedium and also generate HTML files
+    nn <- writeIntensityFiles(outdir=outdir, xr=cellHTSList$raw, htmldir=htmldir)
+    ## Now the QC results
     writeHtml.header(con)
-    writeQCTable(exptab, url=url, con=con, glossary=glossary)
+    links[,"Filename"] <- nn
+    links[,"status"] <- file.path("../", links[,"status"])
+    writeQCTable(exptab, url=links, con=con, glossary=glossary)
     writeHtml.trailer(con)
-    return(invisible(NULL))
+    return(NULL)
+}
+
+
+## Write raw data files from the cellHTS object back to disk, both as regular
+## txt files and as formatted HTML 
+writeIntensityFiles <- function(outdir, xr, htmldir)
+{
+    wh <- which(plateList(xr)$status=="OK")
+    nm <- file.path("in", names(intensityFiles(xr)))
+    newFileNames <- NULL
+    for(w in wh)
+    {
+        txt <- intensityFiles(xr)[[w]]		
+        if(is.null(txt))
+            stop(sprintf(paste("CellHTS object is internally inconsistent, plate %d",
+                               "(%s) is supposedly OK but has no raw data file."),
+                         as.integer(w), nm[w]))
+        writeLines(txt, file.path(outdir, nm[w]))
+        html <- gsub("in/", "", paste(strsplit(nm[w], ".", fixed=TRUE)[[1]][1], "html", sep="."))
+        con <- file(file.path(htmldir, html), open="w")
+        writeHtml.header(con, path="../html")
+	writeLines(sprintf("<p class=\"verbatim\">%s</p>", paste(txt, collapse="<br>")), con)
+        writeHtml.trailer(con)
+        close(con)
+        newFileNames <- c(newFileNames, html)
+    }
+    return(newFileNames)
 }
 
 
@@ -45,8 +78,6 @@ plateListClass <-  function(df, nrPlates, classes=c("odd", "even"))
 }
 
 
-
-
 writeQCTable <- function(x, url, glossary, con)
 {
     ## The glossary
@@ -60,13 +91,9 @@ writeQCTable <- function(x, url, glossary, con)
                                       "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\" onmouseout=\"UnTip()\">",
                                       colnames(x[common]),"</a>")
     }
-    ## Making sure that the table is sorted by plates
-    sel <- order(x$Plate)
-    x <- x[sel,]
-    url <- url[sel,]
     ## Finding the redundant plates
     ## hwriter does not allow for rowspans, so we have to fake an additional line
-    ## in a separate table
+    ## in a separate table, all pretty ugly.
     red <- table(x$Plate)
     redHTML <- "
       <table class=\"plate\">
@@ -117,7 +144,6 @@ writeQCTable <- function(x, url, glossary, con)
 </table>", paste(redHTML, collapse="\n"), paste(tabHTML, collapse="\n"))
     writeLines(out, con)
 }
-
 
 
 ## write a dataframe of numeric component
@@ -187,7 +213,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
     fn <- file.path(subPath, "index.html")
     con <- file(file.path(basePath, fn), open="w")
     on.exit(close(con))
-    writeHtml.header(con, path="..")
+    writeHtml.header(con, path="../html")
     hwrite(paste("Experiment report for", name), con, center = TRUE, heading = 1, br=TRUE) 
     hwrite("",con, br=TRUE)
 	
@@ -490,13 +516,13 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
         ## old code
         else 
         { 
-            plotTable[count + 1, ch+1] <- hwrite(paste(nrRep," replicate(s): scatterplot omitted"), 
+            plotTable[count + 1, ch+1] <- hwrite("No replicates: scatterplot omitted", 
                                                  center = TRUE, br = TRUE)   
         }
         count <- count + 1 
 		
         ## ------------- Histograms (replicates) ----------------------------
-      ##   plotTable[count + 1, ch+1] <- hwrite("HISTOGRAM(S)")  
+      ##   plotTable[count + 1, ch+1] <- hwrite("HISTOGRAMS")  
 ##         count <- count + 1
 ##         aa <- c(iwells[["pos"]], iwells[["neg"]], iwells[["act"]], iwells[["inh"]])
 ##         aa <- aa[!is.na(aa)] 
@@ -547,7 +573,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             count <- oldcount
 			
             ## plot global title
-            plotTable[count+1, ch+1] <- hwrite("PLATE PLOT(S)")  
+            plotTable[count+1, ch+1] <- hwrite("PLATE PLOTS")  
 			
             ## plot title
             plotTable[count+2, 1] <- hwrite("Standard deviation across replicates") 
@@ -591,7 +617,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             } 
             else 
             {
-                plotTable[count+2, ch+1] <- hwrite(paste(nrRep, "replicate(s): plate plot omitted"), 
+                plotTable[count+2, ch+1] <- hwrite(paste(nrRep, "replicate: plate plot omitted"), 
                                                    center = TRUE, br = TRUE) 
             }#(!all(is.na(psd)))
             count <- count + 2

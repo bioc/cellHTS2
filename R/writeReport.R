@@ -208,47 +208,13 @@ createOutputFolder <- function(outdir, xr, force)
     {
         dir.create(outdir, recursive=TRUE, showWarnings=FALSE)
     }
-    ## create "in" folder
+    ## create "in" and "html" folder
     dir.create(file.path(outdir, "in"), showWarnings=FALSE)
+    dir.create(file.path(outdir, "html"), showWarnings=FALSE)
     return(outdir)
 }
 
 
-
-
-##  Write raw data files from the cellHTS object back to disk
-writeIntensityFiles <- function(outdir, xr)
-{	
-    wh <- which(plateList(xr)$status=="OK")
-    nm <- file.path("in", names(intensityFiles(xr)))
-    for(w in wh)
-    {
-        txt <- intensityFiles(xr)[[w]]		
-        if(is.null(txt))
-            stop(sprintf(paste("CellHTS object is internally inconsistent, plate %d",
-                               "(%s) is supposedly OK but has no raw data file."),
-                         as.integer(w), nm[w]))
-        writeLines(txt, file.path(outdir, nm[w]))	
-    } 
-}
-
-
-
-
-## save the script for the whole experience in the 'in' folder of the compendia
-saveMainScript <- function(mainScriptFile, outputFile)
-{
-    if(is.na(mainScriptFile))
-    {
-        warning("The R script which produced this cellHTS2 report has not been provided ",
-                "via the 'mainScriptFile' argument.\nWe strongly recommend storing these ",
-                "scripts for future reference along with the report.", call.=FALSE)
-    }
-    else
-    {
-        file.copy(from=mainScriptFile, to=outputFile, overwrite=TRUE)
-    }
-}
 
 ## This function produces the HTML report from the cellHTS object(s) in the output folder.
 ## The entry point to the report is the file "index.html" and should be viewed with a web
@@ -611,40 +577,34 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
             progress <- myUpdateProgress(progress, "step2", progress$timePerStep["step2"]/nrPlate)
         }## for p plates				
     }	
-	
-    ## step 4 : write the raw data intensity  files and also the main script into the
-    ## "in" folder
-    writeIntensityFiles(outdir, xr)  
-    saveMainScript(mainScriptFile, outputFile=file.path(outdir, "in", "mainScript.txt")) 	
-    progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
-		
-    ## steps 5, 6, 7 :
-    ## saving javascript file for mouseover bubbles
+
+    ## copying all necessary files into the html folder (css, javascripts, gifs) 
     cpfiles <- dir(system.file("templates", package="cellHTS2"), full=TRUE)
-    file.copy(from=cpfiles, to=outdir, overwrite=TRUE)
+    htmldir <- file.path(outdir, "html")
+    file.copy(from=cpfiles, to=htmldir, overwrite=TRUE)
     ## saving the glossary as a web page. createGlossary() returns a glossary with all
     ## the definitions 	
-    saveHtmlGlossary(createGlossary(), file.path(outdir,'glossary.html'))	
+    saveHtmlGlossary(createGlossary(), file.path(htmldir, 'glossary.html'))	
 
     ## The 'Plate List' module: this is a matrix of quality metrics for the different
     ## plates and linked per plate quality reports. The workhorse function to produce
     ## the necessary HTML code is 'writeHtml.plateList'.
     wh <- which(plateList(xr)$status=="OK")
     nm <- file.path("in", names(intensityFiles(xr)))
+    expOrder <- order(exptab["Plate"], exptab["Channel"], exptab["Replicate"])
     url[wh, "Filename"] <- nm[wh]
-
-	sorted.exptab <- exptab[order(exptab["Plate"], exptab["Channel"], exptab["Replicate"] ), ]
-
-    plateList.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateList.html"),
+    plateList.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
-                                   funArgs=list(center=TRUE, glossary=createGlossary(), url=url,
-                                   exptab=sorted.exptab))
+                                   funArgs=list(center=TRUE, glossary=createGlossary(),
+                                   links=url[expOrder,], exptab=exptab[expOrder,],
+                                   outdir=outdir, htmldir=htmldir))
     tab <- writeHtml(plateList.module)
+    progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
 		
     ## The 'Plate Configuration' module: this is an array of image plots indicating the
     ## plate layout (controls, samples, flagged wells). The workhorse function to produce
     ## the necessary HTML code is 'writeHtml.plateConf'.
-    plateConf.module <- chtsModule(cellHTSlist, url=file.path(outdir, "plateConf.html"),
+    plateConf.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateConf.html"),
                                htmlFun=writeHtml.plateConf, title="Plate Configuration",
                                funArgs=list(nrPlate=nrPlate, posControls=posControls,
                                negControl=negControls))
@@ -653,7 +613,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
 
     ## The 'Plate Summaries' module: boxplots of raw and normalized data as well as controls plots.
     ## The workhorse function to produce the necessary HTML code is 'writeHtml.experimentQC'.
-    experimentQC.module <- chtsModule(cellHTSlist, url=file.path(outdir, "experimentQC.html"),
+    experimentQC.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "experimentQC.html"),
                                       htmlFun=writeHtml.experimentQC, title="Plate Summaries",
                                       funArgs=list(allControls=allControls, allZfac=allZfac))
     tab <- rbind(tab, writeHtml(experimentQC.module))
@@ -662,7 +622,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## with an underlying HTML imageMap to allow for drill-down to the quality report page of
     ## the respective plates. The workhorse function to produce the necessary HTML code is
     ## 'writeHtml.screenSummary'.
-    screenSummary.module <- chtsModule(cellHTSlist, url=file.path(outdir, "screenImage.html"),
+    screenSummary.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenImage.html"),
                                      htmlFun=writeHtml.screenSummary, title="Screen Summary",
                                      funArgs=list(nrPlate=nrPlate, imageScreenArgs=imageScreenArgs,
                                      overallState=overallState))
@@ -672,27 +632,37 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## The 'Screen Results module': a downloadable ASCII table of the screening results and
     ## a sortable HTML table. The workhorse function to produce the necessary HTML code is
     ## 'writeHtml.screenResults'.
-    screenResults.module <- chtsModule(cellHTSlist, url=file.path(outdir, "screenResults.html"),
+    screenResults.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenResults.html"),
                                        htmlFun=writeHtml.screenResults, title="Screen Results",
-                                       funArgs=list(file=file.path(outdir, "topTable.txt"),
+                                       funArgs=list(file=file.path(outdir, "in", "topTable.txt"),
                                        verbose=FALSE, overallState=overallState))
     tab <- rbind(tab, writeHtml(screenResults.module))
     progress <- myUpdateProgress(progress, "step6")
     
     ## The 'Screen Description module': currently an ASCII file of the screen description. FIXME: Later
-    ## this is supposed to be formatted HTML output The workhorse function to produce the necessary HTML
+    ## this is supposed to be formatted HTML output. The workhorse function to produce the necessary HTML
     ## code is 'writeHtml.screenDescription'.
-    screenDescription.module <- chtsModule(cellHTSlist, url=file.path(outdir, "Description.txt"),
+    screenDescription.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenDescription.html"),
                                            htmlFun=writeHtml.screenDescription, title="Screen Description",
-                                           funArgs=list(overallState=overallState))
-    tab <- rbind(tab, writeHtml(screenDescription.module, con=NULL))
-    
+                                           funArgs=list(overallState=overallState,
+                                           outFile=file.path(outdir, "in", "Description.txt")))
+    tab <- rbind(tab, writeHtml(screenDescription.module, con=))
+
+
+    ## The 'Screen Script module': The commands that generated this report.  The workhorse function to produce
+    ## the necessary HTML code is 'writeHtml.screenScript'.
+    screenScript.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenScript.html"),
+                                      htmlFun=writeHtml.screenScript, title="Analysis Script",
+                                      funArgs=list(mainScriptFile=mainScriptFile,
+                                      outputFile=file.path(outdir, "in", "mainScript.R")))
+    tab <- rbind(tab, writeHtml(screenScript.module))
+        
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
     indexFile <- file.path(outdir, "index.html")
     con <- file(indexFile, open="w")
     on.exit(close(con))
-    writeHtml.mainpage(title=name(xr), tabs=tab, methods=getProInfo(cellHTSlist), con=con)
+    writeHtml.mainpage(title=name(xr), tabs=tab, con=con)
     progress <- myUpdateProgress(progress, "step7")
     
     ## finally, return indexFile
@@ -700,11 +670,3 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     return(invisible(indexFile))
 }
 
-
-getProInfo <- function(cellHTSlist)
-{
-    n <- c("normalized", "summarized", "scored")
-    info <- cellHTSlist[[length(cellHTSlist)]]@processingInfo[n]
-    sel <- !sapply(info, is.null)
-    return(info[sel]) 
-}

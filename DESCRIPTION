@@ -41,6 +41,7 @@ Collate: AllClasses.R
 	 readPlateList.R  
 	 screenResultsModule.R
 	 screenDescriptionModule.R
+	 screenScriptModule.R
 	 screenSummaryModule.R
          summarizeReplicates.R  
 	 tableOutput.R  

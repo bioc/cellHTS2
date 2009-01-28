@@ -25,6 +25,11 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
         writeHtml.header(con)
         writeHtml(img, con)
         writeHtml.trailer(con)
+        return(NULL)
+    }
+    else
+    {
+        return(NA)
     }
 }
 

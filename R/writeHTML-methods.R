@@ -125,9 +125,9 @@ writeHtml.tabCollection <- function(tabs, size=c("big", "medium", "small"), con)
 ##         arguments don't have to be supplied again, they are taken from the function arguments
 ##         or are initialized as needed.
 ##   con: a connection object
-writeHtml.mainpage <- function(title, tabs, methods, con)
+writeHtml.mainpage <- function(title, tabs, con)
 {
-    writeHtml.header(con)
+    writeHtml.header(con, path="html")
     writeLines(sprintf("
     <table class=\"border\">
       <tr class=\"border top\">
@@ -138,12 +138,7 @@ writeHtml.mainpage <- function(title, tabs, methods, con)
           <div class=\"header\">
 	    Report for Experiment <span class=\"header\">%s</span>
           </div>
-	  <div class=\"methods\">
-	    <table class=\"methods\">
-	       %s
-	    </table>
-	  </div>
-          <div class=\"timestamp\">
+	  <div class=\"timestamp\">
             generated %s
           </div>
           <div class=\"logo\">
@@ -153,18 +148,8 @@ writeHtml.mainpage <- function(title, tabs, methods, con)
       </tr>
       <tr class=\"border middle\">
         <td class=\"border left\"></td>
-        <td class=\"main\">", title,
-                       paste(sprintf("
-                  <tr>
-                    <td class=\"methods description\">
-		      %s 
-                    </td>
-                    <td class=\"methods content\">
-                      %s 
-                    </td>
-                  </tr>", names(methods), unlist(methods)), collapse="\n"),
-                       date()), con)
-    ## FIXME: Move methods to screen description
+        <td class=\"main\">", title, format(Sys.time(), "%a %b %d %H:%M %Y")), con)
+    tabs <- tabs[!apply(tabs, 1, function(y) all(is.na(y))),]
     writeHtml.tabCollection(tabs, size="medium", con=con)
     writeLines(sprintf("
           <div class=\"main\">
@@ -208,7 +193,9 @@ guid <- function()
 ##            objects, con, a file connection to write to, and the chtsModule object itself.
 ##            The return value of the function can be a list of additional
 ##            elements for the tabs data.frame which later serves as input to writeHtml.mainpage, i.e., everything
-##            except 'url' and 'title', which is directly taken from the chtsModule object.
+##            except 'url' and 'title', which is directly taken from the chtsModule object. If the return value is
+##            NA, the respective tab will be omitted. This is useful to handle conditional generation of particular
+##            modules in the htmFun function rather than directly in 'writeReport'.
 ##   funArgs: a list of values for additional function arguments. htmlFun will be called via 'do.call' and this list
 ## This should allow for simple extension of the report. In order to keep the code easier to read and understand,
 ## the computations and image generation in htmlFun should be kept separated from the rendering of HTML. Use the
@@ -229,7 +216,9 @@ chtsModule <- function(cellHTSList, title="anonymous", url=file.path(outdir, gui
 
 
 
-## Call 'htmlFun' with 'funArgs' in a chtsModule object and generate all necessary HTML code
+## Call 'htmlFun' with 'funArgs' in a chtsModule object and generate all necessary HTML code. Setting the
+## 'con' argument to NULL results in not opening a file connection. This might be handy in case one wants
+## to link to an already existing file, or to handle the file generation directly in the HTML function.
 setMethod("writeHtml",
           signature=signature("chtsModule"),
           definition=function(x, con, cellHTSList)
@@ -255,7 +244,9 @@ setMethod("writeHtml",
           alist$module <- x
           alist$con <- con
           tmp <- do.call(x@htmlFun, args=alist)
-          res <- data.frame(title=if(!length(x@title)) NA else x@title, url=basename(x@url))
+          if(!is.null(tmp) && is.na(tmp))
+              return(NA)
+          res <- data.frame(title=if(!length(x@title)) NA else x@title, url=file.path("html", basename(x@url)))
           if(!is.null(tmp) && is.list(tmp) && names(tmp) %in% c("id", "total", "class"))
               res <- cbind(res, tmp)
           return(invisible(res))

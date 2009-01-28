@@ -162,6 +162,7 @@ div.tab
     top:-3px;
     left:-1px;
     height:70px;
+    z-index:100;
 }
 
 div.tab.medium
@@ -626,8 +627,14 @@ table.rest td.header a
 table.rest td a
 {
     text-decoration:none;
+    color:darkblue;
+}
+
+table.rest td a:hover
+{
     color:black;
 }
+
 
 table.plate td
 {
@@ -665,4 +672,12 @@ td.even
 {
     background-color:#E4E8FE;
 
+}
+
+
+p.verbatim
+{
+    text-align:left;
+    font-size:13px;
+    font-family:Courier;
 }

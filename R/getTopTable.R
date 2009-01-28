@@ -188,8 +188,11 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
     ## Export everything to the file
     out <- out[order(out$score, decreasing=TRUE), ]
     out$score <- round(out$score, 2)
-    if(verbose)
-        cat(sprintf("Saving 'topTable' list in file '%s'\n", file))
-    write.tabdel(out, file=file)
+    if(!is.null(file))
+    {
+        if(verbose)
+            cat(sprintf("Saving 'topTable' list in file '%s'\n", file))
+        write.tabdel(out, file=file)
+    }
     return(out)
 }

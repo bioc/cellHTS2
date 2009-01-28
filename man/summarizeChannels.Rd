@@ -4,27 +4,29 @@
 \concept{normalization}
 \title{Summarization of dual-channel data}
 \description{
-  Combines plate intensities (raw or already corrected in a per-plate fashion) from dual-channel data stored in slot \code{assayData} of a
+  Combines plate intensities (raw or already corrected in a per-plate fashion) from multi-channel data stored in slot \code{assayData} of a
   \code{\linkS4class{cellHTS}} instance by applying the function defined in \code{fun}.
 }
 \usage{
 summarizeChannels(object,
-    fun = function(r1, r2, thresh) ifelse(r1>thresh, r2/r1, as.numeric(NA)))
+    fun = function(r1, r2, thresh=-Inf) ifelse(r1>thresh, r2/r1, as.numeric(NA)))
 }
 
 \arguments{
   \item{object}{an object of class \code{\linkS4class{cellHTS}} that has been configured. See details.}
-  \item{fun}{a user-defined function for the two channel summarization.
-    \code{fun} takes two numeric vectors and returns a numeric vector of
+  \item{fun}{a user-defined function for the multi channel summarization.
+    \code{fun} takes as many numeric vectors as there are channels,
+  names \code{r1, r2, etc.}, and
+  returns a single numeric vector of
     the same length. The default is to take the ratio between the
     second and first channels, with a threshold on \code{r1} shown above
     in the \emph{Usage} section that should be set by the user.}
 }
 
 \details{
-For each plate and replicate of a two-color experiment, the function
+For each plate and replicate of a multi-color experiment, the function
 defined in \code{fun} is applied to relate the intensity values in the
-two channels of the \code{cellHTS} object. The default is to 
+respective channels of the \code{cellHTS} object. The default is to 
 take the ratio between the second and first channels, with a threshold on 
 \code{r1} (see the \emph{Usage} section). This threshold should be adjusted by the 
 user according to the data. For an example, see the \emph{Examples} section.
@@ -32,7 +34,7 @@ This function uses the content of slot \code{assayData} of \code{object} and can
 }
 
 \value{
-An object of class \code{\linkS4class{cellHTS}} with the summarized dual-channel intensities stored in slot \code{assayData}.
+An object of class \code{\linkS4class{cellHTS}} with the summarized multi-channel intensities stored in slot \code{assayData}.
 This is an object of class \code{assayData} containing one matrix with the summarized channel data (dimensions nrFeatures x nrSamples).
 }
 
