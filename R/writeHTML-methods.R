@@ -246,7 +246,12 @@ setMethod("writeHtml",
           tmp <- do.call(x@htmlFun, args=alist)
           if(!is.null(tmp) && is.na(tmp))
               return(NA)
-          res <- data.frame(title=if(!length(x@title)) NA else x@title, url=file.path("html", basename(x@url)))
+          url <- file.path("html", basename(x@url))
+          title <- if(!length(x@title)) NA else x@title
+          res <- data.frame(title=title, url=url,
+                            script=sprintf(paste("toggleTabById('%s', this, '%s');\" onmouseover=\"Tip('%s",
+                            "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1);\" onmouseout=\"UnTip();\"", sep=""),
+                            "mainTab", url, getDefinition(title, createGlossary())))
           if(!is.null(tmp) && is.list(tmp) && names(tmp) %in% c("id", "total", "class"))
               res <- cbind(res, tmp)
           return(invisible(res))

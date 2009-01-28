@@ -159,14 +159,14 @@ plotPlateArgsVerification <- function(plotPlateArgs, map)
 
 
 ## imageScreenArgs verification
-imageScreenArgsVerification <- function(imageScreenArgs, map)
+imageScreenArgsVerification <- function(imageScreenArgs, map, ar=1)
 {	
     if(is.list(imageScreenArgs))
     {
         if(!("map" %in% names(imageScreenArgs)))
             imageScreenArgs$map=map
         if(!("ar" %in% names(imageScreenArgs)))
-            imageScreenArgs$ar=1
+            imageScreenArgs$ar=ar
         if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno"))) 
             stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for ",
                  "'imageScreenArgs' list!")
@@ -175,7 +175,7 @@ imageScreenArgsVerification <- function(imageScreenArgs, map)
     {
         if(!is.null(imageScreenArgs)) 
             stop("'imageScreenArgs' must either be a list or NULL.")
-        imageScreenArgs <- list(map=map)
+        imageScreenArgs <- list(map=map, ar=ar)
     }	
     return(imageScreenArgs)
 }
@@ -297,7 +297,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     colnames(url) <- colnames(exptab)
     qmHaveBeenAdded <- FALSE		
     plotPlateArgs <- plotPlateArgsVerification(plotPlateArgs, map)
-    imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map)
+    imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map,
+                                                  ar=pdim(xn)[1]/pdim(xn)[2])
 
     ## Set up the progress report and status output
     progress <- createProgressList(nrReplicate, nrChannel, nrPlate, plotPlateArgs,

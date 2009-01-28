@@ -5,14 +5,24 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
 {
      if(overallState["scored"]){
          out <- getTopTable(cellHTSList, file=file, verbose=verbose)
+         keep <- grep("^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_",
+                      colnames(out))
+         sel <- !(is.na(out$score))
+         out <- out[sel,keep]
          rownames(out) <- NULL
          writeHtml.header(con)
          writeLines(sprintf(paste("<div class=\"download\"><a href=\"%s\" target=\"_new\"><img",
                                   "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
                             file.path("..", "in", basename(file))), con)
-         writeLines("<center>", con)
-         hwrite(out, table.class="sortable", border=FALSE, page=con)
-         writeLines("</center>", con)
+         if(length(unlist(out)) > 20000)
+         {
+             writeLines("<div class=\"alert\">Result table too big to render.<br>
+                         Please download txt version using the link to the left.</div>", con)
+         }
+         else
+         {
+             hwrite(out, table.class="sortable", border=FALSE, center=TRUE, page=con)
+         }             
          writeHtml.trailer(con)
          return(NULL)
      }

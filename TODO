@@ -30,34 +30,23 @@
 
 * The writeReport should strongly encourage users to provide the
   history of the object being shown in the form of the R script with
-  which they created it (i.e. writeReport ask .
+  which they created it (i.e. writeReport ask . #DONE#
 
 * store normalization and summarization methods and use this
-  information in the output.
+  information in the output. #DONE#
 
 * check the enormous list of dependencies of the package, see which 
-  ones we can remove.
+  ones we can remove. #DONE#
 
 * People were confused on how to get the data out. This should be 
   explained in our vignette in a self-contained manner, since most 
-  people don't know how an NChannelSet works.
+  people don't know how an NChannelSet 
 
-* remove tcltk, and the progressReport
-
-* replace "cellHTSList" argument list with separate arguments, as 
-  is normal for R.
 
 * subset method is broken (see Florian's mail of 30.4.08)
 
 * summarizeReplicate is fine if there are no biologically 
   different assays and they are all just replicates; for any more 
   complex design, document how to use limma's lmFit and eBayes.
-
-
-* major reorganisation of writeReport:
-  each plot or table should be its own function
-  each of these functions will in general consist of two functions,
-    one for computing, one for rendering
-  check hwriter package!!
 
 * standard deviations plot: wouldn't a standard error plot be more informative?

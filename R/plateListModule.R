@@ -116,9 +116,12 @@ writeQCTable <- function(x, url, glossary, con)
                     collapse="\n      <tr>\n")
         redHTML <- c(redHTML, sprintf("
         <tr>
-          <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\">
+          <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\"
+            onmouseover=\"Tip('Detailed QC information for plate %s across all replicates and channels.',
+            WIDTH, 250, TITLE, 'Definition', OFFSETX, 1);\"
+            onmouseout=\"UnTip();\">
           </td>
-          %s", red[i], unique(url[,"status"])[i], pl))
+          %s", red[i], unique(url[,"status"])[i], i, pl))
         curPlate <- curPlate+red[i]
         class <- if(class=="odd") "even" else "odd"
     }
