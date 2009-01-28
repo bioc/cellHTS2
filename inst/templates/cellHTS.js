@@ -1,41 +1,80 @@
-function selectTab(id,off)
+toggleSelectionState = function(id, thisTable)
 {
-    var rep;
-    if(off) rep = "unselected"; else rep = "selected";
-    var classes = new Array("tab left ", "tab middle ", "tab ", "tab right ");
-    for(var j=1; j<=4; j++)
-	document.getElementById("tab"+id+"_"+j).className = classes[j-1]+rep;
-}
-  
-  
-function toggleTabs(id, total, src)
-{
-    for(var j=1; j<=total; j++){
-	selectTab(j,true);
+    var tables = document.getElementsByTagName("table");
+    var tl = tables.length;
+    var cl;
+    var match;
+    for(var i=0; i<tl; i++)
+    {
+        cl = tables[[i]].className;
+	mt = cl.match(id);
+        if(mt)
+	    tables[[i]].className = cl.replace(/ selected/, " unselected");
     }
-    selectTab(id,false);
-    document.getElementsByTagName("iframe")[0].src=src;
+    thisTable.className = thisTable.className.replace(/ unselected/, " selected");
 }
 
 
-function toggleImages(id, total)
-{
-    var classes = new Array("image header ", "image caption ", "image ", "image pdf ");
-    for(var i=1; i<=total; i++){
-	selectTab(i,true);
-	for(var j=1; j<=3; j++)
-	    document.getElementById("img"+i+"_"+j).className = classes[j-1]+"invisible";
+toggleImageVisibility = function(id)
+    {
+	var tables = document.getElementsByTagName("table");
+	var tl = tables.length;
+	var cl;
+	var mtid; var mtChanRep;
+	for(var i=0; i<tl; i++)
+	{
+            cl = tables[[i]].className;
+	    mtId = cl.match(id);
+	    mtChanRep = cl.match("channel"+currentChannel+" replicate"+currentReplicate);
+	    if(mtId)
+		tables[[i]].className = cl.replace(/ visible/, " invisible");
+	    if(mtChanRep)
+		tables[[i]].className = cl.replace(/ invisible/, " visible");
+	}
     }
-    selectTab(id,false);
-    for(var j=1; j<=3; j++)
-	document.getElementById("img"+id+"_"+j).className = classes[j-1];
+
+
+function toggleTabById(id, thisTable, src)
+{
+    toggleSelectionState(id, thisTable);   
+    document.getElementsByTagName("iframe")[0].src=src; 
 }
+
+    var currentReplicate=1;
+    var currentChannel=1;
+
+
+
+function toggleTabByChannel(id, thisTable, channel)
+{
+    toggleSelectionState(id, thisTable);  
+    currentChannel = channel;
+    id = id.replace(/Channel/, "");
+    toggleImageVisibility(id);
+}
+
+
+    function toggleTabByReplicate(id, thisTable, replicate)
+{
+    toggleSelectionState(id, thisTable);  
+    currentReplicate = replicate;
+    id = id.replace(/Replicate/, "");
+    toggleImageVisibility(id);
+}
+
 
 
 function linkToPdf(url)
 {
     document.location.href = url;
 }
+
+
+function linkToFile(url)
+{
+     document.location.href = url; 
+}
+
 
 
 

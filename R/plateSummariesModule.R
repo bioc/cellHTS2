@@ -5,9 +5,8 @@ writeHtml.experimentQC <- function(cellHTSList, module, con, allControls, allZfa
     outdir <- dirname(module@url)
     xn <- cellHTSList$normalized
     xr <- cellHTSList$raw
-    plotTable <- QMexperiment(xr, xn, outdir, con, allControls, allZfac)
     writeHtml.header(con)
-    writeHTMLtable4plots(plotTable, con=con)
+    QMexperiment(xn, xr, outdir, con, allControls, allZfac)
     writeHtml.trailer(con)
 }
 
@@ -47,10 +46,11 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
     		
     ## Create a dataframe for the plots of each channel
     plotTable <- data.frame(matrix(data=NA, nrow=0, ncol=nrCh + 1))
-    names(plotTable) <- c("", paste("Channel", 1:nrCh, sep=" "))	
+    names(plotTable) <- c("", paste("Channel", 1:nrCh, sep=" "))
+    chList <- vector(mode="list", length=nrCh)
     for(ch in 1:nrCh)
     {
-        count <- 0
+        repList <- list()
         for (r in 1:nrReplicate)
         {
             ## batch information
@@ -81,103 +81,90 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
                     btn <- rep(1L, nrPlate)
                 }
             }
-			
+
+            ## Create the boxplot of measurement values before and after normalization (if applicable)
             makePlot(path, con=con, name=sprintf("boxplot_%d_%d", r, ch), w=5*(nrbxp-hasLessCh),
-                     h=5, fun = function() {
-                         par(mfrow=c(1, (nrbxp-hasLessCh)), mai=c(1, 1, 0.01, 0.02))
-                         if (!hasLessCh) {
-                             xbp <- matrix(Data(xr)[,r,ch], ncol=nrPlate, nrow=nrWell)
-                             boxplotwithNA(xbp, col="pink", outline=FALSE, main="", xlab="plate",
-                                           ylab="raw intensity", batch=btr)
-                         }
-                         if(hasNormData) {
-                             xbp <- matrix(Data(xn)[,r,ch], ncol=nrPlate, nrow=nrWell)
-                             boxplotwithNA(xbp, col="lightblue", outline=FALSE, main="", xlab="plate",
-                                           ylab="normalized intensity", batch=btn)
-                         }
-                     }, print=FALSE)
-            
-            if(ch ==1)
-            {
+                     h=3, fun = function()
+                 {
+                     par(mfrow=c(1, (nrbxp-hasLessCh)), mai=c(0.8, 0.8, 0.2, 0.2),
+                         mgp=c(2.5,1,0))
+                     if (!hasLessCh)
+                     {
+                         xbp <- matrix(Data(xr)[,r,ch], ncol=nrPlate, nrow=nrWell)
+                         boxplotwithNA(xbp, col="pink", outline=FALSE, main="", xlab="plate",
+                                       ylab="raw intensity", batch=btr)
+                     }
+                     if(hasNormData)
+                     {
+                         xbp <- matrix(Data(xn)[,r,ch], ncol=nrPlate, nrow=nrWell)
+                         boxplotwithNA(xbp, col="lightblue", outline=FALSE, main="", xlab="plate",
+                                       ylab="normalized intensity", batch=btn)
+                     }
+                 }, print=FALSE)
+            caption <- 
                 if(hasNormData & !hasLessCh)
-                {
-                    plotTable[count + 1, 1] <- paste(hwrite(paste("Replicate ",r, '<br>')),
-                                                     hwrite("Left: raw, right: normalized", br=TRUE))
-                }		
+                    sprintf("Left: raw, right: normalized", r)
                 else
-                {
-                    plotTable[count + 1, 1] <- hwrite(paste("Replicate ",r,'<br>'))
-                }
-            }
-			
-            plotTable[count + 1, ch+1] <- hwrite(hwriteImage(sprintf("boxplot_%d_%d.png", r, ch),
-                                                             image.border=2),
-                                                 link = sprintf("boxplot_%d_%d.pdf", r, ch), center = TRUE,
-                                                 br = TRUE)    
+                    NA
+            img <- sprintf("boxplot_%d_%d.png", r, ch)
+            title <- "Boxplot"
             
-            count <- count + 1 
-			
+            ## Create the controls plot if there are any controls
+            missingError <- NULL
             if( nrPos[ch] & nrNeg[ch] & hasNormData )
             {
                 xbp <- matrix(Data(xn)[,r,ch], ncol=nrPlate, nrow=nrWell)
-				
                 yvals <- lapply(posCtrls[[ch]], function(d) xbp[d])
                 yvals$neg <- xbp[negCtrls[[ch]]]
                 yvals$inh <- xbp[inhCtrls[[ch]]]
                 yvals$act <- xbp[actCtrls[[ch]]]
-                
                 if (!all(is.na(unlist(yvals))))
                 {
                     makePlot(path, con=con,
-                             name=sprintf("Controls_%d_%d", r, ch), w=5*nrbxp, h=5, fun = function() {
-                                 par(mfrow=c(1, nrbxp), mai=c(par("mai")[1:2], 0.01, 0.02))
-                                 xvals <- lapply(posCtrls[[ch]], function(d) plt[d]) 
-                                 xvals$neg <- plt[negCtrls[[ch]]]
-                                 xvals$inh <- plt[inhCtrls[[ch]]]
-                                 xvals$act <- plt[actCtrls[[ch]]]
-                                 controlsplot(xvals, yvals, main="", batch=btn)
-								
-                                 ## density function needs at least 2 points
-                                 ## dealing with the case where we have a single positive or negative
-                                 ## control well, and a single plate, so that a single measurement
-                                 ## is available in either xpos or xneg or both.
-								
-                                 yvals <- lapply(yvals, function(d) d[!is.na(d)])
-                                 yvals.len <- sapply(yvals, length)>1
-                                 if (yvals.len[["neg"]] & sum(yvals.len)>1) {
-                                     densityplot(values=yvals,
-                                                 zfacs= sapply(names(allZfac),
-                                                 function(i) allZfac[[i]][r,ch]), main="")
-                                 }
-                             }, print=FALSE)					
-					
-                    plotTable[count + 1, 1] <- ""
-                    plotTable[count + 1, ch+1] <- hwrite(hwriteImage(sprintf("Controls_%d_%d.png", r, ch),
-                                                                     image.border=2),
-                                                         link=sprintf("Controls_%d_%d.pdf", r, ch),
-                                                         center = TRUE, br = TRUE)    
-                    
+                             name=sprintf("Controls_%d_%d", r, ch), w=5*nrbxp, h=3, fun = function()
+                         {
+                             par(mfrow=c(1, nrbxp), mai=c(0.8, 0.8, 0.2, 0.2),
+                                 mgp=c(2.5,1,0))
+                             xvals <- lapply(posCtrls[[ch]], function(d) plt[d]) 
+                             xvals$neg <- plt[negCtrls[[ch]]]
+                             xvals$inh <- plt[inhCtrls[[ch]]]
+                             xvals$act <- plt[actCtrls[[ch]]]
+                             controlsplot(xvals, yvals, main="", batch=btn)
+                             ## density function needs at least 2 points
+                             ## dealing with the case where we have a single positive or negative
+                             ## control well, and a single plate, so that a single measurement
+                             ## is available in either xpos or xneg or both.
+                             yvals <- lapply(yvals, function(d) d[!is.na(d)])
+                             yvals.len <- sapply(yvals, length)>1
+                             if (yvals.len[["neg"]] & sum(yvals.len)>1) {
+                                 densityplot(values=yvals,
+                                             zfacs= sapply(names(allZfac),
+                                             function(i) allZfac[[i]][r,ch]), main="")
+                             }
+                         }, print=FALSE)					
+                    img <- c(img, sprintf("Controls_%d_%d.png", r, ch))
+                    title <- c(title, "Controls Plot")
+                    caption <- c(caption, NA)
                 }
                 else
                 {## if !all NA
-                    plotTable[count + 1, 1] <- ""
-                    plotTable[count + 1, ch+1] <- hwrite("Values for 'pos' and 'neg' controls are missing.",
-                                                         center = TRUE, br=TRUE)
+                    missingError <- "Values for 'pos' and 'neg' controls are missing."
                 }## else !allNA
             }
             else
             {## if nrPos & nrNeg
-                plotTable[count + 1, 1] <- ""
-                plotTable[count + 1, ch+1] <- hwrite(paste("No controls ('pos' and 'neg') were found",
-                                                           "and/or the 'cellHTS' object is not normalized yet."),
-                                                           center = TRUE, br=TRUE) 
+                missingError <- paste("No controls ('pos' and 'neg') were found",
+                                      "and/or the 'cellHTS' object is not normalized yet.")
             }## else nrPos nrNeg
-			
-            count <- count + 1
+            htmlImg <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                            fullImage=gsub("png$", "pdf", img), caption=caption))
+            repList <- append(repList, htmlImg)
         } ## for r
-        
+        chList[[ch]] <- repList
     } ## for ch
-    return(plotTable) 
+    stack <- chtsImageStack(chList, id="expQC")
+    writeHtml(stack, con=con)
+    return(invisible(NULL))
 }
 
 

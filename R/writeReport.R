@@ -323,7 +323,10 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
 	
     ## the overview table of the plate result files in the experiment,
     ##  plus the (possible) urls for each table cell
+    ## We want the columns in a particular order
     exptab <- plateList(xr)
+    mt <- match(c("Plate", "Replicate", "Channel", "Filename"), colnames(exptab))
+    exptab <- cbind(exptab[,mt], exptab[,-mt, drop=FALSE])
     url <- matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
     colnames(url) <- colnames(exptab)
     qmHaveBeenAdded <- FALSE		
@@ -612,8 +615,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## step 4 : write the raw data intensity  files and also the main script into the
     ## "in" folder
     writeIntensityFiles(outdir, xr)  
-    saveMainScript(mainScriptFile, outputFile=file.path(outdir,
-                                   file.path("in", "mainScript.txt"))) 	
+    saveMainScript(mainScriptFile, outputFile=file.path(outdir, "in", "mainScript.txt")) 	
     progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
 		
     ## steps 5, 6, 7 :
@@ -684,14 +686,6 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                            htmlFun=writeHtml.screenDescription, title="Screen Description",
                                            funArgs=list(overallState=overallState))
     tab <- rbind(tab, writeHtml(screenDescription.module, con=NULL))
-
-   getProInfo <- function(cellHTSlist)
-				{
-					n <- c("normalized", "summarized", "scored")
-					info <- cellHTSlist[[length(cellHTSlist)]]@processingInfo[n]
-					sel <- !sapply(info, is.null)
-					return(info[sel]) 
-				}
     
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
@@ -704,4 +698,13 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## finally, return indexFile
     cat(sprintf("\rReport was successfully generated in folder %s\n", indexFile))
     return(invisible(indexFile))
+}
+
+
+getProInfo <- function(cellHTSlist)
+{
+    n <- c("normalized", "summarized", "scored")
+    info <- cellHTSlist[[length(cellHTSlist)]]@processingInfo[n]
+    sel <- !sapply(info, is.null)
+    return(info[sel]) 
 }

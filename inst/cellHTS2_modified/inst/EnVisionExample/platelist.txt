@@ -1,3 +1,0 @@
-Filename	Plate	Replicate	Channel
-XXX_1500.csv	1	1	1
-

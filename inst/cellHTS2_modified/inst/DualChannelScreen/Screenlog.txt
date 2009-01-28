@@ -1,3 +1,0 @@
-Plate	Sample	Channel	Well	Flag	Comment
-3	1	1	A05	NA	contaminated
-3	1	2	A05	NA	contaminated

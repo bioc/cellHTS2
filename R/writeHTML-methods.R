@@ -1,5 +1,5 @@
 ## Set up cellHTS HTML pages including all necessary javascript and css links
-writeHtml.header <- function(con)
+writeHtml.header <- function(con, path=".")
 {
     doc <- c("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\
 \"http://www.w3.org/TR/html4/loose.dtd\">",
@@ -10,12 +10,13 @@ writeHtml.header <- function(con)
     <title>
       cellHTS2 Experiment Report
     </title>
-    <link rel=\"stylesheet\" href=\"cellHTS.css\" type=\"text/css\">
-    <script type=\"text/javascript\" src=\"cellHTS.js\"></script>
-    <script src=\"sorttable.js\"></script>
+    <link rel=\"stylesheet\" href=\"%s/cellHTS.css\" type=\"text/css\">
+    <script type=\"text/javascript\" src=\"%s/cellHTS.js\"></script>
+    <script src=\"%s/sorttable.js\"></script>
    </head>
    <body onload=\"if (parent.adjustIFrameSize) parent.adjustIFrameSize(window);\">
-     <script type=\"text/javascript\" src=\"wz_tooltip.js\"></script>", doc[1])
+     <script type=\"text/javascript\" src=\"%s/wz_tooltip.js\"></script>",doc[1], path,
+                  path, path, path)
     if(!missing(con))
         writeLines(out, con)
     return(invisible(out))
@@ -37,37 +38,77 @@ writeHtml.trailer <- function(con)
 
 ## write HTML output for a single tab. The following mandatory arguments have to be set:
 ##   title: text used as a title for the tab
-##   id: an integer skalar used as idenitfier for the tab in javascript
-##   total: the total number of tabs on the page, this is also needed for the javascript
+##   id: a character scalar used as identifier for the tab collection in javascript
+##       (this identifies the collection of tabs, there may be multiple collections on one page)
+##   script: a character containing the java script that is associated to the tab
 ##   url: url to another HTML page which is supposed to be opened in the iFrame as result
 ##        of clicking the tab
+##   size: there are three different sizes of tabs: big, medium and small
 ##   con: a connection object
 ##   class: the css class of the tag, one in 'selected' or 'unselected'
-writeHtml.tab <- function(title, id, total, url, class="unselected", image=FALSE, con)
+writeHtml.tab <- function(title, url, id="mainTab",
+                          script=sprintf("toggleTabById('%s', this, '%s')", id, url),
+                          class, size, con)
 {
-    out <- if(!image)
-        sprintf("
-          <table class=\"tab\" id=\"tab%d\" onCLick=\"toggleTabs('%d',%d,'%s')\">",
-                id, id, total, url)
-    else
-        sprintf("
-          <table class=\"tab\" id=\"tab%d\" onCLick=\"toggleImages('%d',%d)\">",
-                id, id, total)
-    out <- c(out, sprintf("
-            <tr class=\"tab\">
-              <td class=\"tab left %s\" id=\"tab%d_1\">
-                &nbsp&nbsp
-              </td>
-              <td class=\"tab middle %s\" id=\"tab%d_2\">
-                <div class=\"tab %s\" id=\"tab%d_3\">
-                  %s
-                </div>
-              </td>
-              <td class=\"tab right %s\" id=\"tab%d_4\">
-                &nbsp&nbsp
-              </td>
-            </tr>
-          </table>", class, id, class, id, class, id, title, class, id))
+    out <- sprintf("
+	    <table class=\"%s %s %s\" onClick=\"%s\">
+	      <tr>
+		<td class=\"left\">
+		  &nbsp&nbsp
+		</td>
+		<td class=\"middle\">
+                  <span>
+		     %s
+                  </span>
+		</td>
+		<td class=\"right\">
+		  &nbsp&nbsp		
+		</td>
+	      </tr>
+	    </table>" , size, class, id, script, title)
+    if(!missing(con))
+        writeLines(out, con)
+    return(invisible(out)) 
+}
+
+
+## Produce HTML output for a whole collection of tabs.
+##   tabs: a data frame with all necessary values for the tabs. Each row will be supplied as
+##         argument list to 'writeHtml.tab' via 'do.call'. The con, class, id, script and size
+##         arguments don't have to be supplied again, they are taken from the function arguments
+##         or are initialized as needed.
+##   con: a connection object
+writeHtml.tabCollection <- function(tabs, size=c("big", "medium", "small"), con)
+{
+    size <- match.arg(size)
+    tabs$size <- size
+    out <- sprintf("
+    <div class=\"tab %s\">
+      <table class=\"bar %s\">
+	<tr>
+	  <td class=\"topbar\">
+	  </td>
+	</tr>
+	<tr>
+	  <td class=\"bar\">
+	  </td>
+	</tr>
+      </table>
+      <table class=\"tabs\">
+	<tr>
+	  <td>", size, size)
+    if(is.null(tabs$class))
+        tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
+    for(i in seq_len(nrow(tabs))){
+        alist <- as.list(tabs[i,])
+        alist$con <- NULL
+        out <- c(out, do.call("writeHtml.tab", args=alist))
+    }
+    out <- c(out,"
+           </td>
+	</tr>
+      </table>
+    </div>")
     if(!missing(con))
         writeLines(out, con)
     return(invisible(out)) 
@@ -80,8 +121,9 @@ writeHtml.tab <- function(title, id, total, url, class="unselected", image=FALSE
 ## The following mandatory arguments have to be set
 ##   title: the experiment title
 ##   tabs: a data frame with all necessary values for the tabs. Each row will be supplied as
-##         argument list to 'writeHtml.tab' via 'do.call'. The con, class, id and total arguments don't
-##         have to be supplied again, they are taken from the function arguments or initialized
+##         argument list to 'writeHtml.tab' via 'do.call'. The con, class, id, script and size
+##         arguments don't have to be supplied again, they are taken from the function arguments
+##         or are initialized as needed.
 ##   con: a connection object
 writeHtml.mainpage <- function(title, tabs, methods, con)
 {
@@ -122,16 +164,8 @@ writeHtml.mainpage <- function(title, tabs, methods, con)
                     </td>
                   </tr>", names(methods), unlist(methods)), collapse="\n"),
                        date()), con)
-    if(is.null(tabs$class))
-        tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
-    for(i in seq_len(nrow(tabs))){
-        alist <- as.list(tabs[i,])
-        alist$con <- con
-        alist$total <- nrow(tabs)
-        if(is.null(alist$id))
-            alist$id <- i
-        do.call("writeHtml.tab", args=alist)
-    }
+    ## FIXME: Move methods to screen description
+    writeHtml.tabCollection(tabs, size="medium", con=con)
     writeLines(sprintf("
           <div class=\"main\">
 	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\" noresize id=\"main\"
@@ -155,6 +189,7 @@ return(invisible(NULL))
 setGeneric("writeHtml",  function(x, ...)
          standardGeneric("writeHtml")
      )
+
 
 
 ## Create quasi-random guids. This is only based on the time stamp,
@@ -239,12 +274,16 @@ setMethod("writeHtml",
 ##   caption: a character scalar or vector of subtitles
 ##   thumbnail: a character scalar or vector of urls to the bitmap versions of the image(s)
 ##   fullImage: a character scalar or vector of urls to the vectorized versions of the image(s)
+##   jsclass: a character scalar which is used to identify the image in the javascripts. Additional
+##          classes for the respective channel and replicate versions of the image are augmented
+##          automatically.
 setClass("chtsImage",
          representation=representation(shortTitle="character",
          title="character",
          caption="character",
          thumbnail="character",
-         fullImage="character"))
+         fullImage="character",
+         jsclass="character"))
 
 ## constructor
 chtsImage <- function(x)
@@ -257,7 +296,7 @@ chtsImage <- function(x)
         x$shortTitle <- paste("Image", seq_len(nrow(x)))
     new("chtsImage", thumbnail=as.character(x$thumbnail), fullImage=as.character(x$fullImage),
         shortTitle=as.character(x$shortTitle), title=as.character(x$title),
-        caption=as.character(x$caption))
+        caption=as.character(x$caption), jsclass=if(!is.null(x$jsclass)) x$jsclass else "default")
 }
                      
 
@@ -265,13 +304,16 @@ chtsImage <- function(x)
 ## coerce chtsImage to data.frame
 setAs(from="chtsImage", to="data.frame", def=function(from)
   {
+      tm <- from@thumbnail
+      ltm <- length(tm)
       st <- if(!length(from@shortTitle)) "foo" else from@shortTitle
-      ti <- if(!length(from@title)) NA else from@title
-      ca <- if(!length(from@caption)) NA else from@caption
-      fi <- if(!length(from@fullImage)) NA else from@fullImage
+      ti <- if(!length(from@title)) rep(NA, ltm)  else from@title
+      ca <- if(!length(from@caption)) rep(NA, ltm) else from@caption
+      fi <- if(!length(from@fullImage)) rep(NA, ltm) else from@fullImage
       df <- data.frame(ID=seq_along(st), Title=I(ti), Caption=I(ca), FullImage=I(fi),
                        Pdf=I(sapply(fi, function(y) ifelse(is.na(y), "", "pdf"))),
-                       Thumbnail=from@thumbnail, Class=c("", rep("invisible", length(st)-1)))
+                       Thumbnail=tm,
+                       Class=paste(from@jsclass, c("visible", rep("invisible", length(st)-1))))
        if(any(is.na(df)))
            df[is.na(df)] <- ""
       return(df)
@@ -282,7 +324,7 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
 ## The optional argument map will add an imageMap to the HTML code.
 setMethod("writeHtml",
           signature=signature("chtsImage"),
-          definition=function(x, con, map, additionalCode)
+          definition=function(x, con, map, additionalCode, stack=FALSE)
       {
           st <- x@shortTitle
           if(!length(st))
@@ -291,7 +333,7 @@ setMethod("writeHtml",
           imgs <- as(x, "data.frame")
           if(missing(map))
           {
-              map <- vector(mode="list", length=nrow(imgs))
+              map <- rep("", nrow(imgs))
           }
           else
           {
@@ -300,73 +342,135 @@ setMethod("writeHtml",
           }
            if(missing(additionalCode))
           {
-              additionalCode <- vector(mode="list", length=nrow(imgs))
+              additionalCode <- rep("", nrow(imgs))
           }
           else
           {
               if(length(additionalCode) != nrow(imgs))
                   stop("The length of the additional code list doesn't match the number of images.")
           }
-          out <- "
-          <table class=\"image\" align=\"center\">"
-          if(nrow(tabs)>1){
+          out <- sprintf("
+          <table class=\"image %s\" align=\"center\">", unique(imgs$Class))
+          if(nrow(tabs)>1 && !stack){
               if(is.null(tabs$class))
                   tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
               out <- c(out, "
-            <tr class=\"image tabs\" align=\"center\">
-              <td class=\"image tabs\" colspan=\"2\">")
+            <tr>
+              <td class=\"tabs\">")
               for(i in seq_len(nrow(tabs))){
                   alist <- as.list(tabs[i,])
-                  if(!missing(con))
-                      alist$con <- con
-                  alist$total <- nrow(tabs)
+                  alist$size <- "small"
                   if(is.null(alist$id))
                       alist$id <- i
                   alist$image <- TRUE
-                  do.call("writeHtml.tab", args=alist)
+                  out <- c(out, do.call("writeHtml.tabCollection", args=alist))
               }
               out <- c(out, "    
               </td>
             </tr>")
           }
-          for(i in seq_len(nrow(imgs))){
-              out <- c(out, sprintf("   
-            <tr class=\"image header %s\" id=\"img%d_1\">
-              <td class=\"image header spacer\">
-              </td>
-              <td class=\"image header\">
-                <span class=\"image header\">
+          out <- c(out, sprintf("   
+            <tr>
+              <td class=\"header\">
+                <div class=\"header\">
 	          %s
-                </span>
+                </div>
+                <div class=\"caption\">
+	          %s
+                </div>
               </td>
             </tr>  
-            <tr class=\"image %s\" id=\"img%d_2\">
-              <td class=\"image caption\">
-                <span class=\"image caption\">
- 	          %s
+            <tr>
+              <td class=\"main\">
+                <img class=\"image\" src=\"%s\" %s>
+                  %s
+               </td>
+            </tr>
+            <tr>
+              <td class=\"pdf\">
+                <span class=\"pdf\" onClick=\"linkToPdf('%s');\">
+                  %s
                 </span>
               </td>
-            <td class=\"image main\">
-              <img class=\"image\" src=\"%s\" %s>
-              %s
-            </td>
-          </tr>
-          <tr class=\"image pdf %s\" id=\"img%d_3\">
-            <td class=\"image pdf\" colspan=\"2\">
-              <span class=\"image pdf\" onClick=\"linkToPdf('%s');\">
-                %s
-              </span>
-            </td>
-          </tr>",  imgs[i, "Class"], imgs[i, "ID"], imgs[i, "Title"], imgs[i, "Class"],
-                                 imgs[i, "ID"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
-                                 if(!is.null(map[[i]])) map[[i]] else "",
-                                 if(!is.null(additionalCode[[i]])) additionalCode[[i]] else "",
-                                 imgs[i, "Class"], imgs[i, "ID"], imgs[i, "FullImage"],  imgs[i, "Pdf"]))
-          }
+            </tr>",  imgs$Title, imgs$Caption, imgs$Thumbnail, map, additionalCode,
+                                imgs$FullImage, imgs$Pdf))
           out <- c(out, "
-        </table>")
+          </table>")
           if(!missing(con))
               writeLines(out, con)
           return(invisible(out))
       })
 
+
+
+## A class to hold chtsImage objects for multiple channels and replicates
+## Each element of the first list is supposed to be one channel, and the
+## elements in the subsequent list are the replicates. For each channel and replicate
+## there may be exactly one chtsImage object, possibly with multiple sub-images
+setClass("chtsImageStack",
+         representation(stack="list", id="character"),
+         prototype(stack=list(list())))
+
+## constructor
+chtsImageStack <- function(stack=list(list()), id)
+{
+    nrChan <- length(stack)
+    nrRep <- unique(sapply(stack, length))
+    if(length(nrRep)!=1)
+        stop("Need the same number of replicates for each channel")
+    vals <- sapply(unlist(stack), is, "chtsImage")
+    if(!all(vals))
+        stop("All elements of the outer lists must be 'chtsImage' objects")
+    new("chtsImageStack", stack=stack, id=id)
+}
+
+
+## Create HTML output. The organisation of the image stack is as follows:
+##   each channel will be on a separate tab
+##   replicates will be aligned vertically and there will be a set of buttons
+##   to navigate to the individual images in the chtsImage objects
+setMethod("writeHtml",
+          signature=signature("chtsImageStack"),
+          definition=function(x, con)
+      {
+          nrChan <- length(x@stack)
+          nrRep <- unique(sapply(x@stack, length))
+          out <- "
+          <table class=\"imageStack\" align=\"center\">
+            <tr>
+              <td class=\"tabs\">"
+          if(nrChan>1){
+              chanTabs <- data.frame(title=paste("Channel", seq_len(nrChan)),
+                                     id=paste(x@id, "Channel", sep=""),
+                                     script=sprintf("toggleTabByChannel('%sChannel', this, %d)", x@id,
+                                     seq_len(nrChan)))
+              out <- c(out, writeHtml.tabCollection(chanTabs, size="medium"))
+          }
+          if(nrRep>1){
+              repTabs <- data.frame(title=paste("Replicate", seq_len(nrRep)),
+                                     id=paste(x@id, "Replicate", sep=""),
+                                     script=sprintf("toggleTabByReplicate('%sReplicate', this, %d)", x@id,
+                                     seq_len(nrRep)))
+              out <- c(out, writeHtml.tabCollection(repTabs, size="small"))
+          }
+          out <- c(out, "
+              </td>
+            </tr>
+            <tr>
+              <td>")
+          for(i in seq_len(nrChan)){
+              for(j in seq_len(nrRep)){
+                  viz <- if(i==1 && j==1) "visible" else "invisible"
+                  img <- x@stack[[i]][[j]]
+                  img@jsclass <- sprintf(" %s %s channel%d replicate%d\"", viz, x@id, i, j)
+                  out <- c(out, writeHtml(img, stack=TRUE))
+              }
+          }
+          out <- c(out, "
+              </tr>
+            </td>  
+          </table>")
+          if(!missing(con))
+              writeLines(out, con)
+          return(invisible(out))     
+      })

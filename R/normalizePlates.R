@@ -113,6 +113,7 @@ summarizeChannels = function(object,
 
   ## The argument 'fun' allows using different normalizations, and also to define
   ## the numerator/denominator for the ratio (i.e. R1/R2 or R2/R1)
+  ## FIXME: Construct args list based on available channels
   xnorm <- array(
      do.call(fun, list(r1=xnorm[,,1], r2=xnorm[,,2])),
             dim=c(dim(xnorm)[1:2], "Channels"=1))
