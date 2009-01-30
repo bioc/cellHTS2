@@ -80,6 +80,18 @@ createGlossary <- function()
     simpleDef <- "Detailled quality report for a single plate across all replicates and channels."
     completeDef <- ""
     glossary <- setDefinition(glossary, "experimentQC", simpleDef, completeDef)
+
+    simpleDef <- "Pdf version of the image."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "pdf", simpleDef, completeDef)
+
+    simpleDef <- "Switch off the tooltips."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "switchHelp", simpleDef, completeDef)
+
+    simpleDef <- "Download the complete screen result table as a tab-delimited ASCII file. You can import this file into any spreadsheet program of your choice."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "downloadTable", simpleDef, completeDef)
     
     return(glossary)
 }

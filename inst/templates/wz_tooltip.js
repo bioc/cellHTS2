@@ -44,7 +44,6 @@ var config = new Object();
 
 //===================  GLOBAL TOOPTIP CONFIGURATION  =========================//
 var tt_Debug	= true		// false or true - recommended: false once you release your page to the public
-var tt_Enabled	= true		// Allows to (temporarily) suppress tooltips, e.g. by providing the user with a button that sets this global variable to false
 var TagsToTip	= true		// false or true - if true, HTML elements to be converted to tooltips via TagToTip() are automatically hidden;
 							// if false, you should hide those HTML elements yourself
 
@@ -532,11 +531,22 @@ function tt_HideSrcTag(sT2t)
 }
 function tt_Tip(arg, t2t)
 {
-	if(!tt_db)
-		return;
-	if(tt_iState)
-		tt_Hide();
-	if(!tt_Enabled)
+    if(!tt_db)
+	return;
+    if(tt_iState)
+	tt_Hide();
+    var cn = "showTooltips";
+    cv = Get_Cookie(cn);
+    if(cv && cv=="true") 
+    {
+	tt_Enabled=true; 
+    }
+    else 
+    {
+	tt_Enabled=false;
+    }
+
+        if(!tt_Enabled)
 		return;
 	tt_t2t = t2t;
 	if(!tt_ReadCmds(arg))

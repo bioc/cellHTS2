@@ -11,8 +11,9 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
          out <- out[sel,keep]
          rownames(out) <- NULL
          writeHtml.header(con)
-         writeLines(sprintf(paste("<div class=\"download\"><a href=\"%s\" target=\"_new\"><img",
+         writeLines(sprintf(paste("<div class=\"download\"%s><a href=\"%s\" target=\"_new\"><img",
                                   "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
+                            addTooltip("downloadTable", "Help"),
                             file.path("..", "in", basename(file))), con)
          if(length(unlist(out)) > 20000)
          {

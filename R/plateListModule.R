@@ -86,10 +86,12 @@ writeQCTable <- function(x, url, glossary, con)
         cn <- colnames(x)
         common <- intersect(glossary$word, cn)
         rownames(glossary) <- glossary$word
-        cn[match(common, cn)] <- paste("<a href=\"glossary.html\" onmouseover=\"Tip('",
-                                      glossary[colnames(x[common]),2],
-                                      "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\" onmouseout=\"UnTip()\">",
-                                      colnames(x[common]),"</a>")
+        cn[match(common, cn)] <- paste("<span onmouseover=\"Tip('",
+                                       glossary[colnames(x[common]),2],
+                                       "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\"",
+                                       " onmouseout=\"UnTip();\" onClick=\"if(tt_Enabled) ",
+                                       "linkToFile('glossary.html');\">",
+                                       colnames(x[common]),"</span>", sep="")
     }
     ## Finding the redundant plates
     ## hwriter does not allow for rowspans, so we have to fake an additional line
@@ -116,12 +118,11 @@ writeQCTable <- function(x, url, glossary, con)
                     collapse="\n      <tr>\n")
         redHTML <- c(redHTML, sprintf("
         <tr>
-          <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\"
-            onmouseover=\"Tip('Detailed QC information for plate %s across all replicates and channels.',
-            WIDTH, 250, TITLE, 'Definition', OFFSETX, 1);\"
-            onmouseout=\"UnTip();\">
+          <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\"%s>
           </td>
-          %s", red[i], unique(url[,"status"])[i], i, pl))
+          %s", red[i], unique(url[,"status"])[i],
+               addTooltip(sprintf("Detailed QC information for plate %s across all replicates and channels.", i),
+                          "Help", FALSE), pl))
         curPlate <- curPlate+red[i]
         class <- if(class=="odd") "even" else "odd"
     }
@@ -161,10 +162,12 @@ writeHTMLtable <- function(x, url=NA, con, center=FALSE, extra=NULL, glossary=NU
         cn <- colnames(x)
         common <- intersect(glossary$word, cn)
         rownames(glossary) <- glossary$word
-        cn[match(common, cn)] <- paste("<a href=\"glossary.html\" onmouseover=\"Tip('",
-                                      glossary[colnames(x[common]),2],
-                                      "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\" onmouseout=\"UnTip()\">",
-                                      colnames(x[common]),"</a>")
+        cn[match(common, cn)] <- paste("<span onmouseover=\"Tip('",
+                                       glossary[colnames(x[common]),2],
+                                       "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\"",
+                                       " onmouseout=\"UnTip()\" onClick=if(tt_Enabled) ",
+                                       "linkToFile('glossary.html');\">",
+                                       colnames(x[common]),"</span>", sep="")
         colnames(x) <- cn
     }
     ## writing data.frame 
@@ -724,7 +727,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
                                   ylim=ylim, xlab="Channel 1", ylab="Channel 2", col=wellTypeColor[mtt[[r]]])
                              abline(a=0, b=1, col="lightblue")
                          }, print=FALSE)
-                plotTable[r+3, 4] <- paste(hwrite(wellLeg, center=TRUE), hwrite(hwriteImage(sprintf("scp_Rep%d.png", r),), link = sprintf("scp_Rep%d.pdf", r), center = TRUE) )      
+                plotTable[r+3, 4] <- paste(hwrite(wellLeg, center=TRUE), hwrite(hwriteImage(sprintf("scp_Rep%d.png", r),),
+                                                           link = sprintf("scp_Rep%d.pdf", r), center = TRUE) )      
             }
             else
             {

@@ -50,11 +50,34 @@ td.top
     border-bottom:1px solid #336699;
 }
 
+div.helpSwitch
+{
+    text-align:center;
+    color:white;
+    float:left;
+    font-size:8px;
+    position:relative;
+    left:57px;
+    top:-2px;
+    font-weight:bold;
+}
+
+div.helpSwitch span
+{
+    font-size:8px;
+}
+
+div.helpSwitch span:hover
+{
+    cursor:pointer;
+    color:#4f4f4f;
+}
+
 div.header
 {
     font-size:14px; 
     color:white; 
-    padding-left:10px; 
+    padding-left:70px; 
     float:left;
 }
 
@@ -66,56 +89,25 @@ span.header
 }
 
 
-div.methods
-{
-    float:left;
-    margin-left:40px;
-    position:relative;
-    top:5px;
-}
-
-
-table.methods
-{
-    display:none;
-    color:white;
-    border-spacing:0px; 
-    border-collapse:collapse;     
-}
-
-
-td.methods.description
-{
-    font-size:11px;
-    font-weight:bold;
-    text-align:right;
-}
-
-
-td.methods.content
-{
-    text-align:left;
-    padding-left:5px;
-    font-size:10px;
-}
-
 div.timestamp
 {
-margin-left:170px;
+margin-left:230px;
 float:left;
 font-size: 10px;
 color:white;
 vertical-align:bottom;
 position:relative;
-top:20px;
+top:25px;
 font-style:italic;
 }
 
 
 div.logo
 {
-    font-size:24px; 
-    color:white; 
+    width:120px;
+    height:32px;
+    background-image:url(logoSmall.png);
+    background-repeat:no-repeat;
     padding-right:10px; 
     float:right;
 }
@@ -240,7 +232,7 @@ div.tab table.tabs table.unselected
 
 div.tab table.tabs table:hover
 {
-    color:black;
+    color:#4f4f4f;
 }
 
 div.tab table.tabs table.unselected.small
@@ -455,6 +447,18 @@ table.imageStack
     background-color:#6699cc;
 }
 
+table.horizontal
+{
+    float:left;   
+}
+
+
+table.horizontal invisible
+{
+    display:none;
+}
+
+
 table.image
 {
     font-family:Arial;
@@ -480,6 +484,8 @@ table.imageStack table.image td.header div.header
 {
     position:relative;
     top:-15px;
+    padding-right:0px;
+    padding-left:0px;
 }
 
 table.image td.header div.header
@@ -487,6 +493,8 @@ table.image td.header div.header
     float:none;
     font-size:20px;
     font-weight:bold;
+    padding-right:0px;
+    padding-left:0px;
 }
 
 table.image div.caption
@@ -579,7 +587,7 @@ div.download
 
 div.download a
 {
-    color:#454545;
+    color:#989898;
     text-decoration:none;
 }
 
@@ -591,7 +599,7 @@ div.download img
 
 div.download a:hover
 {
-    color:darkblue;
+    color:black;
 }
 
 
@@ -637,7 +645,7 @@ table.rest td a
 
 table.rest td a:hover
 {
-    color:black;
+    color:#4f4f4f;
 }
 
 
@@ -658,10 +666,6 @@ table.plate td.details
 table.plate td.details:hover
 {
     background-image:url(lupebw.png);
-}
-
-table.plate td.details:hover
-{
     cursor:pointer;
 }
 
