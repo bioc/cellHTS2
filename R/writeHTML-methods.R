@@ -286,6 +286,8 @@ setMethod("writeHtml",
 ##   caption: a character scalar or vector of subtitles
 ##   thumbnail: a character scalar or vector of urls to the bitmap versions of the image(s)
 ##   fullImage: a character scalar or vector of urls to the vectorized versions of the image(s)
+##   additionalCode: a character scalar or vector of arbitrary HTML code to be added to the bottom of the image
+##   map: a character scalar or vector of valid HTML imageMap code for each image
 ##   jsclass: a character scalar which is used to identify the image in the javascripts. Additional
 ##          classes for the respective channel and replicate versions of the image are augmented
 ##          automatically.
@@ -295,6 +297,8 @@ setClass("chtsImage",
          caption="character",
          thumbnail="character",
          fullImage="character",
+         additionalCode="character",
+         map="character",
          jsclass="character"))
 
 ## constructor
@@ -302,12 +306,15 @@ chtsImage <- function(x)
 {
     if(!is.data.frame(x))
         stop("'x' must be a data frame.")
-    if(is.null(x$thumbnail))
-        stop("You have to specifiy at least an image url to create a 'chtsImage' object.")
+    if(is.null(x$additionalCode))
+        x$additionalCode <- ""
+    if(is.null(x$map))
+        x$map <- ""
     if(nrow(x)>1 && is.null(x$shortTitle))
         x$shortTitle <- paste("Image", seq_len(nrow(x)))
     new("chtsImage", thumbnail=as.character(x$thumbnail), fullImage=as.character(x$fullImage),
         shortTitle=as.character(x$shortTitle), title=as.character(x$title),
+        additionalCode=as.character(x$additionalCode), map=as.character(x$map),
         caption=as.character(x$caption), jsclass=if(!is.null(x$jsclass)) x$jsclass else "default")
 }
                      
@@ -316,15 +323,18 @@ chtsImage <- function(x)
 ## coerce chtsImage to data.frame
 setAs(from="chtsImage", to="data.frame", def=function(from)
   {
-      tm <- from@thumbnail
+      ltm <- max(sapply(slotNames(from), function(x) length(slot(from, x))))
+      tm <- if(!length(from@thumbnail)) rep(NA, ltm)  else from@thumbnail
       ltm <- length(tm)
       st <- if(!length(from@shortTitle)) "foo" else from@shortTitle
       ti <- if(!length(from@title)) rep(NA, ltm)  else from@title
       ca <- if(!length(from@caption)) rep(NA, ltm) else from@caption
       fi <- if(!length(from@fullImage)) rep(NA, ltm) else from@fullImage
-      df <- data.frame(ID=seq_along(st), Title=I(ti), Caption=I(ca), FullImage=I(fi),
+      map <- if(!length(from@map)) rep(NA, ltm) else from@map
+      ac <- if(!length(from@additionalCode)) rep(NA, ltm) else from@additionalCode
+      df <- data.frame(ID=seq_len(ltm), Title=I(ti), Caption=I(ca), FullImage=I(fi),
                        Pdf=I(sapply(fi, function(y) ifelse(is.na(y), "", "pdf"))),
-                       Thumbnail=tm, Class=from@jsclass)
+                       Thumbnail=I(tm), Class=from@jsclass, AdditionalCode=ac, Map=map)
        if(any(is.na(df)))
            df[is.na(df)] <- ""
       return(df)
@@ -335,32 +345,14 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
 ## The optional argument map will add an imageMap to the HTML code.
 setMethod("writeHtml",
           signature=signature("chtsImage"),
-          definition=function(x, con, map, additionalCode, stack=FALSE)
+          definition=function(x, con, stack=FALSE, vertical=TRUE)
       {
           st <- x@shortTitle
           if(!length(st))
               st <- "foo"
           tabs <- data.frame(title=st, id=seq_along(st))
           imgs <- as(x, "data.frame")
-          if(missing(map))
-          {
-              map <- rep("", nrow(imgs))
-          }
-          else
-          {
-              if(length(map) != nrow(imgs))
-                  stop("The length of the imageMap list doesn't match the number of images.")
-          }
-           if(missing(additionalCode))
-          {
-              additionalCode <- rep("", nrow(imgs))
-          }
-          else
-          {
-              if(length(additionalCode) != nrow(imgs))
-                  stop("The length of the additional code list doesn't match the number of images.")
-          }
-          out <- NULL
+          out <- if(!vertical) "<table align=\"center\"><tr><td>" else "" 
           for(i in seq_len(nrow(tabs))){
               out <- c(out, sprintf("
           <table class=\"image %s\" align=\"center\">", unique(imgs[i,"Class"])))
@@ -407,11 +399,16 @@ setMethod("writeHtml",
                    %s
                 </span>
               </td>
-            </tr>",  imgs[i, "Title"], imgs[i, "Caption"], imgs[i, "Thumbnail"], map[i], additionalCode[i],
-                                    imgs[i, "FullImage"], addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
+            </tr>",  imgs[i, "Title"], imgs[i, "Caption"], imgs[i, "Thumbnail"], imgs[i, "Map"],
+                                    imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
+                                    addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
               out <- c(out, "
           </table>")
+              if(!vertical)
+                  out <- c(out, "</td><td>")
           }
+          if(!vertical)
+              out <- c(out, "</td></tr></table>")
           if(!missing(con))
               writeLines(out, con)
           return(invisible(out))
@@ -424,11 +421,11 @@ setMethod("writeHtml",
 ## elements in the subsequent list are the replicates. For each channel and replicate
 ## there may be exactly one chtsImage object, possibly with multiple sub-images
 setClass("chtsImageStack",
-         representation(stack="list", id="character"),
+         representation(stack="list", id="character", title="character", tooltips="character"),
          prototype(stack=list(list())))
 
 ## constructor
-chtsImageStack <- function(stack=list(list()), id)
+chtsImageStack <- function(stack=list(list()), id, title=as.character(NULL), tooltips=as.character(NULL))
 {
     nrChan <- length(stack)
     nrRep <- unique(sapply(stack, length))
@@ -437,7 +434,9 @@ chtsImageStack <- function(stack=list(list()), id)
     vals <- sapply(unlist(stack), is, "chtsImage")
     if(!all(vals))
         stop("All elements of the outer lists must be 'chtsImage' objects")
-    new("chtsImageStack", stack=stack, id=id)
+    if(length(tooltips) && length(tooltips) != length(stack[[1]]))
+        stop("'tooltips' must be a vector of the same length as number of replicates")
+    new("chtsImageStack", stack=stack, id=id, title=title, tooltips=tooltips)
 }
 
 
@@ -452,15 +451,17 @@ chtsImageStack <- function(stack=list(list()), id)
 ##     the replicates are horizontally stacked
 setMethod("writeHtml",
           signature=signature("chtsImageStack"),
-          definition=function(x, con)
+          definition=function(x, con, vertical=TRUE)
       {
           nrChan <- length(x@stack)
           nrRep <- unique(sapply(x@stack, length))
           class <- "imageStack"
           out <- sprintf("
             <table class=\"%s\" align=\"center\">
+              %s
               <tr>
-                <td class=\"tabs\">", class)
+                <td class=\"tabs\">", class,
+                         if(length(x@title)) sprintf("<tr><td class=\"header\">%s</td></tr>", x@title) else "")
           if(nrChan>1){
               chanTabs <- data.frame(title=paste("Channel", seq_len(nrChan)),
                                      id=paste(x@id, "Channel", sep=""),
@@ -471,10 +472,11 @@ setMethod("writeHtml",
           imgs <- !is.null(names(x@stack[[1]]))
           title <- if(!imgs) paste("Replicate", seq_len(nrRep)) else names(x@stack[[1]])
           if(nrRep>1){
+              tt <- if(length(x@tooltips)) paste("\"", x@tooltips) else ""
               repTabs <- data.frame(title=title,
                                     id=paste(x@id, "Replicate", sep=""),
-                                    script=sprintf("toggleTabByReplicate('%sReplicate', this, %d)", x@id,
-                                    seq_len(nrRep)))
+                                    script=sprintf("toggleTabByReplicate('%sReplicate', this, %d) %s", x@id,
+                                    seq_len(nrRep), tt))
               out <- c(out, writeHtml.tabCollection(repTabs, size="small"))
           }
           out <- c(out, "
@@ -482,12 +484,13 @@ setMethod("writeHtml",
             </tr>
             <tr>
               <td>")
+          vert <- if(vertical) "" else "horizontal"
           for(i in seq_len(nrChan)){
               for(j in seq_len(nrRep)){
-                  viz <- if(i==1 && j==1) "visible" else "invisible"
+                  viz <- if(i==1 && j==1) "visible" else "invisible"             
                   img <- x@stack[[i]][[j]]
-                  img@jsclass <- sprintf(" %s %s channel%d replicate%d", viz, x@id, i, j)
-                  out <- c(out, writeHtml(img, stack=TRUE))
+                  img@jsclass <- sprintf(" %s %s %s channel%d replicate%d", vert, viz, x@id, i, j)
+                  out <- c(out, writeHtml(img, stack=TRUE, vertical=vertical))
               }
           }
           out <- c(out, "

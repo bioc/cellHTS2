@@ -20,7 +20,7 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
                                      thumbnail="imageScreen.png",
                                      fullImage="imageScreen.pdf"))
         if (!is.null(res))
-            res <- screenImageMap(object=res$obj, tags=res$tag, "imageScreen.png",
+            img@map <- screenImageMap(object=res$obj, tags=res$tag, "imageScreen.png",
                                   cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs)
         writeHtml.header(con)
         writeHtml(img, con)
@@ -53,10 +53,7 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
 	
     ## beginning of the html code
     mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_") 	
-    ##  outin <- paste("<img src=\"", imgname, "\" usemap=\"#", mapname,
-    ##                    "\" border=\"2\" alt=\"\"/>\n", "<map name=\"", mapname,
-    ##                    "\" id=\"",mapname," \">\n", sep="")
-    outin <- sprintf("usemap=\"#%s\"<map name=\"%s\" id=\"%s\">\n", mapname, mapname, mapname)
+    outin <- sprintf("usemap=\"#%s\"><map name=\"%s\" id=\"%s\">\n", mapname, mapname, mapname)
 	
     ## links to the plate report	
     plateCounter <- 1
@@ -79,7 +76,7 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
                                    paste(toAdd[j,], collapse=","),"\"", sep=""),
                              paste(" ", paste(names(tags), "=\"",
                                               c(paste('Plate', plateCounter,sep=' '),
-                                                paste(plateCounter, 'index.html', sep='/')),
+                                                paste("..", plateCounter, 'index.html', sep='/')),
                                               "\"", sep=""), collapse=" "), " alt=\"\"/>\n",
                              sep="")
             out <- paste(out, newLine)	
@@ -87,7 +84,7 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
         }			
         remainingPlates <- remainingPlates-tempCol			
     }
-    out <- paste(outin, out, "</map>",sep="")
+    out <- paste(outin, out, "</map",sep="")
     return(out)
 } 
 

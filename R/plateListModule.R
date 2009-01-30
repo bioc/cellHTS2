@@ -1,15 +1,15 @@
 ## The workhorse function for the 'Plate List' module: this is a matrix of quality metrics
-## for the different plates and linked per plate quality reports. 
+## for the different plates and links to the per plate quality reports. 
 writeHtml.plateList <- function(cellHTSList, module, exptab, links, center, glossary,
-                                outdir, htmldir, con, ...)
+                                outdir, htmldir, configured, con, ...)
 {
     ## Copy the original intensity files for the compedium and also generate HTML files
     nn <- writeIntensityFiles(outdir=outdir, xr=cellHTSList$raw, htmldir=htmldir)
     ## Now the QC results
-    writeHtml.header(con)
+    writeHtml.header(con, path="../html")
     links[,"Filename"] <- nn
     links[,"status"] <- file.path("../", links[,"status"])
-    writeQCTable(exptab, url=links, con=con, glossary=glossary)
+    writeQCTable(exptab, url=links, con=con, glossary=glossary, configured=configured)
     writeHtml.trailer(con)
     return(NULL)
 }
@@ -43,33 +43,8 @@ writeIntensityFiles <- function(outdir, xr, htmldir)
 
 
 
-
-## writes a dataframe of plots in the html report
-## x : dataframe
-## con : output file
-writeHTMLtable4plots <- function(x, con)
-{ 
-	hwrite("",con, br=TRUE)
-	hwrite(x,con, row.names=FALSE, col.names=TRUE, border = 0, center = TRUE,
-               style='font-weight: bold; text-align : center',
-               row.style='font-weight: bold; font-size: 18px; text-align : center',
-               row.bgcolor="#d0d0f0",bgcolor=dataframeColor(x), br = TRUE) 
-	hwrite("",con, br=TRUE)
-}
-
-
-
-## Function using hwriter to color a data.frame in a checkerboard way
-## returns a matrix of colors
-## dataframe : dataframe to be colored in the html table
-dataframeColor <- function(dataframe, basicColors=matrix(c("#D5DDF3","#f0f0ff","#d0d0f0","#e0e0ff"),
-                                      ncol=2, byrow=TRUE))
-{     
-    mcolor <- matrix(basicColors[1+(1:ncol(dataframe))%%2,1+(1:nrow(dataframe))%%2],ncol=ncol(dataframe),
-                     nrow=nrow(dataframe), byrow=TRUE) 
-    return(mcolor)
-}
-
+## Function to outogenerate a matrix of class labels from a data frame, where common rows as
+## denoted by nrPlates alternate between 'odd' and 'even'
 plateListClass <-  function(df, nrPlates, classes=c("odd", "even"))
 {
     mclass <- matrix(classes[1], ncol=ncol(df), nrow=nrow(df))
@@ -78,7 +53,9 @@ plateListClass <-  function(df, nrPlates, classes=c("odd", "even"))
 }
 
 
-writeQCTable <- function(x, url, glossary, con)
+
+## The function creating the HTML table of QC scores including all links
+writeQCTable <- function(x, url, glossary, configured, con)
 {
     ## The glossary
     if(!is.null(glossary))
@@ -127,8 +104,11 @@ writeQCTable <- function(x, url, glossary, con)
         class <- if(class=="odd") "even" else "odd"
     }
     redHTML <- c(redHTML, "</tr></table>")
-    x <- x[,-1]
-    url <- url[,-1]
+    if(configured)
+    {
+        x <- x[,-1]
+        url <- url[,-1]
+    }
     url[,"status"] <- NA
     url <- rbind(NA, url)
     tabClasses <- rbind("header", plateListClass(x, red))
@@ -145,40 +125,14 @@ writeQCTable <- function(x, url, glossary, con)
       %s
     </td>
   </tr>
-</table>", paste(redHTML, collapse="\n"), paste(tabHTML, collapse="\n"))
+</table>", ifelse(configured, paste(redHTML, collapse="\n"), ""), paste(tabHTML, collapse="\n"))
     writeLines(out, con)
 }
 
 
-## write a dataframe of numeric component
-## x : dataframe
-## url : links to the by plate results (for main html page)
-## con : output file
-writeHTMLtable <- function(x, url=NA, con, center=FALSE, extra=NULL, glossary=NULL)
-{
-    ## glossary
-    if(!is.null(glossary))
-    {
-        cn <- colnames(x)
-        common <- intersect(glossary$word, cn)
-        rownames(glossary) <- glossary$word
-        cn[match(common, cn)] <- paste("<span onmouseover=\"Tip('",
-                                       glossary[colnames(x[common]),2],
-                                       "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\"",
-                                       " onmouseout=\"UnTip()\" onClick=if(tt_Enabled) ",
-                                       "linkToFile('glossary.html');\">",
-                                       colnames(x[common]),"</span>", sep="")
-        colnames(x) <- cn
-    }
-    ## writing data.frame 
-    hwrite(x,con, row.names=FALSE, col.names=TRUE, link=ifelse(is.na(url),NA,url),border=0,
-           center=TRUE, bgcolor=dataframeColor(x), style='text-align : center',
-           row.style='font-weight: bold; text-align : center',row.bgcolor="#d0d0f0", br=TRUE)
-    hwrite("",con, br=TRUE)
-}
 
-
-## Create a HTML image map from a matrix of (rectangular) coordinates
+## Create a HTML image map from a matrix of (rectangular) coordinates. Note that this will not create the
+## whole img tag, but only the map part, which needs to be injected in the img.
 myImageMap <- function(object, tags, imgname)
 {		
     if(!is.matrix(object)||ncol(object)!=4)
@@ -187,9 +141,8 @@ myImageMap <- function(object, tags, imgname)
     if(any(len != nrow(object)))
         stop(sprintf("Elements of the list 'tag' must have a length equal to the number of rows of 'object' (%g).",
                      nrow(object)))
-    mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_") 
-    outin <- paste("<img src=\"", imgname, "\" usemap=\"#", mapname, "\" border=\"2\" alt=\"\"/>\n", "<map name=\"",
-                   mapname, "\" id=\"",mapname," \">\n", sep="")    
+    mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_")
+    outin <- sprintf("usemap=\"#%s\"><map name=\"%s\" id=\"%s\">\n", mapname, mapname, mapname)
     stopifnot(names(tags) == c("title", "href"))
     out <- lapply(1:nrow(object), function(i) { 
         paste(paste("<area shape=\"rect\" coords=\"", paste(object[i,], collapse=","),"\"", sep=""),
@@ -198,7 +151,7 @@ myImageMap <- function(object, tags, imgname)
     }) 	
     ## add all together:
     out <- paste(unlist(out), collapse="")
-    out <- paste(outin, out, "</map>",sep="")
+    out <- paste(outin, out, "</map",sep="")
     return(out)
 }
 
@@ -220,8 +173,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
     con <- file(file.path(basePath, fn), open="w")
     on.exit(close(con))
     writeHtml.header(con, path="../html")
-    hwrite(paste("Experiment report for", name), con, center = TRUE, heading = 1, br=TRUE) 
-    hwrite("",con, br=TRUE)
+    ##hwrite(paste("Experiment report for", name), con, center = TRUE, heading = 1, br=TRUE) 
+    ## hwrite("",con, br=TRUE)
 	
     ## which of the replicate plates has not just all NA values
     whHasData <- list()
@@ -309,18 +262,12 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
         qm <- rbind(qm, data.frame(metric=I("Repeatability standard deviation"), value=cc1, comment=I(comm)))
         qm <- rbind(qm, data.frame(metric=I(sprintf("Spearman rank correlation %s", ifelse(maxRep==2,"","(min - max)"))),
                                    value=cc2, comment=I(comm)))		
-        qmplate <- if (exists("qmplate")) cbind(qmplate, value=qm$value, comment=qm$comm) else qm
-    
+            
         ## store data in qmsummary 
         qmsummary[[ch]] <- qm$value
         names(qmsummary[[sprintf("Channel %d", ch)]]) <- qm$metric
     } # for ch
-    qmplate[is.na(qmplate)] <- I("--")
-    ## We can skip the comment if it is always empty
-    if(all(qmplate$comment==""))
-        qmplate <- qmplate[,-which(names(qmplate)=="comment")]
-    writeHTMLtable(qmplate, con=con, center=TRUE, extra=sprintf("Channel %d", 1:nrChannel))
-	
+        	
     ## ------------------  Color legend for each channel ----------------------------------
     ## For the original configuration plate corrected by the screen log information:
     wellCount <- data.frame(matrix(NA, ncol = nrChannel, nrow = 2))
@@ -361,7 +308,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
         fontColor <- wellTypeColor[-c(iwells[["flagged"]],iwells[["controls"]])]
         names <- names(wellTypeColor)[-c(iwells[["flagged"]],iwells[["controls"]])]
         nbr <- nrWellTypes[-c(iwells[["flagged"]], iwells[["controls"]])]			
-        wellCount[2, 1] <- paste(sprintf("<font color=\"%s\">%s: %d</font>", fontColor, names, nbr), collapse=", ")
+        wellCount[2, 1] <- paste(sprintf("<font color=\"%s\">%s: %d</font>", fontColor, names, nbr),
+                                 collapse="&nbsp&nbsp&nbsp")
 		
         ## so "flagged" always wins over "pos", "neg" or "sample"
         mtt[[1]][is.na(mtt[[1]])] <- apply(mtrep[is.na(mtt[[1]]),, drop=FALSE], 1, max) 
@@ -389,8 +337,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
                     ## replace possible wells annotated as "pos" by NA, because they shouldn't
                     ## be considered as a positive control for this channel:
                     if (any(mtt[[ch]] %in% iwells[["pos"]])) {
-                        mtrep[mtt[[ch]] %in% iwells[["pos"]],]=NA
-                        mtt[[ch]][mtt[[ch]] %in% iwells[["pos"]]]=NA 
+                        mtrep[mtt[[ch]] %in% iwells[["pos"]],] <- NA
+                        mtt[[ch]][mtt[[ch]] %in% iwells[["pos"]]] <- NA 
                     } ## if any
                 } ## else length pos
             }
@@ -401,7 +349,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
                 ## should be regarded as such in this channel
                 if (length(pact[[ch]]))
                 {
-                    mtrep[pact[[ch]],] [which(is.na(mtrep[pact[[ch]],]))]=iwells[["act"]]
+                    mtrep[pact[[ch]],][which(is.na(mtrep[pact[[ch]],]))] <- iwells[["act"]]
                 }
                 else
                 {## if length act
@@ -448,54 +396,54 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             nrWellTypes <- sapply(seq(along=wellTypeColor), function(i) sum(mtrep[,aa[1]]==i, na.rm=TRUE))
 			
             ## flagged wells
-            wellCount[1,ch] <- paste(sprintf("flagged: %d", nrWellTypes[iwells[["flagged"]]]), collapse=", ")
+            wellCount[1,ch] <- paste(sprintf("(%d flagged samples)", nrWellTypes[iwells[["flagged"]]]), collapse=", ")
             ## the other wells, except controls
             fontColor <- wellTypeColor[-c(iwells[["flagged"]], iwells[["controls"]])]
             names <- names(wellTypeColor)[-c(iwells[["flagged"]],iwells[["controls"]])]
             nbr <- nrWellTypes[-c(iwells[["flagged"]], iwells[["controls"]])]
-            wellCount[2, ch] <- paste(sprintf("<font color=\"%s\">%s: %d</font>", fontColor, names, nbr), collapse=", ")
+            wellCount[2, ch] <- paste(sprintf("<font color=\"%s\">%s: %d</font>", fontColor, names, nbr),
+                                      collapse="&nbsp&nbsp&nbsp")
             ## so "flagged" always wins over "pos", "neg" or "sample" or "act" or "inh"
             mtt[[ch]][is.na(mtt[[ch]])] <- apply(mtrep[is.na(mtt[[ch]]),, drop=FALSE], 1, max)
         }## for channel
     }## else hasLessCh
 
     ##  ------------------  Make plots ----------------------------------
-    ##	 Create a dataframe for the plots of each channel	
-    plotTable <- data.frame(matrix(data = NA, nrow = 0, ncol = nrChannel + 1))
-    names(plotTable) <- c("", paste("Channel", 1:nrChannel, sep=" "))	
+    chList <- vector(mode="list", length=nrChannel)
+    imgList <- list()
     plsiz <- 4
     for (ch in 1:nrChannel)
     {
         nrRep <- nrRepCh[ch]
         ## ------------- Scatter plot between replicates ----------------------------
-        count <- 1		
+        img <- sprintf("scp_Channel%d.png", ch)
         if(nrRep==2) 
         {
-            plotTable[1, ch+1] <- hwrite("SCATTERPLOT BETWEEN REPLICATES") 
+            title <- "Scatterplot between replicates"
+            caption <- sprintf("Spearman rank correlation: %s<br>%s",
+                               qmsummary[[sprintf("Channel %d", ch)]]["Spearman rank correlation "],
+                               wellCount[1,ch])
             makePlot(file.path(basePath, subPath), con=con,
-                     name=sprintf("scp_Channel%d", ch), w=plsiz, h=plsiz, fun = function() 
+                     name=sprintf("scp_Channel%d", ch), w=plsiz+1, h=plsiz+1, fun = function() 
                  {
-                     par(mai=c(0.9,0.9,0.2,0.2))
+                     par(mai=c(0.8,0.8,0.2,0.2), mgp=c(2.5, 1, 0))
                      ylim=c(min(platedat[,,,ch], na.rm=TRUE), max(platedat[,,,ch], na.rm=TRUE))
                      plot(platedat[,,whHasData[[ch]][1],ch], platedat[,,whHasData[[ch]][2],ch],
-                          pch=16, cex=0.5, ylim=ylim, 
-                          xlab=paste("replicate", whHasData[[ch]][1], sep=" "), 
-                          ylab=paste("replicate", whHasData[[ch]][2], sep=" "), 
+                          pch=20, cex=0.6, ylim=ylim,
+                          xlab=paste("Replicate", whHasData[[ch]][1], sep=" "), 
+                          ylab=paste("Replicate", whHasData[[ch]][2], sep=" "), 
                           col=wellTypeColor[mtt[[ch]]]); abline(a=0, b=1, col="lightblue")
                  }
                      , print=FALSE)
-            ## color legend:
-            wellLeg <- paste(hwrite(wellCount[1,ch],center=TRUE,br=TRUE),
-                             hwrite(paste(hwrite("Color legend: ",br = TRUE),wellCount[2,ch]),
-                                    center=TRUE,br=TRUE))
-            plotTable[count + 1, ch+1] <- paste(hwrite(hwriteImage(sprintf("scp_Channel%d.png", ch), image.border=2), 
-                                                       link = sprintf("scp_Channel%d.pdf", ch), center=TRUE, br=TRUE),
-                                                wellLeg) 
+            imgList$Correlation <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                                        fullImage=gsub("png$", "pdf", img), caption=caption,
+                                                        additionalCode=sprintf("<div class=\"scatterLegend\">%s</div>",
+                                                        wellCount[2,ch])))
         } 
         else if(nrRep>2)
-        {	
-            plotTable[1, ch+1] <- hwrite("CORRELATION BETWEEN REPLICATES") 
-            ## covariance matrix
+        {
+            title <- "Correlation between replicates"
+            caption <- NA
             cm <- cor(platedat[,,whHasData[[ch]],ch], method = "spearman", use = "pairwise.complete.obs")
             legend <- seq(0,1,0.2)
             m.legend <- as.matrix(legend)
@@ -515,54 +463,53 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
                      axis(side = 1, at=seq(0, 1, 0.2))
                  }
                      , print=FALSE)
-            plotTable[count + 1, ch+1] <- paste(hwrite(hwriteImage(sprintf("Correlation_ch%d.png", ch), 
-                     image.border=2), link = sprintf("Correlation_ch%d.pdf", ch),
-                                                       center = TRUE, br = TRUE)) 
+            imgList$Correlation <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                                        fullImage=gsub("png$", "pdf", img), caption=caption))
         }
-        ## old code
         else 
-        { 
-            plotTable[count + 1, ch+1] <- hwrite("No replicates: scatterplot omitted", 
-                                                 center = TRUE, br = TRUE)   
+        {
+            imgList$Correlation <- chtsImage(caption="No replicates: scatterplot omitted")
         }
-        count <- count + 1 
-		
+        
         ## ------------- Histograms (replicates) ----------------------------
-      ##   plotTable[count + 1, ch+1] <- hwrite("HISTOGRAMS")  
-##         count <- count + 1
-##         aa <- c(iwells[["pos"]], iwells[["neg"]], iwells[["act"]], iwells[["inh"]])
-##         aa <- aa[!is.na(aa)] 
-##         for (r in 1:maxRep) {
-##             plotTable[count+1, 1] <- hwrite(paste("Replicate ",r))  
-##             if (r %in% whHasData[[ch]])
-##             {
-##                 makePlot(file.path(basePath, subPath), con=con,
-##                          name=sprintf("hist_Channel%d_%02d",ch,r), w=plsiz, h=plsiz*.6, fun = function() 
-##                      {
-##                          par(mai=c(0.7,0.25,0.01,0.1))
-##                          hist(platedat[,,r,ch], xlab ="", breaks=brks[[ch]],
-##                               col = gray(0.95), yaxt = "n", main="")
-##                          rug(platedat[,,r,ch])
-##                          for(jj in aa) rug(platedat[,,r,ch][mtt[[ch]]==jj], col=wellTypeColor[jj])
-##                      }
-##                          , print=FALSE)
-##                 plotTable[count+1,ch+1] <- hwrite(hwriteImage(sprintf("hist_Channel%d_%02d.png",ch,r), 
-##                                                               image.border=2), link = sprintf("hist_Channel%d_%02d.pdf",ch,r), 
-##                                                   center=TRUE, br = TRUE)   
-##             } 
-##             else 
-##             {
-##                 plotTable[count + 1, ch+1] <- hwrite(paste("Replicate ", r, " is missing"), center = TRUE, br = TRUE)
-##             }			
-##             count <- count+1
-##         }## for r
+        tabTitle <- sprintf("Histogram%s", ifelse(maxRep>1, "s", ""))
+        img <- caption <- title <- NULL
+        aa <- c(iwells[["pos"]], iwells[["neg"]], iwells[["act"]], iwells[["inh"]])
+        aa <- aa[!is.na(aa)] 
+        for (r in 1:maxRep) {
+            if (r %in% whHasData[[ch]])
+            {
+                makePlot(file.path(basePath, subPath), con=con,
+                         name=sprintf("hist_Channel%d_%02d",ch,r), w=plsiz, h=plsiz*0.6, fun = function() 
+                     {
+                         par(mai=c(0.7,0.25,0.01,0.1))
+                         hist(platedat[,,r,ch], xlab ="", breaks=brks[[ch]],
+                              col = gray(0.95), yaxt = "n", main="")
+                         rug(platedat[,,r,ch])
+                         for(jj in aa) rug(platedat[,,r,ch][mtt[[ch]]==jj], col=wellTypeColor[jj])
+                     }
+                         , print=FALSE)
+                img <- c(img, sprintf("hist_Channel%d_%02d.png",ch,r))
+                cnam <- paste("Dynamic range ", ifelse(maxRep>1, sprintf("(replicate %d)", r), ""))
+                caption <- c(caption, sprintf("Dynamic range: %s",
+                                              qmsummary[[sprintf("Channel %d", ch)]][cnam]))
+                title <- c(title, sprintf("Replicate %d", r))
+            } 
+            else 
+            {
+                caption <- c(caption, sprintf("Replicate %d is missing", r))
+            }			
+        }## for r
+        imgList[[tabTitle]] <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                                 fullImage=gsub("png$", "pdf", img), caption=caption))
+        chList[[ch]] <- imgList
     } ## for channel
+    
 	
     ## ------------- Plate plots (replicates) ----------------------------
     if(is.list(plotPlateArgs)) 
     {
         plsiz <- 4		
-        oldcount <- count
         for (ch in 1:nrChannel) 
         {
             char <- character(dim(platedat)[1])
@@ -576,14 +523,10 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             {
                 char[unlist(ppos[[ch]])] <- "P" 
             }
-            count <- oldcount
-			
-            ## plot global title
-            plotTable[count+1, ch+1] <- hwrite("PLATE PLOTS")  
-			
-            ## plot title
-            plotTable[count+2, 1] <- hwrite("Standard deviation across replicates") 
-			
+            title <- "Standard deviation across replicates"
+            caption <- sprintf("Repeatability standard deviation: %s",
+                               qmsummary[[sprintf("Channel %d", ch)]]["Repeatability standard deviation"])
+           			
             ## platePlot of sd
             sdWithNA <- function(x) 
             {
@@ -597,81 +540,71 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
                 if(is.null(plotPlateArgs$sdrange[[ch]]))
                     plotPlateArgs$sdrange[[ch]]=c(0, quantile(psd, 0.95, na.rm=TRUE))
                 pp <- makePlot(file.path(basePath, subPath), con=con,
-                               name=sprintf("ppsd_Channel%d",ch), w=plsiz, fun = function() 
+                               name=sprintf("ppsd_Channel%d",ch), w=plsiz+2, fun = function() 
                            {
-                               return(plotPlate(psd, nrow=pdim["nrow"], ncol=pdim["ncol"], 
+                               return(plotPlate(psd, nrow=pdim["nrow"], ncol=pdim["ncol"],
+                                                main="Standard Deviations",
                                                 na.action="xout",
-                                                main="between replicate standard deviations",
                                                 col=plotPlateArgs$sdcol, char=char,
-                                                xrange=plotPlateArgs$sdrange[[ch]]) )
+                                                xrange=plotPlateArgs$sdrange[[ch]]))
                            }
-                               , print=FALSE, isPlatePlot=TRUE)				
-                if(plotPlateArgs$map) 
-                {
-                    img <- myImageMap(object=pp$coord, tags=list(title=paste(genAnno, ": sd=", signif(psd,3),
-                                                                 sep=""),href=rep(sprintf("ppsd_Channel%d.pdf", ch),
-                                                                         length(genAnno))), 
-                                      sprintf("ppsd_Channel%d.png", ch))
-                    plotTable[count+2, ch+1] <- hwrite(img, center = TRUE, br = TRUE)
-                } 
-                else 
-                {
-                    plotTable[count+2,ch+1] <- hwrite(hwriteImage(sprintf("ppsd_Channel%d.png",ch),
-                                                                  image.border=2), link = sprintf("ppsd_Channel%d.pdf",ch) ,
-                                                      center = TRUE, br = TRUE)
-                }				
+                               , print=FALSE, isPlatePlot=TRUE)
+                imap <- if(plotPlateArgs$map) 
+                    myImageMap(object=pp$coord, tags=list(title=paste(genAnno, ": sd=", signif(psd,3),
+                                                          sep=""),href=rep(sprintf("ppsd_Channel%d.pdf", ch),
+                                                                  length(genAnno))), 
+                               sprintf("ppsd_Channel%d.png", ch)) else ""
+                img <- sprintf("ppsd_Channel%d.png",ch)
+                chList[[ch]]$Reproducibility <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                                                     fullImage=gsub("png$", "pdf", img), caption=caption,
+                                                                     map=imap))
             } 
             else 
             {
-                plotTable[count+2, ch+1] <- hwrite(paste(nrRep, "replicate: plate plot omitted"), 
-                                                   center = TRUE, br = TRUE) 
+                chList[[ch]]$Reproducibility <- chtsImage(caption=paste(nrRep, "replicate: plate plot omitted"))
             }#(!all(is.na(psd)))
-            count <- count + 2
-			
+            			
             ## platePlot of intensities
+            title <- caption <- img <- NULL
             for (r in 1:maxRep) 
             {
-                plotTable[count+1, 1] = hwrite(paste("Replicate ",r))   
+                title <- c(title, paste("Replicate ",r))
                 if (r %in% whHasData[[ch]])
                 {					
                     if(is.null(plotPlateArgs$xrange[[ch]]))
                         plotPlateArgs$xrange[[ch]] <- quantile(platedat[,,,ch], c(0.025, 0.975), na.rm=TRUE)
                     pp <- makePlot(file.path(basePath, subPath), con=con,
-                                   name=sprintf("pp_Channel%d_%d",ch,r), w=plsiz, h=plsiz*0.66, fun = function() 
+                                   name=sprintf("pp_Channel%d_%d",ch,r), w=plsiz+1, h=(plsiz+1)*0.66, fun=function() 
                                {
                                    plotPlate(platedat[,,r,ch], nrow=pdim["nrow"], ncol=pdim["ncol"], 
                                              na.action="xout",
-                                             main=sprintf("intensities for replicate %d", r),
+                                             main="Intensities",
                                              col=plotPlateArgs$xcol, char=char,
                                              xrange=plotPlateArgs$xrange[[ch]])
                                }
                                    , print=FALSE, isPlatePlot=TRUE)
-                    if(plotPlateArgs$map) 
-                    {						
-                        img <- myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
-                                                                     ": value=", signif(platedat[,,r,ch],3), sep=""), 
-                                                           href=rep(sprintf("pp_Channel%d_%d.pdf", ch, r),
-                                                           length(genAnno))), sprintf("pp_Channel%d_%d.png", 
-                                                                                      ch, r))
-                        plotTable[count+1,ch+1] <- hwrite(img, center = TRUE, br = TRUE)
-                    } 
-                    else 
-                    { ##map            
-                        plotTable[count+1,ch+1] <- hwrite(hwriteImage(sprintf("pp_Channel%d_%d.png",ch,r),
-                                                                      image.border=2), link = sprintf("pp_Channel%d_%d.pdf",
-                                                                                       ch,r), center = TRUE, br = TRUE)
-                    }
+                    imap <- if(plotPlateArgs$map) 
+                        myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
+                                                              ": value=", signif(platedat[,,r,ch],3), sep=""), 
+                                                    href=rep(sprintf("pp_Channel%d_%d.pdf", ch, r),
+                                                    length(genAnno))), sprintf("pp_Channel%d_%d.png", ch, r)) else ""
+                    img <- c(img, sprintf("pp_Channel%d_%d.png",ch,r))
+                    caption <- c(caption, NA)
                 } 
                 else 
                 {## if r %in$ whHasData[[ch]]
-                    plotTable[count + 1, ch+1] <- hwrite(paste("Replicate ", r, " is missing"), center = TRUE, 
-                                                         br = TRUE)  
+                    caption <- c(caption, paste("Replicate ", r, " is missing"))
                 }## else if r %in% whHasData[[ch]]
-                count <- count+1
-            } # maxRep			
+                
+            } # maxRep
+            chList[[ch]]$Intensities <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                                             fullImage=gsub("png$", "pdf", img), caption=caption,
+                                                             map=imap))
         } # channel
     } # if(is.list(plotPlateArgs))
-	
+    stack <- chtsImageStack(chList, id="perExpQC", title=paste("Experiment report for", name),
+                            tooltips=addTooltip(names(chList[[1]]), "Help"))
+    writeHtml(stack, con=con, vertical=FALSE)
 	
     ## --------- "Channel 2 vs Channel 1" plot (if nrChannels==2) ------------- ##
     if (nrChannel==2) 
@@ -681,10 +614,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
         wellCount <- data.frame(matrix(NA, ncol = maxRep, nrow = 2))
         names(wellCount) = sprintf("Replicate %d", 1:maxRep)
         mtt <- vector("list", length = maxRep)
-        if (isTwoWay) 
-            ctrls <- unique(c(unlist(pact), unlist(pinh), unlist(pneg))) 
-        else
-            ctrls <- unique(c(unlist(ppos), unlist(pneg)))
+        ctrls <- if(isTwoWay) unique(c(unlist(pact), unlist(pinh), unlist(pneg))) else unique(c(unlist(ppos),
+                                                                                                unlist(pneg)))
         iPNAI <- which(names(wellTypeColor) %in% c("pos", "neg", "act", "inh"))
         for (r in 1:maxRep) 
         {
@@ -695,11 +626,12 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             aa <- apply(finalWellAnno[,,r,, drop=FALSE], 4, function(u) sum(u=="flagged"))
             aa <- order(aa, decreasing=TRUE)
             nrWellTypes <- sapply(seq(along=wellTypeColor), function(i) sum(mtrep[,aa[1]]==i, na.rm=TRUE))
-            wellCount[1,r] <- paste(sprintf("flagged: %d", nrWellTypes[iwells[["flagged"]]]), collapse=", ")			
+            wellCount[1,r] <- paste(sprintf("(%d flagged samples)", nrWellTypes[iwells[["flagged"]]]), collapse=", ")
             wellCount[2, r] <- paste(sprintf("<font color=\"%s\">%s: %d</font>", 
                                              wellTypeColor[-c(iwells[["flagged"]], iPNAI)], 
                                              names(wellTypeColor)[-c(iwells[["flagged"]], iPNAI)], 
-                                             nrWellTypes[-c(iwells[["flagged"]], iPNAI)]), collapse=", ")
+                                             nrWellTypes[-c(iwells[["flagged"]], iPNAI)]),
+                                     collapse="&nbsp&nbsp&nbsp")
 			
             ## so "flagged" or "empty" always wins over "controls" or "sample"
             mtt[[r]][is.na(mtt[[r]])] <- apply(mtrep[is.na(mtt[[r]]),, drop=FALSE], 1, max) 
@@ -708,39 +640,41 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
             mtt[[r]][!is.na(mtt[[r]])] <- apply(mtrep[!is.na(mtt[[r]]),, drop=FALSE], 1, max) 
 			
         }## for r
-        
-        plotTable$"Channel 2 vs Channel 1" <- ""
-		
+        		
         ## plot title
-        plotTable[3, 4] <-  hwrite("SCATTERPLOT BETWEEN CHANNELS") 
-        for (r in 1:maxRep) {			
+        tabTitle <- "Channel Correlation"
+        title <- img <- missingMessage <- NULL
+        for (r in 1:maxRep)
+        {			
             if((r %in% whHasData[[1]]) & (r %in% whHasData[[2]])){
                 ## color legend:
                 wellLeg <- paste(hwrite(wellCount[1,r], center = TRUE, br = TRUE) , hwrite(paste(hwrite("Color legend: "),
                                                                        wellCount[2,r]), center=TRUE, br=TRUE))
                 ## scatterplot between channels
                 makePlot(file.path(basePath, subPath), con=con,
-                         name=sprintf("scp_Rep%d", r), w=plsiz, h=plsiz, fun = function() {
-                             par(mai=c(0.5,0.5,0.1,0.1))
-                             ylim=c(min(platedat, na.rm=TRUE), max(platedat, na.rm=TRUE))
-                             plot(platedat[,,r,1], platedat[,,r,2], pch=16, cex=0.5,
-                                  ylim=ylim, xlab="Channel 1", ylab="Channel 2", col=wellTypeColor[mtt[[r]]])
-                             abline(a=0, b=1, col="lightblue")
-                         }, print=FALSE)
-                plotTable[r+3, 4] <- paste(hwrite(wellLeg, center=TRUE), hwrite(hwriteImage(sprintf("scp_Rep%d.png", r),),
-                                                           link = sprintf("scp_Rep%d.pdf", r), center = TRUE) )      
+                         name=sprintf("scp_Rep%d", r), w=plsiz, h=plsiz, fun = function()
+                     {
+                         par(mai=c(0.5,0.5,0.1,0.1))
+                         ylim=c(min(platedat, na.rm=TRUE), max(platedat, na.rm=TRUE))
+                         plot(platedat[,,r,1], platedat[,,r,2], pch=16, cex=0.5,
+                              ylim=ylim, xlab="Channel 1", ylab="Channel 2", col=wellTypeColor[mtt[[r]]])
+                         abline(a=0, b=1, col="lightblue")
+                     }, print=FALSE)
+                img <- c(img, sprintf("scp_Rep%d.png", r))
+                title <- c(title, sprintf("Replicate %s", r))
             }
             else
             {
-                plotTable[r+3, 4] <- hwrite(paste("Replicate ", r, " is missing in one of the channels: scatterplot omitted",
-                                                  image.border=2), center = TRUE)    
+                caption <- c(caption, paste("Replicate ", r, " is missing in one of the channels: scatterplot omitted",
+                                      sep=""))
             }## if r
         }## for r
+        img <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
+                                    fullImage=gsub("png$", "pdf", img), caption=caption,
+                                    additionalCode=sprintf("<div class=\"scatterLegend\">%s</div>",
+                                    wellCount[2,ch])))
+        fakeStack <- chtsImageStack(list(list(img)), id="perExpQCFake")
+        writeHtml(fakeStack, con=con, vertical=FALSE)
     }## if nrChannel
-	
-    plotTable[is.na(plotTable)] <- ""
-	
-    writeHTMLtable4plots(plotTable, con=con)  
-    writeHtml.trailer(con)
     return(list(url=fn, qmsummary=qmsummary)) 
 }

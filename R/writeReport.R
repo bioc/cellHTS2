@@ -252,7 +252,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     qmHaveBeenAdded <- FALSE		
     plotPlateArgs <- plotPlateArgsVerification(plotPlateArgs, map)
     imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map,
-                                                  ar=pdim(xn)[1]/pdim(xn)[2])
+                                                  ar=pdim(xr)[1]/pdim(xr)[2])
 
     ## Set up the progress report and status output
     progress <- createProgressList(nrReplicate, nrChannel, nrPlate, plotPlateArgs,
@@ -387,11 +387,11 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
         ## Define well colors and comment on them.
         ## (to avoid having the legend for 'pos' when we have 'inhibitors' and 'activators'
         ## or vice-versa)
-        wellTypeColor <- if(twoWay) c(neg="#2040FF", act="#E41A1C", inh="#FFFF00",
-                                      sample="#000000", controls="#43FF00",
-                                      other="#999999", empty="#FA00FF", flagged="#000000") else
-        c(pos="#E41A1C", neg="#2040FF", sample="#000000", controls="#43FF00", other="#999999",
-          empty="#FA00FF", flagged="#000000")
+        wellTypeNames <- c("sample", "neg", "controls", "other", "empty", "flagged",
+                           if(twoWay) c("act", "inh") else "pos")
+        colPal <- brewer.pal(9, "Set1")
+        wellTypeColor <- c("black", colPal[c(2:4, 5, 7)], if(twoWay) colPal[c(1,6)] else colPal[1])
+        names(wellTypeColor) <- wellTypeNames
         
         ## assign common arguments for the plate plots
         if(is.list(plotPlateArgs))
@@ -531,7 +531,13 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
             ## has been done for every Plate, step 3 is completed
             progress <- myUpdateProgress(progress, "step2", progress$timePerStep["step2"]/nrPlate)
         }## for p plates				
-    }	
+    }## if configures
+    else
+    {
+        ## We need these variables to pass down to the modules, where the conditional evaluation
+        ## based on configuration status etc takes place
+        posControls <- negControls <- allControls <- allZfac <- NULL
+    }
 
     ## copying all necessary files into the html folder (css, javascripts, gifs) 
     cpfiles <- dir(system.file("templates", package="cellHTS2"), full=TRUE)
@@ -552,7 +558,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(),
                                    links=url[expOrder,], exptab=exptab[expOrder,],
-                                   outdir=outdir, htmldir=htmldir))
+                                   outdir=outdir, htmldir=htmldir,
+                                   configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
     progress <- myUpdateProgress(progress, "step3", 0.2*length(which(plateList(xr)$status=="OK")))
 		

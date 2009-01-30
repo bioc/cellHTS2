@@ -440,6 +440,7 @@ tr.invisible, table.invisible
 
 table.imageStack
 {
+    text-align:center;
     font-family:Arial;
     border:1px solid #336699;
     border-spacing:0px; 
@@ -449,7 +450,7 @@ table.imageStack
 
 table.horizontal
 {
-    float:left;   
+     
 }
 
 
@@ -478,12 +479,12 @@ table.image td.header
 table.imageStack table.image td.header
 {
     padding-bottom:0px;
+    padding-left:0px;
+    padding-right:0px;
 }
 
 table.imageStack table.image td.header div.header
 {
-    position:relative;
-    top:-15px;
     padding-right:0px;
     padding-left:0px;
 }
@@ -505,8 +506,16 @@ table.image div.caption
 
 table.imageStack table.image td.header div.caption
 {
-    position:relative;
-    top:-15px;
+    padding-bottom:5px;
+}
+
+table.imageStack td.header
+{
+    color:white;
+    text-align:center;
+    font-weight:bold;
+    font-size:28px;
+    padding:10px 170px 20px 170px;
 }
 
 table.image td.main
@@ -526,13 +535,18 @@ table.image span.pdf
 {
     font-weight:bold;
     color:white;
-    margin-right:35px;
+    margin-right:25px;
     font-size:12px;
 }
 
 table.image span.pdf:hover
 {
     color:#4c698a;
+}
+
+img.image
+{
+    border:none;
 }
 
 
@@ -704,3 +718,11 @@ div.alert
     padding:10px;
     margin-top:20px;
 }
+
+
+div.scatterLegend
+{
+margin-top:5px;
+font-size:12px;
+}
+

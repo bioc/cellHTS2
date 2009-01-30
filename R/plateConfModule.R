@@ -28,12 +28,13 @@ writeHtml.plateConf <- function(cellHTSList, module, nrPlate, posControls,
         ## A color legend for the plot
         mat <- matrix(NA, ncol=length(res), nrow=1)
         mat <- rbind(mat, names(res))
-        ## Now we produce the necessary HTML (FIXME hwriter class not yet working)
+        img@additionalCode <- hwrite(mat, border=FALSE, bgcolor=rbind(res, NA),
+                                     center=TRUE, table.class="plateConfModule legend",
+                                     class="plateConfModule legend",
+                                     style="width:30px; border: 1px solid #6699cc;")
+        ## Now we produce the necessary HTML
         writeHtml.header(con)
-        writeHtml(img, additionalCode=hwrite(mat, border=FALSE, bgcolor=rbind(res, NA),
-                       center=TRUE, table.class="plateConfModule legend",
-                       class="plateConfModule legend",
-                       style="width:30px; border: 1px solid #6699cc;"), con=con)
+        writeHtml(img, con=con)
         writeHtml.trailer(con)
         return(NULL)
     }

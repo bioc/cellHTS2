@@ -92,7 +92,32 @@ createGlossary <- function()
     simpleDef <- "Download the complete screen result table as a tab-delimited ASCII file. You can import this file into any spreadsheet program of your choice."
     completeDef <- ""
     glossary <- setDefinition(glossary, "downloadTable", simpleDef, completeDef)
-    
+
+    simpleDef <- "The reproducibility of the measurement values between replicates. For the case of two replicates, this is a simple scatter plot. For more than two replicates we plot the correlation matrix. Please note that the assumption of correlated data does not hold for all experiment designs; e.g., most of the measurement values could be random noise, in which case they would be completely independent."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Correlation", simpleDef, completeDef)
+
+    simpleDef <- "Histograms of the raw or normalized measurement values for the respective replicates. This can be useful to compare data distributions between replicates."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Histograms", simpleDef, completeDef)
+
+    simpleDef <- "Histogram of the raw or normalized measurement values."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Histogram", simpleDef, completeDef)
+
+    simpleDef <- "A plate plot of standard deviations between replicates. Abnormal spatial pattern or very high values can indicate problems with one of the replicates."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Reproducibility", simpleDef, completeDef)
+
+    simpleDef <- "A plate plot of raw or normalized intensities. Plotting the data as arranges on the assay plate helps to identify spatial abnormalities."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Intensities", simpleDef, completeDef)
+
+
+    simpleDef <- "The correlation of the measurement values between two channels in a scatter plot. Depending on the experimental design, the two channels can be completely independent, and strong correlation could indicate problems."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Channel Correlation", simpleDef, completeDef)
+       
     return(glossary)
 }
 
