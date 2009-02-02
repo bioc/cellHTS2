@@ -16,7 +16,6 @@ oneRowPerId(x, ids)
   \item{x}{dataframe.}
   \item{ids}{character vector.}
 }
-\details{}
 
 \value{A dataframe whose rows correspond 1:1 to \code{ids}.}
 

@@ -325,10 +325,12 @@ setMethod("annotate",
           nrPlate <- max(plate(object))
           plates <- rep(seq_len(nrPlate), each=nrWpP)
           if(nrow(geneIDs) != nrWpP*nrPlate){
-              warning(paste("Incomplete input file '", geneIDFile, "': for full annotation",
-                            " we expect ", nrWpP*nrPlate, " rows, one for each of the ",
-                            nrWpP, " wells on each of the ", nrPlate, " plates.\nSome ",
-                            "gene IDs will be missing.\n", sep=""))
+              warning(paste("Incomplete input file '", geneIDFile, "':\n for full annotation",
+                            " we expect ", nrWpP*nrPlate, " rows,\n one for each of the ",
+                            nrWpP, " wells on each of the ", nrPlate, " plates,\n but only ",
+                            nrow(geneIDs), " have been provided.\n The available annotation ",
+                            "information has been mapped,\n but for some probes it will be ",
+                            "missing.\n", sep=""), call.=FALSE)
           }else if(!(all(wcoord$num %in% seq_len(nrWpP)) && all(geneIDs$Plate %in% plates)))
               warning(paste("Invalid values in the  input file '", geneIDFile, "' are being",
                             " ignored for annotation./n", sep=""))

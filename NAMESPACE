@@ -1,7 +1,8 @@
 importFrom("methods", "show")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
-importFrom("prada", "devDims", "plotPlate", "lines")
+importFrom("prada", "devDims", "plotPlate")
+importFrom("graphics", "plot", "lines")
 
 exportClasses("cellHTS", "ROC")
 

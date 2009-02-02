@@ -29,6 +29,13 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 }
 
 
+\seealso{
+
+\code{\link{updateCellHTS}}
+  
+}
+
+
 \examples{
     data("oldKcViabSmall")
     out <-  convertOldCellHTS(oldKcViabSmall)

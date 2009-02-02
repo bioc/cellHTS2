@@ -107,7 +107,6 @@ summarizeChannels <- function(object, fun=function(r1, r2, thresh=-Inf)
     xnorm <- Data(object) 
     ## The argument 'fun' allows using different normalizations, and also to define
     ## the numerator/denominator for the ratio (i.e. R1/R2 or R2/R1)
-    ## FIXME: Construct args list based on available channels
     nrChans <- dim(xnorm)[3]
     alist <- vector(mode="list", length=nrChans)
     names(alist) <- paste("r", seq_along(alist), sep="")
@@ -124,14 +123,6 @@ summarizeChannels <- function(object, fun=function(r1, r2, thresh=-Inf)
     assayDataElement(object, chNames[2:nrChans]) <- NULL
     ## 2) replace the contents of the (single) remaining channel by the new summarized values:
     Data(object) <- xnorm
-    ## just to ensure that the object will pass the validity checks:
-    if(!is.null(batch(object))) {
-        bb <- batch(object) 
-        ## see if it differs across channels. If so, reset it to an empty matrix given that we've
-        ## lost one channel. Otherwise, just keep one channel.
-        bbt <- apply(bb, 1:2, function(i) length(unique(i)))
-        if(any(bbt>1)) object@batch <- new("cellHTS")@batch else batch(object) <- bb[,,1, drop=FALSE]
-    }
     validObject(object)
     return(object)
 }

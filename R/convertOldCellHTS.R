@@ -107,14 +107,7 @@ convertOldCellHTS <- function(oldObject)
         fvarMetadata(objRaw)[names(gInfo),] <- names(gInfo)
     }
 
-    ## add batch information
-    ## in the old cellHTS class, batch was related with plate configuration. 
-    ## oldObject$batch is a vector giving the batch number for each plate.
-    bb <- rep(oldObject$batch, each=nrWell)
-    stopifnot(dim(objRaw)[["Features"]]==length(bb))
-    bb <- array(bb, dim(Data(objRaw)))
-    batch(objRaw) <- bb
-
+    
     ## return the cellHTS object(s) as a named list:
     cellHTSlist <- list("raw" = objRaw)
 
@@ -129,15 +122,6 @@ convertOldCellHTS <- function(oldObject)
         Data(objNorm) <- xnorm
         objNorm@state[["normalized"]] <- TRUE
 
-        ## If the number of channels has changed, arrange the cellHTS object:
-        if(hasLessChan)
-        {
-            ## just to ensure that the object will pass the validity checks:
-            bb <- batch(objNorm) 
-            ## since the batch doesn't change across channels, just keep one channel.
-            batch(objNorm) <- bb[,,1:dim(xnorm)[3], drop=FALSE]
-        } #hasLessChan
-
         cellHTSlist$"normalized" = objNorm
     }
 
@@ -151,8 +135,6 @@ convertOldCellHTS <- function(oldObject)
                                          dimnames=list(featureNames(objNorm), 1)))
 
         ## just to ensure that the object will pass the validity checks:
-        bb < -batch(objSc) 
-        objSc@batch <- bb[,1,1, drop=FALSE]
         objSc@state[["scored"]] <- TRUE
         cellHTSlist$"scored" <- objSc
     }

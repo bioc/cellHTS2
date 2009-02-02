@@ -94,7 +94,8 @@ readPlateList(filename, path=dirname(filename), name, importFun, verbose=interac
 To read input files obtained in a HTanalyser plate reader see \code{\link{readHTAnalystData}}.
 }
 
-\author{W. Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}
+\author{W. Huber \email{huber@ebi.ac.uk}, Ligia Bras
+  \email{ligia@ebi.ac.uk}, Florian Hahne}
 
 \references{
 Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
