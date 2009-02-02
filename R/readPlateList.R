@@ -1,6 +1,4 @@
-## Adapted from 'readPlateData' (package 'cellHTS': (C) Michael Boutros and Wolfgang Huber,
-## Nov 2005)
-
+## Read in the list of plates in the 'Platelist' file and create a cellHTS object
 readPlateList <- function(filename,
                           path=dirname(filename),
                           name,
@@ -95,12 +93,18 @@ readPlateList <- function(filename,
         stop(msg)
     }
 
+    ## We delete all leading and trailing white space from the filenames
+    pd$Filename <- gsub("^ *", "", gsub(" *$", "", pd$Filename))
+    
+    
     xraw <- array(NA_real_, dim=c(nrWell, nrPlate, nrRep, nrChannel))
     intensityFiles <- vector(mode="list", length=nrow(pd))
     names(intensityFiles) <- pd[, "Filename"]
 
     status <- character(nrow(pd))
     batch <- as.data.frame(matrix(ncol=nrRep, nrow=nrPlate))
+    colnames(batch) <- sprintf("replicate%d", seq_len(nrRep))
+    rownames(batch) <- sprintf("plate%d", seq_len(nrPlate))
 
     for(i in seq_len(nrow(pd))) {
         if(verbose)
@@ -124,10 +128,10 @@ readPlateList <- function(filename,
                                   warning=function(e) paste(class(e)[1], e$message, sep=": "),
                                   error=function(e) paste(class(e)[1], e$message, sep=": ")
                                   ) ## tryCatch
-            bt <- pd$Batch[i]
-            batch[pd$Plate[i], pd$Replicate[i]] <-
-                if(!is.null(bt)) bt else 1
         } ## else
+        bt <- pd$Batch[i]
+        batch[pd$Plate[i], pd$Replicate[i]] <- if(!is.null(bt)) bt else 1
+
     } ## for
 
     if(verbose)
@@ -181,9 +185,19 @@ readPlateList <- function(filename,
                      paste(plateList(res)$Filename[idx], status[idx], sep="\t", collapse="\n\t"),
                      if(length(whHadProbs)>5) sprintf("\n\t...and %d more.\n",
                                                       length(whHadProbs)-5), "\n", sep="")
-        stop(msg)
+        warning(msg, call.=FALSE)
     }
 
+    ## We only need the error code in the plateList, the full error message can be supplied as an additional
+    ## column, which we later use to create the tooltips.
+    res@plateList$errorMessage <- NA
+    if(any(whHadProbs))
+    {
+        res@plateList[whHadProbs, "errorMessage"] <- gsub("'", "", status[whHadProbs])
+        res@plateList$status <- gsub("File not found.*", "ERROR",
+                                     gsub("simpleError.*", "ERROR",
+                                          gsub("simpleWarning.*", "WARNING",  res@plateList$status)))
+    }
     return(res)
 }
 

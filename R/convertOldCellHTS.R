@@ -1,8 +1,7 @@
 ## Function that converts an S3 class cellHTS object to a S4 cellHTS object 
-## Ligia P. Bras (September 2007)
-
-convertOldCellHTS <- function(oldObject) { 
-
+## Ligia P. Bras (September 
+convertOldCellHTS <- function(oldObject)
+{ 
     ## old S3 class cellHTS object
     if(!(mode(oldObject)=="list" & class(oldObject)=="cellHTS"))
         stop("'oldObject' should be an object of S3 class 'cellHTS' (obtained using ",
@@ -18,7 +17,6 @@ convertOldCellHTS <- function(oldObject) {
     nrWell <- dim(xraw)[1]
     adata <- assayDataNew(storage.mode="environment")
     chNames <- paste("ch", 1:nrChannel, sep="")
-
     for(ch in 1:nrChannel) 
         assign(chNames[ch], matrix(xraw[,,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlate),
                env=adata)
@@ -36,7 +34,6 @@ convertOldCellHTS <- function(oldObject) {
     fdata <- new("cellHTS")@featureData
     pData(fdata) <- data.frame(plate=rep(1:nrPlate, each=nrWell), well=I(rep(wells,nrPlate)), 
                                controlStatus=wa)
-
 
     ## create S4 class cellHTS object
     objRaw <- new("cellHTS", 
@@ -75,7 +72,8 @@ convertOldCellHTS <- function(oldObject) {
                           abstract=grep("^Abstract:",descript)
                           )
 
-        miameInfo <- lapply(miameList, function(i) unlist(strsplit(descript[i], split=": "))[2L]) 
+        miameInfo <- lapply(miameList, function(i)
+                            unlist(strsplit(descript[i], split=": "))[2L]) 
         miameInfo <- lapply(miameInfo, function(i){
             if(is.null(i)) "" else { if(is.na(i)) "" else i }})
         miameInfo <- with(miameInfo, new("MIAME", 
@@ -89,8 +87,6 @@ convertOldCellHTS <- function(oldObject) {
 
         ## store the rest of the description information into slot "other":
         otherInfo <- descript[-unlist(miameList)]
-        ## otherInfo <- otherInfo[nchar(otherInfo)>0] #remove empty lines
-        ## notes(miameInfo) <- unlist(lapply(otherInfo, function(i) append(append("\t",i), "\n")))
         notes(miameInfo) <- lapply(otherInfo, function(i) paste("\t", i, "\n", collapse="")) 
 
         ## add the 'miame'-like description:
@@ -165,3 +161,27 @@ convertOldCellHTS <- function(oldObject) {
     validObject(objRaw)
     return(cellHTSlist)
 }
+
+
+
+## Update an outdated S4 cellHTS object (i.e., the new processingInfo and plateData slots are missing
+updateCellHTS <- function(object)
+{
+    if(isUpToDate(object)[["valid"]]){
+        warning("This cellHTS object is already up to date.", call.=FALSE)
+        return(object)
+    }
+    availSlots <- getObjectSlots(object)
+    availSlotNames <- names(availSlots)
+    definedSlotNames <- slotNames(object)
+    commonSlots <- intersect(definedSlotNames, availSlotNames)
+    missingSlots <- setdiff(definedSlotNames, availSlotNames)
+    newObject <- new(class(object))
+    for(s in commonSlots)
+        slot(newObject, s) <- availSlots[[s]]
+    oldbatch <- object@batch
+    if(length(oldbatch))
+        warning("Unable to update the batch information.", call.=FALSE)
+    return(newObject)
+}
+

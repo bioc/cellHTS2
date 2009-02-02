@@ -1,4 +1,4 @@
-%\VignetteIndexEntry{Supplement: multi-channel assays}
+\%\VignetteIndexEntry{Supplement: multi-channel assays}
 %\VignetteKeywords{Cell based assays}
 %\VignettePackage{cellHTS2}
 
@@ -119,7 +119,7 @@ files:
 %
 <<dataPath>>=
 experimentName <- "DualChannelScreen"
-dataPath=system.file(experimentName, package="cellHTS2") 
+dataPath <- system.file(experimentName, package="cellHTS2") 
 @ 
 %
 The input files are in the
@@ -158,7 +158,7 @@ Morevoer, we also add the information contained in the
 %
 <<configure the data>>=
 x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt",
-      path=dataPath) 
+               path=dataPath) 
 @ 
 %
 
@@ -166,10 +166,10 @@ x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt",
 %% Create the table for plateConf and screenLog
 <<plateConfscreenLogTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
-    "plate configuration", selRows=NULL, preName="twoChannels")
+                                     "plate configuration", selRows=NULL, preName="twoChannels")
 
 cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"), 
-    "screen log", selRows=1:2, preName="twoChannels")
+                       "screen log", selRows=1:2, preName="twoChannels")
 @ 
 
 In this data set, instead of using the default names \emph{pos} 
@@ -241,11 +241,11 @@ data in a directory called
 \Robject{raw}, in the working directory:
 %
 <<writeReport1Show, eval=FALSE>>=
-out <- writeReport(cellHTSlist=list("raw"=x), outdir="raw",
-    posControls=posControls, negControls=negControls)
+out <- writeReport(raw=x, outdir="raw",
+                   posControls=posControls, negControls=negControls)
 @ 
 <<writeReport1Do, echo=FALSE, results=hide>>=
-out <- writeReport(cellHTSlist=list("raw"=x), force=TRUE, outdir="raw", 
+out <- writeReport(raw=x, force=TRUE, outdir="raw", 
    posControls=posControls, negControls=negControls)
 @ 
 %
@@ -327,7 +327,7 @@ to each replicate and channel:
 %
 <<plateMedianChannels>>=
 xn <- normalizePlates(x, scale="multiplicative", method="median", 
-   varianceAdjust="none")
+                      varianceAdjust="none")
 @ 
 %
 Then, we define the intensity cut-off as follows:
@@ -383,7 +383,8 @@ The above procedure of data masking and channel summarization can be carried out
 %
 <<summarizeChannels>>=
 xn1 <- summarizeChannels(xn, fun = function(r1, r2, 
-             thresh=quantile(r1, probs=0.05, na.rm=TRUE)) ifelse(r1>thresh, r2/r1, as.numeric(NA)))
+                             thresh=quantile(r1, probs=0.05, na.rm=TRUE)) 
+                         ifelse(r1>thresh, r2/r1, as.numeric(NA)))
 @
 %
 %
@@ -402,7 +403,7 @@ since after $log_2$ transformation the data are in an additive scale):
 %
 <<redo plate correction>>=
 xn1 <- normalizePlates(xn1, scale="multiplicative", log=TRUE, method="median", 
-   varianceAdjust="none") 
+                       varianceAdjust="none") 
 @
 %
 Below, we call functions \Rfunction{scoreReplicates} and \Rfunction{summarizeReplicates} to determine the 
@@ -448,18 +449,18 @@ negControls <- "(?i)^geneA$|^geneB$"
 posControls <- "(?i)^geneC$|^geneD$"
 @ 
 <<report2Show, eval=FALSE>>=
-out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn1, "scored"=xsc), 
- outdir="logRatio", 
- imageScreenArgs=list(zrange=c(-4,4)),
- plotPlateArgs=TRUE, map=TRUE, 
- posControls=posControls, negControls=negControls)
+out <- writeReport(raw=x, normalized=xn1, scored=xsc, 
+                   outdir="logRatio", 
+                   imageScreenArgs=list(zrange=c(-4,4)),
+                   plotPlateArgs=TRUE, map=TRUE, 
+                   posControls=posControls, negControls=negControls)
 @
 <<report2Do, results=hide, echo=FALSE>>=
-out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn1, "scored"=xsc), 
-  force=TRUE, outdir="logRatio", 
-  imageScreenArgs=list(zrange=c(-4,4)),
-  plotPlateArgs=TRUE, map=TRUE,
-  posControls=posControls, negControls=negControls)
+out <- writeReport(raw=x, normalized=xn1, scored=xsc, 
+                   force=TRUE, outdir="logRatio", 
+                   imageScreenArgs=list(zrange=c(-4,4)),
+                   plotPlateArgs=TRUE, map=TRUE,
+                   posControls=posControls, negControls=negControls)
 @
 %
 The quality reports have been created in the folder \Robject{logRatio} 

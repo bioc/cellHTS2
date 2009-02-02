@@ -27,6 +27,7 @@ export("oneRowPerId",
        "summarizeChannels",
        "summarizeReplicates",
        "templateDescriptionFile",
+       "updateCellHTS",
        "writeReport",      
        "write.tabdel")
 

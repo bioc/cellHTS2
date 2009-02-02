@@ -132,8 +132,8 @@ for this step. First we define the path where the input files can be
 found.
 %
 <<dataPath>>=
-experimentName = "KcViab"
-dataPath = system.file(experimentName, package="cellHTS2") 
+experimentName <- "KcViab"
+dataPath <- system.file(experimentName, package="cellHTS2") 
 @ 
 %
 In this example, the input files are in the
@@ -150,9 +150,9 @@ rev(dir(dataPath))[1:12]
 and read the data into the object \Robject{x}
 %
 <<readPlateList, results=hide>>=
-x = readPlateList("Platelist.txt", 
-        name=experimentName, 
-        path=dataPath)
+x <- readPlateList("Platelist.txt", 
+                   name=experimentName, 
+                   path=dataPath)
 @ 
 %
 <<showX>>=
@@ -169,7 +169,7 @@ automatically determined from the raw intensity files when calling the
 <<plateFileTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list")
 cellHTS2:::tableOutput(file.path(dataPath, names(intensityFiles(x))[1]), 
-              "signal intensity", header=FALSE)
+                       "signal intensity", header=FALSE)
 @ 
 
 %------------------------------------------------------------
@@ -386,10 +386,10 @@ given to the function as a list component named ``raw'':
  
 %
 <<writeReport1Show, eval=FALSE>>=
-out <- writeReport(list("raw"=x))
+out <- writeReport(raw=x)
 @ 
 <<writeReport1Do, echo=FALSE, results=hide>>=
-out <- writeReport(list("raw"=x), force=TRUE)
+out <- writeReport(raw=x, force=TRUE)
 @ 
 %
 It will create a directory of the name given by \Robject{name(x)} in the
@@ -443,11 +443,11 @@ The first 5 lines of this file are shown in Table~\ref{tab:screenlog}, and the l
 
 To apply the information contained in these three files in our \Rclass{cellHTS} object, we call:
 <<annotatePlateRes>>=
-x = configure(x,
-  descripFile="Description.txt", 
-  confFile="Plateconf.txt", 
-  logFile="Screenlog.txt", 
-  path=dataPath)
+x <- configure(x,
+               descripFile="Description.txt", 
+               confFile="Plateconf.txt", 
+               logFile="Screenlog.txt", 
+               path=dataPath)
 @ 
 %
 Note that the function \Rfunction{configure}\footnote{More precisely,
@@ -461,9 +461,9 @@ should be omitted.
 %% Create the example table for plateConf and screenLog
 <<plateConfscreenLogTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
-  "plate configuration", selRows=NULL)
+                                     "plate configuration", selRows=NULL)
 cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"), 
-  "screen log", selRows=1:3)
+                       "screen log", selRows=1:3)
 @ 
 
 
@@ -724,11 +724,11 @@ the $i$-th result file.
 This is achieved by calling:
 %
 <<normalizePlateMedian>>=
-xn = normalizePlates(x, 
-   scale="multiplicative", 
-   log=FALSE, 
-   method="median", 
-   varianceAdjust="none")
+xn <- normalizePlates(x, 
+                      scale="multiplicative", 
+                      log=FALSE, 
+                      method="median", 
+                      varianceAdjust="none")
 @ 
 after which we obtain a \Rclass{cellHTS} object with the normalized 
 intensities stored in the slot
@@ -837,18 +837,18 @@ This transformation can be done by calling the function
 \Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2Complete-callvalues.png}.
 %
 <<callvalues, echo=FALSE, results=hide, width=180, height=180>>=
-y = scores2calls(xsc, z0=1.5, lambda=2)
+y <- scores2calls(xsc, z0=1.5, lambda=2)
 png("cellhts2Complete-callvalues.png")
 plot(Data(xsc), Data(y), col="blue", pch=".",
-   xlab="z-scores", ylab="calls", 
-   main=expression(1/(1+e^{-lambda *(z-z[0])})))
+     xlab="z-scores", ylab="calls", 
+     main=expression(1/(1+e^{-lambda *(z-z[0])})))
 dev.off()
 @
 <<callvaluesShow, eval=FALSE>>=
-y = scores2calls(xsc, z0=1.5, lambda=2)
+y <- scores2calls(xsc, z0=1.5, lambda=2)
 plot(Data(xsc), Data(y), col="blue", pch=".",
-   xlab="z-scores", ylab="calls", 
-   main=expression(1/(1+e^{-lambda *(z-z[0])})))
+     xlab="z-scores", ylab="calls", 
+     main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @
 \myincfig{cellhts2Complete-callvalues.png}{180px}{A
   sigmoidal transformation that can be used for obtaining call
@@ -881,7 +881,7 @@ xsc <- annotate(xsc, geneIDFile="GeneIDs_Dm_HFA_1.1.txt", path=dataPath)
 %% Create the example table:
 <<geneIDsTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs_Dm_HFA_1.1.txt"), 
-     "gene ID", selRows = 3:6)
+                       "gene ID", selRows = 3:6)
 @ 
 %
 An optional column named \textit{GeneSymbol} can be included in the 
@@ -986,9 +986,9 @@ argument \Robject{cellHTSlist} the three \Rclass{cellHTS} objects:
 ``raw'', ``normalized'' and ``scored'' \Rclass{cellHTS} objects.
 %
 <<writeReport2, results=hide, eval=FALSE>>=
-out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
-  force=TRUE, plotPlateArgs = TRUE, 
-  imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
+out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+                   force=TRUE, plotPlateArgs = TRUE, 
+                   imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
 @ 
 %
 and use a web browser to view the resulting report.
@@ -1125,15 +1125,17 @@ the file} also provided in the \Rpackage{cellHTS2} package.
 <<exportOtherData, eval=FALSE>>=
 # determine the ratio between each well and the plate median
 y <- array(as.numeric(NA), dim=dim(Data(x)))
-nrWell = prod(pdim(x))
-nrPlate = max(plate(x))
-for(p in 1:nrPlate) {
-  j <- (1:nrWell)+nrWell*(p-1)
-  samples <- wellAnno(x)[j]=="sample"
-  y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3, 
-     function(w) w/median(w[samples], na.rm=TRUE)) }
+nrWell <- prod(pdim(x))
+nrPlate <- max(plate(x))
+for(p in 1:nrPlate) 
+{
+    j <- (1:nrWell)+nrWell*(p-1)
+    samples <- wellAnno(x)[j]=="sample"
+    y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3, 
+                      function(w) w/median(w[samples], na.rm=TRUE)) 
+}
 
-y=signif(y, 3)
+y <- signif(y, 3)
 out <- y[,,1]
 out <- cbind(fData(xsc), out)
 names(out) = c(names(fData(xsc)), 
@@ -1194,7 +1196,7 @@ if not.
 % @ 
 
 <<obsolete GO ids>>=
-obsolete = c("GO:0005489", "GO:0015997", "GO:0045034", "GO:0005660")
+obsolete <- c("GO:0005489", "GO:0015997", "GO:0045034", "GO:0005660")
 @ 
 
 Some distractions are the GO terms 
@@ -1286,7 +1288,7 @@ Figure~\ref{cellhts2Complete-volcano.png} are listed in Table~\ref{tab:enrichedG
 <<volcano, echo=FALSE, results=hide>>=
 png("cellhts2Complete-volcano.png", width=180, height=180)
 par(mai=c(0.9,0.9,0.1,0.1))
-px = cbind(acMean, -log10(acTtest))
+px <- cbind(acMean, -log10(acTtest))
 plot(px, main='', xlab=expression(z[mean]), 
      ylab=expression(-log[10]~p), pch=".", col="black")
 points(px[isEnriched, ], pch=16, col="red", cex=0.7)
@@ -1330,7 +1332,7 @@ First, We will load this file:
 %
 <<load file with previous analysis>>=
 data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"), header=TRUE, 
-as.is=TRUE, sep="\t")
+                       as.is=TRUE, sep="\t")
 @ 
 % 
 The file contains the columns \Robject{\Sexpr{paste(names(data2003), collapse=", ")}}.
@@ -1340,8 +1342,8 @@ column with the corresponding $z$-score values calculated using the \Rpackage{ce
 package. 
 % 
 <<add the current scored values>>=
-i = data2003$Position + 384*(data2003$Plate-1)
-data2003$ourScore = as.vector(Data(xsc))[i]
+i <- data2003$Position + 384*(data2003$Plate-1)
+data2003$ourScore <- as.vector(Data(xsc))[i]
 @ 
 %
 %
@@ -1354,10 +1356,11 @@ Axis labels are not pretty - they overlap with neighboring panels due to space c
 require("geneplotter")
 png("cellhts2Complete-scoresComparison.png", width=324, height=324)
 par(mfrow=c(7,9), mai=c(0,0,0,0))
-for(i in 1:max(data2003$Plate)) {
-   sel = (data2003$Plate==i)
+for(i in 1:max(data2003$Plate)) 
+{
+   sel <- (data2003$Plate==i)
    plot(data2003$ourScore[sel], data2003$Score[sel], pch=19, cex=0.6)
-  }
+}
 dev.off()
 @ 
 %
@@ -1396,9 +1399,9 @@ Regarding the screen description file, as mentioned in Section~\ref{sec:screenco
 we provide a function that creates a template screen description file that can be edited and modified by the user. Below we examplify how such file can be created:
 %
 <<example for description file>>=
-  out <- templateDescriptionFile("template-Description.txt", force=TRUE)
-  out
-  readLines(out)
+out <- templateDescriptionFile("template-Description.txt", force=TRUE)
+out
+readLines(out)
 @
 %
 \input{cellhts2-cellHTSpackage-specificplateconfiguration} 
@@ -1407,9 +1410,9 @@ we provide a function that creates a template screen description file that can b
 % Create the example table for the older formats of plate configuration and screen log files
 <<old plateConfscreenLogTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "old-Plateconf.txt"), 
-  "cellHTS package-specific plate configuration", selRows=1:28)
+                       "cellHTS package-specific plate configuration", selRows=1:28)
 cellHTS2:::tableOutput(file.path(dataPath, "old-Screenlog.txt"), 
-  "cellHTS package-specific screen log", selRows=1:3)
+                       "cellHTS package-specific screen log", selRows=1:3)
 @ 
 %
 
@@ -1541,8 +1544,8 @@ respectively, calculated at the sample wells. This robust Z score method is perf
 \Rfunction{normalizePlates} as follows: 
 %
 <<Z score method, eval=FALSE>>=
- xZ <- normalizePlates(x, scale="additive", log=FALSE,
-         method="median", varianceAdjust="byPlate") 
+xZ <- normalizePlates(x, scale="additive", log=FALSE,
+                      method="median", varianceAdjust="byPlate") 
 @ 
 
 %
@@ -1642,34 +1645,36 @@ than necessity.
 library("vsn")
 png("cellhts2Complete-transfplots.png", width=324, height=474)
 par(mfcol=c(3,2))
-myPlots=function(z,...) {
+myPlots=function(z,...) 
+{
   hist(z[,1], 100, col="lightblue", xlab="",...)
   meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
   qqnorm(z[,1], pch='.', ...)
   qqline(z[,1], col='blue')
 }
-dv = Data(xn)[,,1]
+dv <- Data(xn)[,,1]
 myPlots(dv, main="untransformed")
-xlog = normalizePlates(x, scale="multiplicative", log=TRUE, 
-       method="median", varianceAdjust="byExperiment")
-dvlog = Data(xlog)[,,1]
+xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
+                        method="median", varianceAdjust="byExperiment")
+dvlog <- Data(xlog)[,,1]
 myPlots(dvlog, main="log2")
 dev.off()
 @
 <<transfplotsShow, eval=FALSE>>=
 library("vsn")
 par(mfcol=c(3,2))
-myPlots=function(z,...) {
-  hist(z[,1], 100, col="lightblue", xlab="",...)
-  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
-  qqnorm(z[,1], pch='.', ...)
-  qqline(z[,1], col='blue')
+myPlots=function(z,...) 
+{
+    hist(z[,1], 100, col="lightblue", xlab="",...)
+    meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+    qqnorm(z[,1], pch='.', ...)
+    qqline(z[,1], col='blue')
 }
-dv = Data(xn)[,,1]
+dv <- Data(xn)[,,1]
 myPlots(dv, main="untransformed")
-xlog = normalizePlates(x, scale="multiplicative", log=TRUE, 
-       method="median", varianceAdjust="byExperiment")
-dvlog = Data(xlog)[,,1]
+xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
+                        method="median", varianceAdjust="byExperiment")
+dvlog <- Data(xlog)[,,1]
 myPlots(dvlog, main="log2")
 @ 
 %

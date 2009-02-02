@@ -174,18 +174,6 @@ summarizeReplicates <- function(object, summary="min")
         ## need to construct a new cellHTS object.
         z <- object[, 1] # construct a cellHTS object just with the first sample
         assayData(z) <- assayDataNew("score"=matrix(score, dimnames=list(featureNames(object), 1)))
-
-        ## batch slot: see if the batch differs across samples. If so, reset it to an empty array
-        ## since now we only have one sample. Otherwise just keep one sample.
-
-        ## just to ensure that the object will pass the validity checks:
-        if(!is.null(batch(object)))
-        {
-            bb <- batch(object) 
-            ## see if it differs across samples:
-            bbt <- apply(bb, c(1,3), function(i) length(unique(i)))
-            z@batch <- if(any(bbt>1))  new("cellHTS")@batch else bb[,1,1, drop=FALSE]
-        }
     }
     else
     {

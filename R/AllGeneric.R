@@ -54,5 +54,8 @@ setGeneric("compare2cellHTS", def=function(x,y) standardGeneric("compare2cellHTS
 
 setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("ROC"))
 
+setGeneric("writeHtml",  function(x, ...) standardGeneric("writeHtml"))
+
+
 #if(!isGeneric("lines"))
 #    setGeneric("lines", useAsDefault=lines)

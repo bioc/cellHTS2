@@ -54,34 +54,8 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
         for (r in 1:nrReplicate)
         {
             ## batch information
-            if(!is.null(batch(xr)))
-            { 
-                btr <- batch(xr)[,r,ch]
-                btr <- split(btr, plt)
-                btr <- sapply(btr, unique)
-                ## more than one batch per plate! We cannot handle this, so consider a single batch 
-                if(is(btr, "list"))
-                    btr <- rep(1L, nrPlate)
-            } else {
-                btr <- rep(1L, nrPlate)
-            }
-            if(hasNormData)
-            {
-                if(!is.null(batch(xn)))
-                { 
-                    btn <- batch(xn)[,r,ch]
-                    btn <- split(btn, plt)
-                    btn <- sapply(btn, unique)
-                    ## more than one batch per plate! We cannot handle this, so consider a single batch 
-                    if(is(btn, "list"))
-                        btn <- rep(1L, nrPlate)
-                }
-                else
-                {
-                    btn <- rep(1L, nrPlate)
-                }
-            }
-
+            btr <- if(!is.null(batch(xr)))  if(hasNormData) batch(xn)[,r] else  batch(xr)[,r] else rep(1L, nrPlate)
+            
             ## Create the boxplot of measurement values before and after normalization (if applicable)
             makePlot(path, con=con, name=sprintf("boxplot_%d_%d", r, ch), w=5*(nrbxp-hasLessCh),
                      h=3, fun = function()
@@ -98,7 +72,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
                      {
                          xbp <- matrix(Data(xn)[,r,ch], ncol=nrPlate, nrow=nrWell)
                          boxplotwithNA(xbp, col="lightblue", outline=FALSE, main="", xlab="plate",
-                                       ylab="normalized intensity", batch=btn)
+                                       ylab="normalized intensity", batch=btr)
                      }
                  }, print=FALSE)
             caption <- 
@@ -129,7 +103,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
                              xvals$neg <- plt[negCtrls[[ch]]]
                              xvals$inh <- plt[inhCtrls[[ch]]]
                              xvals$act <- plt[actCtrls[[ch]]]
-                             controlsplot(xvals, yvals, main="", batch=btn)
+                             controlsplot(xvals, yvals, main="", batch=btr)
                              ## density function needs at least 2 points
                              ## dealing with the case where we have a single positive or negative
                              ## control well, and a single plate, so that a single measurement

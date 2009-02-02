@@ -1,5 +1,5 @@
 ## Creates the cellHTS object with the assembled data from 'KcViab' and 'KcViabSmall' experiment:
-
+library(cellHTS2)
 
     fname <- c("KcViab", "KcViabSmall")
     for (f in fname){

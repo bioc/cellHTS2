@@ -97,8 +97,8 @@ Table~\ref{tab:platelist}.
 The path for the raw data is defined below:
 %
 <<dataPath>>=
-experimentName = "TwoWayAssay"
-dataPath=system.file(experimentName, package="cellHTS2") 
+experimentName <- "TwoWayAssay"
+dataPath <- system.file(experimentName, package="cellHTS2") 
 @ 
 %
 The input files are in the
@@ -120,7 +120,7 @@ source(file.path(dataPath, "importData.R"))
 Finally, we call \Rfunction{readPlateList}:
 <<readPlateData, results=hide>>=
 x <- readPlateList("Platelist.txt", name=experimentName,
-  importFun=importData, path=dataPath)
+                   importFun=importData, path=dataPath)
 @ 
 %
 <<showX>>=
@@ -155,7 +155,7 @@ general description of the screen.
 %
 <<configure the data>>=
 x <- configure(x, descripFile = "Description.txt",
-    confFile="Plateconf.txt", path=dataPath)
+               confFile="Plateconf.txt", path=dataPath)
 @ 
 %
 In this data set, instead of using the default names \emph{pos} and \emph{neg} for 
@@ -188,12 +188,12 @@ x <- annotate(x, geneIDFile="GeneIDs.txt", path=dataPath)
 % Create the table for plateConf
 <<plateConfscreenLogTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
-    "plate configuration", selRows=NULL, preName="twoWay")
+                                     "plate configuration", selRows=NULL, preName="twoWay")
 @ 
 %% Create the table for screen annotation:
 <<geneIDsTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs.txt"), "gene ID", 
-  selRows = 3:6, preName="twoWay")
+                       selRows = 3:6, preName="twoWay")
 @ 
 
 
@@ -230,16 +230,15 @@ posCtr <- list(act = "(?i)^AATK$|^ATTK$", inh = "(?i)^MAP2K6$")
 Finally, we construct the quality report pages for the raw data in a directory called \Robject{2Wraw}, in the working directory:
 %
 <<writeReport1Show, eval=FALSE>>=
-out <- writeReport(cellHTSlist=list("raw"=x), outdir="2Wraw",
-     posControls=posCtr, negControls=negCtr, 
-
-     plotPlateArgs=list(xrange=c(300, 4000)))
+out <- writeReport(raw=x, outdir="2Wraw",
+                   posControls=posCtr, negControls=negCtr, 
+                   plotPlateArgs=list(xrange=c(300, 4000)))
 @ 
 %
 <<writeReport1Do, echo=FALSE, results=hide>>=
-out <- writeReport(cellHTSlist=list("raw"=x), force=TRUE, outdir="2Wraw", 
-   posControls=posCtr, negControls=negCtr, 
-   plotPlateArgs=list(xrange=c(300, 4000)))
+out <- writeReport(raw=x, force=TRUE, outdir="2Wraw", 
+                   posControls=posCtr, negControls=negCtr, 
+                   plotPlateArgs=list(xrange=c(300, 4000)))
 @ 
 %
 After this function has finished, we can view the index page of
@@ -259,7 +258,7 @@ as a correction factor, so that each plate measurement is subtracted by it.
 %
 <<normalization>>=
 xn <- normalizePlates(x, scale="multiplicative", log=TRUE, method ="negatives", 
-   varianceAdjust="none", negControls = negCtr)
+                      varianceAdjust="none", negControls = negCtr)
 @ 
 %
 The normalized intensities are stored in the slot
@@ -288,7 +287,7 @@ the $z$-scores for the different types of probes (the "empty" wells were exclude
 %
 <<boxplotzscore, fig=TRUE, include=FALSE, width=7, height=6>>=
 ylim <- quantile(Data(xsc), c(0.001, 0.999), na.rm=TRUE)
-wa = factor(as.character(wellAnno(xsc)), exclude="empty")   # to exclude "empty" wells
+wa <- factor(as.character(wellAnno(xsc)), exclude="empty")   # to exclude "empty" wells
 boxplot(Data(xsc) ~ wa, col="lightblue", main="scores", outline=FALSE, ylim=ylim, xaxt="n")
 lab <- unique(plateConf(xsc)$Content)
 lab <- lab[match(levels(wa), tolower(lab))]
@@ -303,14 +302,15 @@ Now that the data have been normalized, scored and summarized between replicates
 %
 
 <<report2Show, eval=FALSE, results=hide>>=
-out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
-outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
-   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)))
+out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+                   outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
+                   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)))
 @
 <<report2Do, results=hide, echo=FALSE, results=hide>>=
-out <- writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), 
-outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
-   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)), force=TRUE)
+out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+                   outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
+                   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)), 
+                   force=TRUE)
 @
 <<browse2, eval=FALSE>>=
 browseURL(out)
