@@ -154,7 +154,7 @@ div.tab
     top:-3px;
     left:-1px;
     height:70px;
-    z-index:100;
+    z-index:99;
 }
 
 div.tab.medium
@@ -207,6 +207,11 @@ div.tab table.tabs
     top:-66px;
 }
 
+div.tab.small table.tabs
+{
+    top:-41px;
+}
+
 
 div.tab table.tabs table
 {
@@ -233,11 +238,6 @@ div.tab table.tabs table.unselected
 div.tab table.tabs table:hover
 {
     color:#4f4f4f;
-}
-
-div.tab table.tabs table.unselected.small
-{
-    top:25px
 }
 
 div.tab table.tabs table.unselected td.left
@@ -328,12 +328,6 @@ div.tab table.tabs table.selected
     border-collapse:collapse;
     position:relative; 
     margin-left:10px;
-}
-
-div.tab table.tabs table.selected.small
-{
-    top:25px;
-
 }
 
 div.tab table.tabs table.selected td.left
@@ -643,6 +637,7 @@ table.plate td, table.rest td
     height:25px;
     padding-left:5px;
     padding-right:5px;
+    white-space:nowrap;
 }
 
 table.rest td.header a

@@ -157,7 +157,7 @@ boxplotwithNA <- function(x, batch, ...)
     if(ncol(x)==1)
         axis(1, 1)
     bdiff <- diff(batch)
-    if(sum(bdiff)>0)
+    if(sum(bdiff, na.rm=TRUE)>0)
     {
         ind <- 1:length(batch)
         abline(v=which(as.logical(bdiff))+0.5, lty=1)
@@ -241,7 +241,7 @@ controlsplot <- function(xvals, yvals, batch, ...)
 	
     batch <- batch[unique(unlist(xvals))] 
     bdiff <- diff(batch)
-    if(sum(bdiff)>0)
+    if(sum(bdiff, na.rm=TRUE)>0)
     {
         ind <- unique(unlist(xvals))
         abline(v=ind[which(as.logical(bdiff))]+0.5, lty=1)

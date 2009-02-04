@@ -11,7 +11,8 @@ writeHtml.plateList <- function(cellHTSList, module, exptab, links, center, glos
     sel <- !is.na(links[, "status"])
     links[sel,"status"] <- file.path("../", links[sel,"status"])
     
-    writeQCTable(exptab, url=links, con=con, glossary=glossary, configured=configured, xr=cellHTSList$raw)
+    writeQCTable(exptab, url=links, con=con, glossary=glossary, configured=configured,
+                 xr=cellHTSList$raw)
     writeHtml.trailer(con)
     return(NULL)
 }
@@ -113,6 +114,7 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
         redHTML <- c(redHTML, sprintf("
         <tr>
           <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\"%s>
+            &nbsp&nbsp&nbsp
           </td>
           %s", red[i], stat[i],
                addTooltip(sprintf("Detailed QC information for plate %s across all replicates and channels.", i),
@@ -169,7 +171,8 @@ myImageMap <- function(object, tags, imgname)
     stopifnot(names(tags) == c("title", "href"))
     out <- lapply(1:nrow(object), function(i) { 
         paste(paste("<area shape=\"rect\" coords=\"", paste(object[i,], collapse=","),"\"", sep=""),
-              paste(" ", paste(names(tags), "=\"",c(tags[["title"]][i], tags[["href"]][i]),"\"", sep=""), collapse=" "),
+              paste(" ", paste(names(tags), "=\"",c(tags[["title"]][i], tags[["href"]][i]),"\"", sep=""),
+                    collapse=" "),
               " alt = \"\"/>\n", sep="")
     }) 	
     ## add all together:
@@ -181,7 +184,8 @@ myImageMap <- function(object, tags, imgname)
 
 
 ## Create the per plate quality control page
-QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotPlateArgs, brks, finalWellAnno,
+QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotPlateArgs, brks,
+                      finalWellAnno,
                       activators, inhibitors, positives, negatives,isTwoWay, namePos, wellTypeColor,
                       plateDynRange, plateWithData, repMeasures)
 {
@@ -214,16 +218,20 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
     {
         for (ch in 1:nrChannel)
         {
-            pneg[[ch]] <- negatives[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) ## correct to be in range 1:nrWells
-            pact[[ch]] <- activators[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) ## correct to be in range 1:nrWells
-            pinh[[ch]] <- inhibitors[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) ## correct to be in range 1:nrWells 
+            ## correct to be in range 1:nrWells
+            pact[[ch]] <- activators[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells)
+            ## correct to be in range 1:nrWells
+            pneg[[ch]] <- negatives[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells)
+            ## correct to be in range 1:nrWells 
+            pinh[[ch]] <- inhibitors[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) 
         }
     }
     else
     {  #oneWay
         for (ch in 1:nrChannel)
         {
-            pneg[[ch]] <- negatives[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells) ## correct to be in range 1:nrWells
+            ## correct to be in range 1:nrWells
+            pneg[[ch]] <- negatives[[ch]][[as.character(subPath)]]-(subPath-1)*(nrWells)
             ppos[[ch]] <- lapply(names(positives[[ch]]), function(i)
                                  positives[[ch]][[i]][[as.character(subPath)]]-(subPath-1)*(nrWells)) 
             names(ppos[[ch]]) <- names(positives[[ch]])
@@ -245,7 +253,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
         qm <- data.frame(metric=I(character(d)), value=NA, comment=I(character(d)))
         for(i in 1:length(plateDynRange))
         {			
-            pn <- if(names(plateDynRange)[i]=="pos" & length(plateDynRange)==1) "" else sprintf("'%s'",names(plateDynRange)[i])
+            pn <- if(names(plateDynRange)[i]=="pos" & length(plateDynRange)==1) "" else sprintf("'%s'",
+                                                            names(plateDynRange)[i])
             qm$metric[(i-1)*(maxRep+1)+(1:maxRep)] <- I(sprintf("Dynamic range %s (replicate %s)",pn , 1:maxRep))
             qm$metric[(i-1)*(maxRep+1)+(maxRep+1)] <- I(sprintf("Dynamic range %s",pn))
             qm$value[(i-1)*(maxRep+1)+(1:maxRep)] <- round(plateDynRange[[i]][1, 1:maxRep, ch],2)
@@ -765,7 +774,7 @@ chanCorrFun <- function()
                      }, print=FALSE)
                 img <- c(img, sprintf("scp_Rep%d.png", r))
                 title <- c(title, sprintf("Replicate %s", r))
-                addCode <- c(addCode, sprintf("<div class=\"scatterLegend\">%s</div>"))
+                addCode <- c(addCode, sprintf("<div class=\"scatterLegend\">%s</div>", wellCount[2,ch]))
                 caption <- c(caption, wellCount[1,ch])
             }
             else
