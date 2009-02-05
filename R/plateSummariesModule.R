@@ -137,7 +137,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
         chList[[ch]] <- repList
     } ## for ch
     stack <- chtsImageStack(chList, id="expQC")
-    writeHtml(stack, con=con)
+    writeHtml(stack, con=con, vertical=TRUE)
     return(invisible(NULL))
 }
 

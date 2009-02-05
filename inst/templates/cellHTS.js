@@ -39,7 +39,8 @@ toggleImageVisibility = function(id)
 // Toggle the main table tags
 function toggleTabById(id, thisTable, src)
 {
-    toggleSelectionState(id, thisTable);   
+    toggleSelectionState(id, thisTable);
+    resetIframe("main");
     document.getElementsByTagName("iframe")[0].src=src; 
 }
 
@@ -77,6 +78,7 @@ function toggleTabByReplicate(id, thisTable, replicate)
 // Link to pdf version of images
 function linkToPdf(url)
 {
+    resetIframe("main");
     document.location.href = url;
 }
 
@@ -85,44 +87,9 @@ function linkToPdf(url)
 // Set current url of the document
 function linkToFile(url)
 {
-     document.location.href = url; 
+    parent.resetIframe("main");
+    document.location.href = url; 
 }
-
-
-
-// Automatically resize the main iFrame based on its content
-function adjustIFrameSize (iframeWindow) 
-{
-    if (iframeWindow.document.height) {
-	if(iframeWindow.name){
-	    var iframeElement = document.getElementById(iframeWindow.name);
-	    if(iframeElement){
-		iframeElement.style.height = iframeWindow.document.height + 25 + 'px';
-		iframeElement.style.width = iframeWindow.document.width  + 'px';
-	    }
-	}
-    }
-    else if (document.all) {
-	var iframeElement = document.all[iframeWindow.name];
-	if(iframeElement){
-	    if (iframeWindow.document.compatMode &&
-		iframeWindow.document.compatMode != 'BackCompat') 
-	    {
-		iframeElement.style.height = 
-		    iframeWindow.document.documentElement.scrollHeight + 25 + 'px';
-		iframeElement.style.width = 
-		    iframeWindow.document.documentElement.scrollWidth + 5 + 'px';
-	    }
-	    else {
-		iframeElement.style.height = 
-		    iframeWindow.document.body.scrollHeight + 25 + 'px';
-		iframeElement.style.width = 
-		    iframeWindow.document.body.scrollWidth + 5 + 'px';
-	    }
-	}
-    }
-}
-
 
 
 // Setter methods for coockies
@@ -227,5 +194,72 @@ function initialize()
 	if(help)
 	    help.innerHTML="off";
     }
-    if (parent.adjustIFrameSize) parent.adjustIFrameSize(window);
+   
+}
+
+
+// Automatically resize the iFrame based on its content
+function autoIframe(frameId){
+    try{
+	frame = document.getElementById(frameId);
+	innerDoc = (frame.contentDocument) ? frame.contentDocument : frame.contentWindow.document;
+	objToResize = (frame.style) ? frame.style : frame;
+	objToResize.height = innerDoc.body.scrollHeight + 10;
+	objToResize.width = innerDoc.body.scrollWidth + 10;
+    }
+    catch(err){
+	window.status = err.message;
+    }
+}
+
+
+
+// get the current window size (cross browser)
+window.size = function(width)
+{
+	var w = 0;
+	var h = 0;
+
+	//IE
+	if(!window.innerWidth)
+	{
+		//strict mode
+		if(!(document.documentElement.clientWidth == 0))
+		{
+			w = document.documentElement.clientWidth;
+			h = document.documentElement.clientHeight;
+		}
+		//quirks mode
+		else
+		{
+			w = document.body.clientWidth;
+			h = document.body.clientHeight;
+		}
+	}
+	//w3c
+	else
+	{
+		w = window.innerWidth;
+		h = window.innerHeight;
+	}
+    if(width)
+	return w;
+    else
+	return h
+}
+
+
+// reset the iFrame size to the available window size
+function resetIframe(frameId){
+    try{
+	xoff = 175;
+	yoff = 120;
+	frame = document.getElementById(frameId);
+	objToResize = (frame.style) ? frame.style : frame;
+	objToResize.height = window.size(false) - yoff;
+	objToResize.width = window.size(true) - xoff;
+    }
+    catch(err){
+	window.status = err.message;
+    }
 }

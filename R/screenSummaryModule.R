@@ -1,12 +1,14 @@
 ## The workhorse function for the 'Screen Summary' module: an image plot of the results
 ## for the whole screen, possibly with an underlying HTML imageMap to allow for drill-down
-## to the quality report page of the respective plates.
+## to the quality report page of the respective plates. Also a Normal Q-Q plot of the scores
+## data.
 writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overallState,
                                   nrPlate, con)
 {
     outdir <- dirname(module@url)
     if(overallState[["scored"]])
     {
+        imgList <- list()
         ttInfo <- 
             if(overallState["annotated"]) "Table of scored <br/> and annotated probes" else
         "Table of scored probes"
@@ -16,14 +18,28 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
                                      args=append(list(object=xsc, map=map),
                                      imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
                         print=FALSE, isImageScreen=TRUE)
-        img <- chtsImage(data.frame(title="Screen-wide image plot of the scored values",
-                                     thumbnail="imageScreen.png",
-                                     fullImage="imageScreen.pdf"))
-        if (!is.null(res))
-            img@map <- screenImageMap(object=res$obj, tags=res$tag, "imageScreen.png",
-                                  cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs)
+        imgList[["Scores"]] <- chtsImage(data.frame(title="Screen-wide image plot of the scored values",
+                                                    thumbnail="imageScreen.png", 
+                                                    fullImage="imageScreen.pdf",
+                                                    map=if(!is.null(res)) screenImageMap(object=res$obj,
+                                                    tags=res$tag, "imageScreen.png",
+                                                    cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs) else NA))
+                                                    
+        qqn <- makePlot(outdir, con=con, name="qqplot", w=7, h=7, psz=8,
+                        fun=function(x=xsc)
+                    {
+                        par(mai=c(0.8,0.8,0.2,0.2))
+                        qqnorm(Data(x), main=NULL, cex.lab=1.3)
+                        qqline(Data(x), col="darkgray", lty=3)
+                    },
+                        print=FALSE)
+        imgList[["Q-Q Plot"]] <- chtsImage(data.frame(title="Normal Q-Q Plot",
+                                                      thumbnail="qqplot.png",
+                                                      fullImage="qqplot.pdf"))
+        stack <- chtsImageStack(list(imgList), id="imageScreen",
+                                tooltips=addTooltip(names(imgList), "Help"))        
         writeHtml.header(con)
-        writeHtml(img, con)
+        writeHtml(stack, con)
         writeHtml.trailer(con)
         return(NULL)
     }

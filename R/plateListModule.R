@@ -453,11 +453,11 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
     chList <- myCall(sdFun, env)
     ## Plate plot of replicate and channel intensities
     chList <- myCall(intensFun, env)
+    ## Correlation between channels
+    chList <- myCall(chanCorrFun, env)
     stack <- chtsImageStack(chList, id="perExpQC", title=paste("Experiment report for", name),
                             tooltips=addTooltip(names(chList[[1]]), "Help"))
     writeHtml(stack, con=con, vertical=FALSE)
-    ## "Channel 2 vs Channel 1" plot (if nrChannels==2) ##
-    myCall(chanCorrFun, env)
     return(list(url=fn, qmsummary=qmsummary)) 
 }
 
@@ -789,7 +789,8 @@ chanCorrFun <- function()
         img <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
                                     fullImage=gsub("png$", "pdf", img), caption=caption,
                                     additionalCode=addCode))
-        fakeStack <- chtsImageStack(list(list(img)), id="perExpQCFake")
-        writeHtml(fakeStack, con=con, vertical=FALSE)
+        for(i in seq_len(nrChannel))
+            chList[[i]] <- c(chList[[i]], "Channel Correlation"=img)
     }## if nrChannel
+    return(chList)
  }

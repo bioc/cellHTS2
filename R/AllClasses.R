@@ -228,7 +228,8 @@ setClass("chtsImage",
          fullImage="character",
          additionalCode="character",
          map="character",
-         jsclass="character"))
+         jsclass="character",
+         tooltips="character"))
 
 ## constructor
 chtsImage <- function(x)
@@ -244,7 +245,8 @@ chtsImage <- function(x)
     new("chtsImage", thumbnail=as.character(x$thumbnail), fullImage=as.character(x$fullImage),
         shortTitle=as.character(x$shortTitle), title=as.character(x$title),
         additionalCode=as.character(x$additionalCode), map=as.character(x$map),
-        caption=as.character(x$caption), jsclass=if(!is.null(x$jsclass)) x$jsclass else "default")
+        caption=as.character(x$caption),
+        jsclass=if(!is.null(x$jsclass)) as.character(x$jsclass) else "default")
 }
                      
 

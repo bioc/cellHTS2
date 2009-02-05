@@ -442,9 +442,24 @@ table.imageStack
     background-color:#6699cc;
 }
 
-table.horizontal
+table.imageStack table.horImg
 {
-     
+    border-spacing:0px; 
+    border-collapse:collapse;
+}
+
+table.imageStack table.horImg td
+{
+    padding:0px;
+    margin:0px;
+    padding-left:10px;
+    padding-right:10px;
+}
+
+table.imageStack table.horImg tr
+{
+    padding:0px;
+    margin:0px;
 }
 
 
@@ -475,6 +490,7 @@ table.imageStack table.image td.header
     padding-bottom:0px;
     padding-left:0px;
     padding-right:0px;
+    padding-top:15px;
 }
 
 table.imageStack table.image td.header div.header

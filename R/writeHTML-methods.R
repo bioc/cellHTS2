@@ -172,7 +172,8 @@ writeHtml.mainpage <- function(title, tabs, con)
     writeLines(sprintf("
           <div class=\"main\">
 	    <iframe class=\"main\" src=\"%s\" name=\"main\" frameborder=\"0\" noresize id=\"main\"
-              scrolling=\"no\" marginwidth=\"0\ marginheight=\"0\">
+              scrolling=\"no\" marginwidth=\"0\" marginheight=\"0\"
+              onload=\"if (window.parent && window.parent.autoIframe) {window.parent.autoIframe('main');}\">
 	      <p>
 	        Your browser does not support iFrames. This page will not work for you.
 	      </p>
@@ -250,6 +251,7 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
       fi <- if(!length(from@fullImage)) rep(NA, ltm) else from@fullImage
       map <- if(!length(from@map)) rep(NA, ltm) else from@map
       ac <- if(!length(from@additionalCode)) rep(NA, ltm) else from@additionalCode
+      tt <- if(!length(from@tooltips)) rep(NA, ltm) else from@tooltips
       df <- data.frame(ID=seq_len(ltm), Title=I(ti), Caption=I(ca), FullImage=I(fi),
                        Pdf=I(sapply(fi, function(y) ifelse(is.na(y), "", "pdf"))),
                        Thumbnail=I(tm), Class=from@jsclass, AdditionalCode=ac, Map=map,
@@ -261,75 +263,54 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
 
 
 
-## Create HTML for chtsImage objects. If there are multiple images in the object, a tab navigation structure
-## is created. If there is a link to a pdf version, this will also be created.
-## The optional argument map will add an imageMap to the HTML code.
+## Create HTML for chtsImage objects. If there are multiple images
+## in the object they will be stacked (if vertical==TRUE) or aligned horizontally.
+## If there is a link to a pdf version, this will also be created.
 setMethod("writeHtml",
           signature=signature("chtsImage"),
-          definition=function(x, con, stack=FALSE, vertical=TRUE)
+          definition=function(x, con, vertical=TRUE)
       {
           st <- x@shortTitle
           if(!length(st))
               st <- "foo"
           tabs <- data.frame(title=st, id=seq_along(st))
           imgs <- as(x, "data.frame")
-          out <- if(!vertical) "<table align=\"center\"><tr><td>" else "" 
+          out <- if(length(st)>1 && !vertical) "<table align=\"center\" class=\"horImg\">\n<tr>\n<td>" else "" 
           for(i in seq_len(nrow(tabs))){
               out <- c(out, sprintf("
-          <table class=\"image %s\" align=\"center\">", unique(imgs[i,"Class"])))
-              if(nrow(tabs)>1 && !stack)
-              {
-                  if(is.null(tabs$class))
-                      tabs$class <- c("selected", rep("unselected", nrow(tabs)-1))
-                  out <- c(out, "
-            <tr>
-              <td class=\"tabs\">")
-                  for(j in seq_len(nrow(tabs)))
-                  {
-                      alist <- as.list(tabs[j,])
-                      alist$size <- "small"
-                      if(is.null(alist$id))
-                          alist$id <- j
-                      alist$image <- TRUE
-                      out <- c(out, do.call("writeHtml.tabCollection", args=alist))
-                  }
-                  out <- c(out, "    
-              </td>
-            </tr>")
-              }
-              out <- c(out, sprintf("
-            <tr>
-              <td class=\"header\">
-                <div class=\"header\">
-	          %s
-                </div>
-                <div class=\"caption\">
-	          %s
-                </div>
-              </td>
-            </tr>  
-            <tr>
-              <td class=\"main\">
-                <img class=\"image\" src=\"%s\" %s>
-                  %s
-               </td>
-            </tr>
-            <tr>
-              <td class=\"pdf\">
-                <span class=\"pdf\" onClick=\"linkToPdf('%s');\"%s>
-                   %s
-                </span>
-              </td>
-            </tr>",  imgs[i, "Title"], imgs[i, "Caption"], imgs[i, "Thumbnail"], imgs[i, "Map"],
-                                    imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
+                <table class=\"image %s\" align=\"center\">
+                  <tr>
+                    <td class=\"header\">
+                      <div class=\"header\">
+	                %s
+                      </div>
+                      <div class=\"caption\">
+	                %s
+                      </div>
+                    </td>
+                  </tr>  
+                  <tr>
+                    <td class=\"main\">
+                      <img class=\"image\" src=\"%s\" %s>
+                        %s
+                     </td>
+                  </tr>
+                  <tr>
+                    <td class=\"pdf\">
+                      <span class=\"pdf\" onClick=\"linkToPdf('%s');\"%s>
+                        %s
+                      </span>
+                    </td>
+                  </tr>
+                </table>",          unique(imgs[i,"Class"]),
+                                    imgs[i, "Title"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
+                                    imgs[i, "Map"], imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
                                     addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
-              out <- c(out, "
-          </table>")
-              if(!vertical)
-                  out <- c(out, "</td><td>")
-          }
-          if(!vertical)
-              out <- c(out, "</td></tr></table>")
+              if(length(st)>1 && i < nrow(tabs) && !vertical)
+                  out <- c(out, "</td>\n<td>")
+          } ## for(i...
+          if(length(st)>1 && !vertical)
+              out <- c(out, "</td>\n</tr>\n</table>")
           if(!missing(con))
               writeLines(out, con)
           return(invisible(out))
@@ -338,14 +319,9 @@ setMethod("writeHtml",
 
 
 ## Create HTML output. The organisation of the image stack is as follows:
-##   For vertical=TRUE
-##     each channel will be on a separate tab
-##     each replicates will be on a separate tab
-##     the individual images in the chtsImage objects are vertically stacked
-##   For vertical=FALSE
-##     each channel will be on a separate tab
-##     each image from each chtsImage object will be on a separate tab
-##     the replicates are horizontally stacked
+##   each channel will be on a separate tab
+##   each replicates will be on a separate tab
+##   individual images in the chtsImage object are horizontally aligned
 setMethod("writeHtml",
           signature=signature("chtsImageStack"),
           definition=function(x, con, vertical=TRUE)
@@ -381,13 +357,12 @@ setMethod("writeHtml",
             </tr>
             <tr>
               <td>")
-          vert <- if(vertical) "" else "horizontal"
           for(i in seq_len(nrChan)){
               for(j in seq_len(nrRep)){
                   viz <- if(i==1 && j==1) "visible" else "invisible"             
                   img <- x@stack[[i]][[j]]
-                  img@jsclass <- sprintf(" %s %s %s channel%d replicate%d", vert, viz, x@id, i, j)
-                  out <- c(out, writeHtml(img, stack=TRUE, vertical=vertical))
+                  img@jsclass <- sprintf(" %s %s channel%d replicate%d", viz, x@id, i, j)
+                  out <- c(out, writeHtml(img, vertical=vertical))
               }
           }
           out <- c(out, "
