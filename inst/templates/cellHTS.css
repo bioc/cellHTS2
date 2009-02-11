@@ -1,7 +1,7 @@
 /* --- the bounding table and frame elements --- */
 body
 {
-    font-family:Arial;
+    font-family:Helvetica;
     text-align:center;
     padding:0px;
     margin:0px;
@@ -17,7 +17,7 @@ table.border
     border-spacing:0px; 
     empty-cells:show; 
     border-collapse:collapse; 
-    font-family:Arial;
+    font-family:Helvetica;
     width:99%; 
         
 }
@@ -435,7 +435,7 @@ tr.invisible, table.invisible
 table.imageStack
 {
     text-align:center;
-    font-family:Arial;
+    font-family:Helvetica;
     border:1px solid #336699;
     border-spacing:0px; 
     border-collapse:collapse; 
@@ -471,7 +471,7 @@ table.horizontal invisible
 
 table.image
 {
-    font-family:Arial;
+    font-family:Helvetica;
     border-spacing:0px; 
     border-collapse:collapse; 
     background-color:#6699cc;
@@ -566,7 +566,7 @@ table.plateConfModule.legend
     border:none;
     padding-top:5px;
     text-align:center;
-    font-family:Arial;
+    font-family:Helvetica;
     color:white;
     background-color:#6699cc;
     border-spacing:0px;
@@ -584,7 +584,7 @@ td.plateConfModule.legend
 table.sortable
 {
     border:1px solid gray;
-    font-family:Arial;
+    font-family:Helvetica;
     font-size:12px;
     
 }
@@ -649,7 +649,7 @@ table.rest
 
 table.plate td, table.rest td
 {
-    font-size:14px;
+    font-size:13px;
     height:25px;
     padding-left:5px;
     padding-right:5px;
