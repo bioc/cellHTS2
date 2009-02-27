@@ -137,7 +137,18 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
                     x[sel, "status"])
     url <- rbind(NA, url)
     tabClasses <- rbind("header", plateListClass(x, red))
+    fn <- which(colnames(url)=="Filename")
+    tabClasses[-1,fn] <- paste(tabClasses[-1,fn], "link")
     x <- rbind(if(configured) cn[-1] else colnames(x), x)
+
+    ## No need to produce output for empty lines
+    empty <- apply(x[-1,], 2, function(z) all(z == "" | is.na(z)))
+    if(any(empty))
+    {
+        x <- x[,!empty]
+        tabClasses <- tabClasses[,!empty]
+        url <- url[,!empty]
+    }
     tabHTML <-  hwrite(x, row.names=FALSE, col.names=FALSE, class=tabClasses,
                        border=0, table.class="rest", link=url)
     out <- sprintf("
@@ -168,7 +179,6 @@ myImageMap <- function(object, tags, imgname)
                      nrow(object)))
     mapname <- paste("map", gsub(" |/|#", "_", imgname), sep="_")
     outin <- sprintf("usemap=\"#%s\"><map name=\"%s\" id=\"%s\">\n", mapname, mapname, mapname)
-    stopifnot(names(tags) == c("title", "href"))
     out <- lapply(1:nrow(object), function(i) { 
         paste(paste("<area shape=\"rect\" coords=\"", paste(object[i,], collapse=","),"\"", sep=""),
               paste(" ", paste(names(tags), "=\"",c(tags[["title"]][i], tags[["href"]][i]),"\"", sep=""),
@@ -205,7 +215,8 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
 	
     ## which of the replicate plates has not just all NA values
     whHasData <- list()
-    for (ch in 1:nrChannel) whHasData[[ch]] <- which(plateWithData[,,ch])
+    for (ch in 1:nrChannel)
+        whHasData[[ch]] <- which(plateWithData[,,ch])
     nrRepCh <- sapply(whHasData, length)
 	
     ## Checks whether the number of channels has changed (e.g. normalized data)
@@ -568,8 +579,8 @@ histFun <- function()
                          , print=FALSE)
                 img <- c(img, sprintf("hist_Channel%d_%02d.png",ch,r))
                 cnam <- paste("Dynamic range ", ifelse(maxRep>1, sprintf("(replicate %d)", r), ""))
-                caption <- c(caption, sprintf("Dynamic range: %s",
-                                              qmsummary[[sprintf("Channel %d", ch)]][cnam]))
+                dynRange <- as.vector(qmsummary[[sprintf("Channel %d", ch)]][cnam])
+                caption <- c(caption, ifelse(is.na(dynRange), "", sprintf("Dynamic range: %s", dynRange)))
                 title <- c(title, sprintf("Replicate %d", r))
             } 
             else 
@@ -634,8 +645,7 @@ sdFun <- function()
                                , print=FALSE, isPlatePlot=TRUE)
                 imap <- if(plotPlateArgs$map) 
                     myImageMap(object=pp$coord, tags=list(title=paste(genAnno, ": sd=", signif(psd,3),
-                                                          sep=""),href=rep(sprintf("ppsd_Channel%d.pdf", ch),
-                                                                  length(genAnno))), img) else ""
+                                                          sep="")), img) else ""
                 imgList$Reproducibility <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
                                                                 fullImage=gsub("png$", "pdf", img),
                                                                 caption=caption, map=imap))
@@ -643,7 +653,7 @@ sdFun <- function()
             else 
             {
                 imgList$Reproducibility <-
-                    chtsImage(data.frame(caption=paste(nrRep, "replicate: plate plot omitted")))
+                    chtsImage(data.frame(caption="No replicates: plate plot omitted"))
             }
             chList[[ch]] <- c(chList[[ch]], imgList)  
         }## for(ch
@@ -693,9 +703,8 @@ intensFun <- function()
                                    , print=FALSE, isPlatePlot=TRUE)
                     imap <- if(plotPlateArgs$map) 
                         myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
-                                                              ": value=", signif(platedat[,,r,ch],3), sep=""), 
-                                                    href=rep(sprintf("pp_Channel%d_%d.pdf", ch, r),
-                                                    length(genAnno))), sprintf("pp_Channel%d_%d.png", ch, r)) else ""
+                                                              ": value=", signif(platedat[,,r,ch],3), sep="")), 
+                                   sprintf("pp_Channel%d_%d.png", ch, r)) else ""
                     img <- c(img, sprintf("pp_Channel%d_%d.png",ch,r))
                     caption <- c(caption, NA)
                 } 

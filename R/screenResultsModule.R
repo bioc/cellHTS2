@@ -5,7 +5,7 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
 {
      if(overallState["scored"]){
          out <- getTopTable(cellHTSList, file=file, verbose=verbose)
-         keep <- grep("^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_",
+         keep <- grep("^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol",
                       colnames(out))
          sel <- !(is.na(out$score))
          out <- out[sel,keep]

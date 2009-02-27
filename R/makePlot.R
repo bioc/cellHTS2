@@ -27,7 +27,7 @@ makePlot <- function(path, con, name, w, h=devDims(w)$height, fun, psz=12, print
     dev.off()
 
     if (print)
-        cat(sprintf("<CENTER><A HREF=\"%s\"><IMG SRC=\"%s\"/></A></CENTER><BR>\n",
-                    outf[1], outf[2]), file=con)
+        cat(sprintf("<CENTER><IMG SRC=\"%s\"/></CENTER><BR>\n",
+                    outf[2]), file=con)
     return(res)
 }

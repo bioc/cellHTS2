@@ -1,4 +1,4 @@
-\%\VignetteIndexEntry{Supplement: multi-channel assays}
+%\VignetteIndexEntry{Supplement: multi-channel assays}
 %\VignetteKeywords{Cell based assays}
 %\VignettePackage{cellHTS2}
 

@@ -288,8 +288,12 @@ setMethod("writeHtml",
 	                %s
                       </div>
                     </td>
-                  </tr>  
-                  <tr>
+                  </tr>",  
+                                    unique(imgs[i,"Class"]),
+                                    imgs[i, "Title"], imgs[i, "Caption"]))
+              if(imgs[i, "Thumbnail"] != "")
+                  out <- c(out, sprintf("
+               <tr>
                     <td class=\"main\">
                       <img class=\"image\" src=\"%s\" %s>
                         %s
@@ -301,11 +305,11 @@ setMethod("writeHtml",
                         %s
                       </span>
                     </td>
-                  </tr>
-                </table>",          unique(imgs[i,"Class"]),
-                                    imgs[i, "Title"], imgs[i, "Caption"], imgs[i, "Thumbnail"],
-                                    imgs[i, "Map"], imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
-                                    addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
+                  </tr>",
+                                        imgs[i, "Thumbnail"],
+                                        imgs[i, "Map"], imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
+                                        addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
+              out <- c(out, "</table>")
               if(length(st)>1 && i < nrow(tabs) && !vertical)
                   out <- c(out, "</td>\n<td>")
           } ## for(i...
