@@ -25,70 +25,79 @@
 ##   3. Variance adjustment (optional)
 ## =============================================================================
 
-normalizePlates = function(object, scale="additive", log = FALSE, method="median", varianceAdjust="none", posControls, negControls,...) {
+normalizePlates <- function(object, scale="additive", log = FALSE, method="median", varianceAdjust="none",
+                            posControls, negControls,...)
+{
 
-  if(!inherits(object, "cellHTS")) stop("'object' should be of class 'cellHTS'.")
-  ## Check the status of the 'cellHTS' object
-  if(!state(object)[["configured"]])
-    stop("Please configure 'object' (using the function 'configure') before normalization.")
+    if(!is(object, "cellHTS"))
+        stop("'object' should be of class 'cellHTS'.")
+    ## Check the status of the 'cellHTS' object
+    if(!state(object)[["configured"]])
+        stop("Please configure 'object' (using the function 'configure') before normalization.")
 
-  ## Check the conformity between the scale of the data and the chosen preprocessing
-  if(scale=="additive" & log)
-    stop("For data on the 'additive' scale, please do not set 'log=TRUE'. ",
-         "Please have a look at the documentation of the 'scale' and 'log' options ",
-         "of the 'normalizePlates' function.") 
+    ## Check the conformity between the scale of the data and the chosen preprocessing
+    if(scale=="additive" & log)
+        stop("For data on the 'additive' scale, please do not set 'log=TRUE'. ",
+             "Please have a look at the documentation of the 'scale' and 'log' options ",
+             "of the 'normalizePlates' function.") 
 
-  if(!(varianceAdjust %in% c("none", "byPlate", "byBatch", "byExperiment"))) 
-         stop(sprintf("Undefined value %s for 'varianceAdjust'.", varianceAdjust))
+    if(!(varianceAdjust %in% c("none", "byPlate", "byBatch", "byExperiment"))) 
+        stop(sprintf("Undefined value %s for 'varianceAdjust'.", varianceAdjust))
 
- ## Check consistency for posControls and negControls (if provided)
-  nrChannel = length(ls(assayData(object)))
+    ## Check consistency for posControls and negControls (if provided)
+    nrChannel <- length(ls(assayData(object)))
 
-  if(!missing(posControls)) {
-    ## check
-    checkControls(posControls, nrChannel, "posControls")
-  } else { 
-    posControls <- as.vector(rep("^pos$", nrChannel))
-  }
+    if(!missing(posControls))
+    {
+        checkControls(posControls, nrChannel, "posControls")
+    }
+    else
+    { 
+        posControls <- as.vector(rep("^pos$", nrChannel))
+    }
 
-  if(!missing(negControls)){
-    ## check
-    checkControls(y=negControls, len=nrChannel, name="negControls")
-  } else {
-    negControls=as.vector(rep("^neg$", nrChannel))
-  }
+    if(!missing(negControls))
+    {
+        checkControls(y=negControls, len=nrChannel, name="negControls")
+    }
+    else
+    {
+        negControls <- as.vector(rep("^neg$", nrChannel))
+    }
 
-## 1. Log transformation: 
-  oldRawData <- Data(object)
-  if(log){
-      Data(object) <- log2(oldRawData)
-      scale = "additive"
-  }
+    ## 1. Log transformation: 
+    oldRawData <- Data(object)
+    if(log)
+    {
+        Data(object) <- log2(oldRawData)
+        scale <- "additive"
+    }
+    
+    ## 2. Plate-by-plate adjustment:
+    allowedFunctions <- c("mean", "median", "shorth", "negatives", "POC", "NPI", "Bscore", "loess", "locfit")
+    ## overwrite assayData with the new data 
+    object <- switch(method,
+                     "mean" = perPlateScaling(object, scale, method),
+                     "median" = perPlateScaling(object, scale, method),
+                     "shorth" = perPlateScaling(object, scale, method),
+                     "negatives" = perPlateScaling(object, scale, method, negControls),
+                     "POC" = controlsBasedNormalization(object, method, posControls, negControls),
+                     "NPI" = controlsBasedNormalization(object, method, posControls, negControls),
+                     "Bscore" = Bscore(object, ...),
+                     "loess" = spatialNormalization(object, model="loess", ...), 
+                     "locfit" = spatialNormalization(object, model="locfit", ...), 
+                     stop(sprintf("Invalid value '%s' for argument 'method'.\n Allowed values are: %s.", 
+                                  method, paste(allowedFunctions, collapse=", ")))
+                     )
 
-## 2. Plate-by-plate adjustment:
- allowedFunctions  = c("mean", "median", "shorth", "negatives", "POC", "NPI", "Bscore", "loess", "locfit")
-# override assayData with the new data 
- object <- switch(method,
-   "mean" = perPlateScaling(object, scale, method),
-   "median" = perPlateScaling(object, scale, method),
-   "shorth" = perPlateScaling(object, scale, method),
-   "negatives" = perPlateScaling(object, scale, method, negControls),
-   "POC" = controlsBasedNormalization(object, method, posControls, negControls),
-   "NPI" = controlsBasedNormalization(object, method, posControls, negControls),
-   "Bscore" = Bscore(object, ...),
-   "loess" = spatialNormalization(object, model="loess", ...), 
-   "locfit" = spatialNormalization(object, model="locfit", ...), 
-   stop(sprintf("Invalid value '%s' for argument 'method'.\n Allowed values are: %s.", 
-            method, paste(allowedFunctions, collapse=", ")))
-  )
+    ## 3. Variance adjustment (optional):
+    if(varianceAdjust!="none")
+        object <- adjustVariance(object, method=varianceAdjust)
 
-## 3. Variance adjustment (optional):
-  if(varianceAdjust!="none") object <- adjustVariance(object, method=varianceAdjust)
-
-  object@state[["normalized"]] = TRUE
-  object@processingInfo[["normalized"]] <- method
-  validObject(object)
-  return(object)
+    object@state[["normalized"]] <- TRUE
+    object@processingInfo[["normalized"]] <- method
+    validObject(object)
+    return(object)
 }
  
 
@@ -123,6 +132,12 @@ summarizeChannels <- function(object, fun=function(r1, r2, thresh=-Inf)
     assayDataElement(object, chNames[2:nrChans]) <- NULL
     ## 2) replace the contents of the (single) remaining channel by the new summarized values:
     Data(object) <- xnorm
+    ## 3) State is now considered to be normalized
+    if(!state(object)["normalized"])     
+        object@processingInfo[["normalized"]] <- "channel summarization"
+    object@state[["normalized"]] <- TRUE
+    
+    
     validObject(object)
     return(object)
 }

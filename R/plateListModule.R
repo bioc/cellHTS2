@@ -783,8 +783,8 @@ chanCorrFun <- function()
                      }, print=FALSE)
                 img <- c(img, sprintf("scp_Rep%d.png", r))
                 title <- c(title, sprintf("Replicate %s", r))
-                addCode <- c(addCode, sprintf("<div class=\"scatterLegend\">%s</div>", wellCount[2,ch]))
-                caption <- c(caption, wellCount[1,ch])
+                addCode <- c(addCode, sprintf("<div class=\"scatterLegend\">%s</div>", wellCount[2,r]))
+                caption <- c(caption, wellCount[1,r])
             }
             else
             {
