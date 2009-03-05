@@ -668,10 +668,22 @@ table.rest td a
     color:darkblue;
 }
 
-table.rest td a:hover
+table.rest td.link a:hover
 {
     color:#4f4f4f;
 }
+
+table.rest td a
+{
+    color:black;
+}
+
+table.rest td.link a
+{
+    color:#232f61;
+}
+
+
 
 
 table.plate td
