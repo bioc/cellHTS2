@@ -18,11 +18,12 @@ testPlatelist=function(platelist, normalize=TRUE) {
   
   ## write reports
   outdir = file.path(tempdir(),platelist,'raw')
-  writeReport(cellHTSlist=list("raw"=x), force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir)
+  mainScriptFile = 'tests/test.R'
+  writeReport(raw=x, force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir, mainScriptFile=mainScriptFile)
   if (interactive()) browseURL(file.path(outdir,'index.html'))
   if (normalize) {
     outdir = file.path(tempdir(),platelist,'norm')
-    writeReport(cellHTSlist=list("raw"=x, "normalized"=xn, "scored"=xsc), force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir)
+    writeReport(raw=x, normalized=xn, scored=xsc, force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir, mainScriptFile=mainScriptFile)
     if (interactive()) browseURL(file.path(outdir,'index.html'))
   }
 }

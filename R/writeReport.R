@@ -552,12 +552,12 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## the necessary HTML code is 'writeHtml.plateList'.
     wh <- which(plateList(xr)$status=="OK")
     nm <- file.path("in", names(intensityFiles(xr)))
-    expOrder <- order(exptab["Plate"], exptab["Channel"], exptab["Replicate"])
+    expOrder <- order(exptab[["Plate"]], exptab[["Channel"]], exptab[["Replicate"]])
     url[wh, "Filename"] <- nm[wh]
     plateList.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(),
-                                   links=url[expOrder,], exptab=exptab[expOrder,],
+                                   links=url[expOrder,,drop=FALSE], exptab=exptab[expOrder,],
                                    outdir=outdir, htmldir=htmldir,
                                    configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
