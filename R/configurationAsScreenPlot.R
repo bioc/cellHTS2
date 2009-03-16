@@ -54,7 +54,7 @@ configurationAsScreenPlot <- function(x, verbose=interactive(), posControls, neg
     {
         wh <- is.na(mtW)
         notCovered <- unique(wellAnnotation[wh])
-        notCov <- rainbow(length(notCovered))
+        notCov <- substr(rainbow(length(notCovered)), 1, 7)
         names(notCov) <- notCovered
         wellCols <- c(wellCols, notCov)
         mtW[wh] <- match(wellAnnotation[wh], names(wellCols))
