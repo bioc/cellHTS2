@@ -340,7 +340,9 @@ setMethod("writeHtml",
                 <td class=\"tabs\">", class,
                          if(length(x@title)) sprintf("<tr><td class=\"header\">%s</td></tr>", x@title) else "")
           if(nrChan>1){
-              chanTabs <- data.frame(title=paste("Channel", seq_len(nrChan)),
+            channelNames = names(x@stack)
+            if (is.null(channelNames)) channelNames = paste("Channel", seq_len(nrChan))
+            chanTabs <- data.frame(title=channelNames,
                                      id=paste(x@id, "Channel", sep=""),
                                      script=sprintf("toggleTabByChannel('%sChannel', this, %d)", x@id,
                                      seq_len(nrChan)))

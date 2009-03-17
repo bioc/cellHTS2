@@ -194,7 +194,7 @@ myImageMap <- function(object, tags, imgname)
 
 
 ## Create the per plate quality control page
-QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotPlateArgs, brks,
+QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, genAnno, mt,plotPlateArgs, brks,
                       finalWellAnno,
                       activators, inhibitors, positives, negatives,isTwoWay, namePos, wellTypeColor,
                       plateDynRange, plateWithData, repMeasures)
@@ -466,6 +466,7 @@ QMbyPlate <- function(platedat, pdim, name, basePath, subPath, genAnno, mt,plotP
     chList <- myCall(intensFun, env)
     ## Correlation between channels
     chList <- myCall(chanCorrFun, env)
+    names(chList) <- channelNames
     stack <- chtsImageStack(chList, id="perExpQC", title=paste("Experiment report for", name),
                             tooltips=addTooltip(names(chList[[1]]), "Help"))
     writeHtml(stack, con=con, vertical=FALSE)

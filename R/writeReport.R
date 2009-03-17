@@ -443,6 +443,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                 res <- QMbyPlate(platedat=datPerPlate[, p,,, drop=FALSE], 
                                  pdim=pdim(xr), 
                                  name=sprintf("Plate %d (%s)", p, whatDat),
+                                 channelNames=channelNames(xr),
                                  basePath=outdir, 
                                  subPath=p, 
                                  genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 

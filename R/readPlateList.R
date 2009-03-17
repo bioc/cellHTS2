@@ -141,7 +141,8 @@ readPlateList <- function(filename,
     ## arrange the assayData slot:
     dat <- lapply(seq_len(nrChannel), function(ch) 
                   matrix(xraw[,,,ch], ncol=nrRep, nrow=nrWell*nrPlate))
-    names(dat) <- paste("ch", seq_len(nrChannel), sep="")
+    channelNames = paste("Channel", seq_len(nrChannel))
+    names(dat) <- channelNames
     
     adata <- do.call(assayDataNew, c(storage.mode="lockedEnvironment", dat))
     

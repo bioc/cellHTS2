@@ -10,10 +10,6 @@ writeHtml.experimentQC <- function(cellHTSList, module, con, allControls, allZfa
     writeHtml.trailer(con)
 }
 
-
-
-
-
 ## The main workhorse function to produce the experiment-wide QC report. In particular,
 ## this includes boxplots of raw data ad normalized data as well as dot plots and density
 ## plots of the control distributions.
@@ -23,6 +19,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
     hasNormData <- !(is.null(xn))
     nrbxp <- 1 + hasNormData
     nrCh <- ifelse(hasNormData, dim(Data(xn))[3], dim(Data(xr))[3])
+    channelNames <- channelNames(xr)
     nrPlate <- max(plate(xr))
     nrReplicate <- dim(xr)[2]
     nrWell <- prod(pdim(xr))
@@ -48,6 +45,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
     plotTable <- data.frame(matrix(data=NA, nrow=0, ncol=nrCh + 1))
     names(plotTable) <- c("", paste("Channel", 1:nrCh, sep=" "))
     chList <- vector(mode="list", length=nrCh)
+    names(chList) <- channelNames
     for(ch in 1:nrCh)
     {
         repList <- list()
