@@ -440,10 +440,11 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
             if(length(wh)>0) {
                 dir.create(file.path(outdir, p), showWarnings=FALSE)
                 ## QMbyPlate also writes the QC report for the current plate with making res
+                channelNames <- if(!is.null(xn)) channelNames(xn) else channelNames(xr)
                 res <- QMbyPlate(platedat=datPerPlate[, p,,, drop=FALSE], 
                                  pdim=pdim(xr), 
                                  name=sprintf("Plate %d (%s)", p, whatDat),
-                                 channelNames=channelNames(xr),
+                                 channelNames=channelNames,
                                  basePath=outdir, 
                                  subPath=p, 
                                  genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 

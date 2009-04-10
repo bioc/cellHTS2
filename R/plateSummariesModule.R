@@ -15,11 +15,12 @@ writeHtml.experimentQC <- function(cellHTSList, module, con, allControls, allZfa
 ## plots of the control distributions.
 QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
 {
-    ## Initialize dimensions and state variables from the raw data and (if available) normalized data objects
+    ## Initialize dimensions and state variables from the raw data and (if available)
+    ## normalized data objects
     hasNormData <- !(is.null(xn))
     nrbxp <- 1 + hasNormData
     nrCh <- ifelse(hasNormData, dim(Data(xn))[3], dim(Data(xr))[3])
-    channelNames <- channelNames(xr)
+    channelNames <- if(!is.null(xn)) channelNames(xn) else channelNames(xr)
     nrPlate <- max(plate(xr))
     nrReplicate <- dim(xr)[2]
     nrWell <- prod(pdim(xr))

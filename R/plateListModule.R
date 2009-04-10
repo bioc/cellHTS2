@@ -194,10 +194,10 @@ myImageMap <- function(object, tags, imgname)
 
 
 ## Create the per plate quality control page
-QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, genAnno, mt,plotPlateArgs, brks,
-                      finalWellAnno,
-                      activators, inhibitors, positives, negatives,isTwoWay, namePos, wellTypeColor,
-                      plateDynRange, plateWithData, repMeasures)
+QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, genAnno, mt,
+                      plotPlateArgs, brks, finalWellAnno, activators, inhibitors, positives,
+                      negatives, isTwoWay, namePos, wellTypeColor, plateDynRange, plateWithData,
+                      repMeasures)
 {
     ## dimensions
     d <- dim(platedat)

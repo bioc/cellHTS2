@@ -46,35 +46,36 @@ package. %It accompanies the paper \textit{Analysis
 %of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
 %Wolfgang Huber~\cite{Boutros2006}. 
 
-The report demonstrates how the 
-\Rpackage{cellHTS2} package can be applied to the documentation and analysis of 
-multi-channel cell-based high-throughput screens (HTS), more specifically, 
-dual-channel experiments. 
-Such experiments are used, for example, to measure the phenotype of a
-pathway-specific reporter gene against a constitutive signal that can be
-used for normalization purposes. Typical examples for dual-channel experimental setups
-are dual-luciferase assays, whereby both a firefly and renilla luciferase are
-measured in the same well. In principle, multiplex assays can consist of many
-more than two channels, such as in the case of flow-cytometry
-readout or other microscopy-based high-content approaches.
+The report demonstrates how the \Rpackage{cellHTS2} package can be
+applied to the documentation and analysis of multi-channel cell-based
+high-throughput screens (HTS), more specifically, dual-channel
+experiments.  Such experiments are used, for example, to measure the
+phenotype of a pathway-specific reporter gene against a constitutive
+signal that can be used for normalization purposes. Typical examples
+for dual-channel experimental setups are dual-luciferase assays,
+whereby both a firefly and renilla luciferase are measured in the same
+well. In principle, multiplex assays can consist of many more than two
+channels, such as in the case of flow-cytometry readout or other
+microscopy-based high-content approaches.
 
-We note that in this report we present a simple approach to analyse data from dual-channel
- experiments, which can be expanded to experiments with more than two reporters, taking the 
-in-built normalization functions of \textit{cellHTS2} as a template, and employing the 
-extensive statistical modeling capabilities of the R
-programming language. Moreover, such analyses should be adapted to the biological system and
-to the question of interest.
+We note that in this report we present a simple approach to analyse
+data from dual-channel experiments, which can be expanded to
+experiments with more than two reporters, taking the in-built
+normalization functions of \textit{cellHTS2} as a template, and
+employing the extensive statistical modeling capabilities of the R
+programming language. Moreover, such analyses should be adapted to the
+biological system and to the question of interest.
 
 This text has been produced as a reproducible
 document~\cite{Gentleman2004RepRes}, containing the actual computer
-instructions, given in the language R, to produce all results, including the figures and 
-tables that are shown here. To reproduce the computations shown here, 
-you will need an installation
-of R (version 2.3 or greater) together with a recent version of the package
-\Rpackage{cellHTS2} and of some other add-on packages. Then, you can simply take the file
-\textit{twoChannels.Rnw} in the \textit{doc} directory of the package,
-open it in a text editor, run it using the R command
-\Rfunction{Sweave}, and modify it according to your needs.
+instructions, given in the language R, to produce all results,
+including the figures and tables that are shown here. To reproduce the
+computations shown here, you will need an installation of R (version
+2.3 or greater) together with a recent version of the package
+\Rpackage{cellHTS2} and of some other add-on packages. Then, you can
+simply take the file \textit{twoChannels.Rnw} in the \textit{doc}
+directory of the package, open it in a text editor, run it using the R
+command \Rfunction{Sweave}, and modify it according to your needs.
 
 We start by loading the package.
 %
@@ -92,30 +93,31 @@ options(error=recover)
 \label{sec:assemble}
 %------------------------------------------------------------
 
-Here, we consider a sample data of a dual-channel experiment performed 
-with \textit{D. melanogaster} cells. The screen was conducted  
-in microtiter plate format using a library of double-stranded RNAs (dsRNAs), in duplicates.
-The example data set corresponds to three 384-well plates. 
-The purpose of the screen is to find signaling components of a given pathway.
-In the screen, one reporter (assigned to channel 1, and denoted here by $R_1$) 
-monitors cell growth and viability, while the other reporter (assigned to channel 2 and 
-denoted here by $R_2$) is indicative of pathway activity.
+Here, we consider a sample data of a dual-channel experiment performed
+with \textit{D. melanogaster} cells. The screen was conducted in
+microtiter plate format using a library of double-stranded RNAs
+(dsRNAs), in duplicates.  The example data set corresponds to three
+384-well plates.  The purpose of the screen is to find signaling
+components of a given pathway.  In the screen, one reporter (assigned
+to channel 1, and denoted here by $R_1$) monitors cell growth and
+viability, while the other reporter (assigned to channel 2 and denoted
+here by $R_2$) is indicative of pathway activity.
 
 
 %------------------------------------------------------------
 \subsection{Reading the raw intensity files}
 %------------------------------------------------------------
 
-The set of available result files and the information about them (which plate,
-which replicate, which channel) is given in the \emph{plate list file}. 
-The first few lines of the plate list file for this data set are shown in 
-Table~\ref{tab:platelist}.
+The set of available result files and the information about them
+(which plate, which replicate, which channel) is given in the
+\emph{plate list file}.  The first few lines of the plate list file
+for this data set are shown in Table~\ref{tab:platelist}.
 \input{twoChannels-platelist}
 
-Using the function \Rfunction{readPlateData}, we can read the plate list file and 
-all of the intensity files, thereby assembling the data into a single R
-object that can be used for subsequent analyses. First, we define the path for those
-files:
+Using the function \Rfunction{readPlateData}, we can read the plate
+list file and all of the intensity files, thereby assembling the data
+into a single R object that can be used for subsequent
+analyses. First, we define the path for those files:
 %
 <<dataPath>>=
 experimentName <- "DualChannelScreen"
@@ -139,7 +141,8 @@ x
 %% it would have been nice to use the "xtable" package but it insists on 
 %%   adding row numbers, which we don't like.
 <<plateFileTable, results=hide, echo=FALSE>>=
-cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list", preName="twoChannels")
+cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list", 
+                       preName="twoChannels")
 @ 
 
 %------------------------------------------------------------
@@ -148,13 +151,13 @@ cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list", preNa
 \input{twoChannels-plateconfiguration} 
 \input{twoChannels-screenlog} 
 
-Next, we annotate the measured data with information on the controls, 
-and flag invalid measurements using the information given in the \emph{plate
-configuration file} and in the \emph{screen log file}, respectively. 
-Selected lines of these files are shown in Table~\ref{tab:plateconfiguration} and
-Table~\ref{tab:screenlog}. 
-Morevoer, we also add the information contained in the 
-\emph{screen description file}, which gives a general description of the screen.
+Next, we annotate the measured data with information on the controls,
+and flag invalid measurements using the information given in the
+\emph{plate configuration file} and in the \emph{screen log file},
+respectively.  Selected lines of these files are shown in
+Table~\ref{tab:plateconfiguration} and Table~\ref{tab:screenlog}.
+Morevoer, we also add the information contained in the \emph{screen
+  description file}, which gives a general description of the screen.
 %
 <<configure the data>>=
 x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt",
@@ -166,30 +169,30 @@ x <- configure(x, "Description.txt", "Plateconf.txt", "Screenlog.txt",
 %% Create the table for plateConf and screenLog
 <<plateConfscreenLogTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
-                                     "plate configuration", selRows=NULL, preName="twoChannels")
+                                     "plate configuration", selRows=NULL, 
+                                     preName="twoChannels")
 
 cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"), 
                        "screen log", selRows=1:2, preName="twoChannels")
 @ 
 
-In this data set, instead of using the default names \emph{pos} 
-and \emph{neg} for 
-positive and negative controls, respectively, 
-we use the name of the gene targeted by 
-the probes in the control wells: 
-\emph{geneA}, \emph{geneB}, \emph{geneC} and \emph{geneD}. 
-This is a more straighforward approach, 
-since not all of these four controls behave as controls 
-for both reporters $R_1$ and $R_2$. Moreover, the two positive 
-controls have different strengths: \emph{geneC} is expected to generate 
-a weaker effect than \emph{geneD}. 
-Thus, it is useful to define these controls separately at the configuration 
-step, in order to calculate the quality measures 
-(dynamic range and $Z'$-factors) specific for each of them in the HTML 
-quality reports or by calling the function \Rfunction{getDynamicRange} and \Rfunction{getZfactor}.
+In this data set, instead of using the default names \emph{pos} and
+\emph{neg} for positive and negative controls, respectively, we use
+the name of the gene targeted by the probes in the control wells:
+\emph{geneA}, \emph{geneB}, \emph{geneC} and \emph{geneD}.  This is a
+more straighforward approach, since not all of these four controls
+behave as controls for both reporters $R_1$ and $R_2$. Moreover, the
+two positive controls have different strengths: \emph{geneC} is
+expected to generate a weaker effect than \emph{geneD}.  Thus, it is
+useful to define these controls separately at the configuration step,
+in order to calculate the quality measures (dynamic range and
+$Z'$-factors) specific for each of them in the HTML quality reports or
+by calling the function \Rfunction{getDynamicRange} and
+\Rfunction{getZfactor}.
 
 %Note that this allows to have the same configuration file for both reporters.
-Below, we look at the frequency of each well annotation in the example data:
+Below, we look at the frequency of each well annotation in the example
+data:
 %
 <<>>=
 table(wellAnno(x))
@@ -200,20 +203,24 @@ table(wellAnno(x))
 \section{Data preprocessing}
 %------------------------------------------------------------ 
 
-We can take a first look at the data by constructing the HTML quality reports 
-using the \Rfunction{writeReport} function. 
+We can take a first look at the data by constructing the HTML quality
+reports using the \Rfunction{writeReport} function.
 
-As mentioned above, the controls used in the screen are reporter-specific. 
-When calling \Rfunction{writeReport}, we need to specify to the function's arguments
-\Robject{posControls} and \Robject{negControls} which are the positive and
-negative controls for each channel: 
+As mentioned above, the controls used in the screen are
+reporter-specific.  When calling \Rfunction{writeReport}, we need to
+specify to the function's arguments \Robject{posControls} and
+\Robject{negControls} which are the positive and negative controls for
+each channel:
 %
 <<define controls>>=
 ## Define the controls for the different channels:
 negControls <- vector("character", length=dim(Data(x))[3])
 
 # channel 1 - gene A
-negControls[1] <- "(?i)^geneA$" # case-insensitive and match the empty string at the beginning and end of a line (to distinguish between "geneA" and "geneAB", for example. Although it is not a problem for the present well annotation)
+negControls[1] <- "(?i)^geneA$" 
+## case-insensitive and match the empty string at the beginning and 
+## end of a line (to distinguish between "geneA" and "geneAB", for example.
+## Although it is not a problem for the present well annotation)
  
 # channel 2 - gene A and geneB
 negControls[2] <- "(?i)^geneA$|^geneB$" 
@@ -224,21 +231,19 @@ posControls <- vector("character", length=dim(Data(x))[3])
 posControls[2] <- "(?i)^geneC$|^geneD$"
 @ 
 %
-In the constitutive channel $R_1$, there is one negative control, 
-named \emph{geneA}, and no positive controls. In the pathway-specific 
-reporter $R_2$ there are two different negative controls (\emph{geneA} 
-and \emph{geneB}), and two diffferent positive controls (\emph{geneC} 
-and \emph{geneD}).
-Each of the arguments \Robject{posControls} and \Robject{negControls} 
-should be defined as a vector of regular expressions with the same 
-length as the number of channels in slot \Robject{assayData}.
-These arguments will be passed to the \Rfunction{regexpr} 
-function for pattern matching within 
-the well annotation given in \Robject{wellAnno(x)}.
+In the constitutive channel $R_1$, there is one negative control,
+named \emph{geneA}, and no positive controls. In the pathway-specific
+reporter $R_2$ there are two different negative controls (\emph{geneA}
+and \emph{geneB}), and two diffferent positive controls (\emph{geneC}
+and \emph{geneD}).  Each of the arguments \Robject{posControls} and
+\Robject{negControls} should be defined as a vector of regular
+expressions with the same length as the number of channels in slot
+\Robject{assayData}.  These arguments will be passed to the
+\Rfunction{regexpr} function for pattern matching within the well
+annotation given in \Robject{wellAnno(x)}.
 
-Finally, we construct the quality report pages for the raw 
-data in a directory called 
-\Robject{raw}, in the working directory:
+Finally, we construct the quality report pages for the raw data in a
+directory called \Robject{raw}, in the working directory:
 %
 <<writeReport1Show, eval=FALSE>>=
 out <- writeReport(raw=x, outdir="raw",
@@ -249,8 +254,8 @@ out <- writeReport(raw=x, force=TRUE, outdir="raw",
    posControls=posControls, negControls=negControls)
 @ 
 %
-After this function has finished, we can view the index page of
-the report:
+After this function has finished, we can view the index page of the
+report:
 %
 <<browseReport1, eval=FALSE>>=
 browseURL(out)
@@ -264,66 +269,73 @@ browseURL(out)
 %------------------------------------------------------------
 
 
-The preprocessing work-flow for two-channel RNAi screens using \Rpackage{cellHTS2} package is shown below:
+The preprocessing work-flow for two-channel RNAi screens using
+\Rpackage{cellHTS2} package is shown below:
 
 \begin{description}
-\item[(a)] (optional) Per-plate normalization of each individual channel to remove plate and/or edge effects using function \Rfunction{normalizePlates}.
+  
+\item[(a)] (optional) Per-plate normalization of each individual
+  channel to remove plate and/or edge effects using function
+  \Rfunction{normalizePlates}.
 
-\item[(b)] Channel summarization: the per-plate raw or corrected intensities in each channel are combined using \Rfunction{summarizeChannels}.
+\item[(b)] Channel summarization: the per-plate raw or corrected
+  intensities in each channel are combined using
+  \Rfunction{summarizeChannels}.
 
-\item[(c)] (optional) Per-plate normalization of the channel summarized 
-values to remove plate and/or edge effects. This can be done using function 
-\Rfunction{normalizePlates}.
-\item[(d)] Scoring of replicate measurements (for example, compute $z$-score values) using the function \Rfunction{scoreReplicates}.
-\item[(e)] Summarization of replicates (for example, take the median value) using the function \Rfunction{summarizeReplicates}.
+\item[(c)] (optional) Per-plate normalization of the channel
+  summarized values to remove plate and/or edge effects. This can be
+  done using function \Rfunction{normalizePlates}.
+
+\item[(d)] Scoring of replicate measurements (for example, compute
+  $z$-score values) using the function \Rfunction{scoreReplicates}.
+  
+\item[(e)] Summarization of replicates (for example, take the median
+  value) using the function \Rfunction{summarizeReplicates}.
+  
 \end{description}
 
 
-The per-plate normalization steps (\textbf{(a)} and \textbf{(c)}) 
-are optional since they depend on the type of the data and on the 
-channels summarization method to apply (step \textbf{(b)}).
-In particular, step \textbf{(a)} is more optional than step \textbf{(c)}, since for the simplest channels summarization case, where we take the ratio 
-$\frac{R_2}{R_1}$ (or $log_2\left(\frac{R_2}{R_1}\right)$) 
-between channels intensities, step \textbf{(a)} is not required.
-However, this initial step \textbf{(a)} of per-plate correction prior to channels 
-summarization should be performed when we want to 
-apply a more complex summarization function that, 
-for example, makes use of parameters 
-estimated based on overall (i.\,e.\,, across plates) intensities. 
-Such case is illustrated for our data set, 
-where we regard a small intensity measurement 
-in the constitutive channel $R_1$ as a viability defect, excluding it.
+The per-plate normalization steps (\textbf{(a)} and \textbf{(c)}) are
+optional since they depend on the type of the data and on the channels
+summarization method to apply (step \textbf{(b)}).  In particular,
+step \textbf{(a)} is more optional than step \textbf{(c)}, since for
+the simplest channels summarization case, where we take the ratio
+$\frac{R_2}{R_1}$ (or $log_2\left(\frac{R_2}{R_1}\right)$) between
+channels intensities, step \textbf{(a)} is not required.  However,
+this initial step \textbf{(a)} of per-plate correction prior to
+channels summarization should be performed when we want to apply a
+more complex summarization function that, for example, makes use of
+parameters estimated based on overall (i.\,e.\,, across plates)
+intensities.  Such case is illustrated for our data set, where we
+regard a small intensity measurement in the constitutive channel $R_1$
+as a viability defect, excluding it.
 
-For details about the normalization steps performed via 
-the function \Rfunction{normalizePlates} and the available 
-normalization methods, please refer to the main vignette 
-accompanying this package.
+For details about the normalization steps performed via the function
+\Rfunction{normalizePlates} and the available normalization methods,
+please refer to the main vignette accompanying this package.
 
-In the above preprocessing work-flow, we apply step \textbf{(d)} 
-before step \textbf{(e)} so that 
-the summary selected for replicate summarization has the same meaning
+In the above preprocessing work-flow, we apply step \textbf{(d)}
+before step \textbf{(e)} so that the summary selected for replicate
+summarization has the same meaning
 independently of the type of the assay.\\
 
-Returning to our data set, in order to distinguish between changes 
-in the readout caused by depletion of
-specific pathway components versus changes in the overall cell number, 
-we summarize the channels intensities by 
-normalizing the pathway-inducible readout ($R_2$) 
-against the constitutive reporter ($R_1$) - step \textbf{(b)}.
-Since in this experiment, reporter 1 ($R_1$) monitors cell viability, 
-wells with low intensities in $R_1$ should be masked: these cells are not
-responding to a specific perturbation of the studied signaling pathway, 
-but show a more unspecific cell viability phenotype.
-There is no obvious choice for a threshold for the minimum intensity
-$R_1$ that we consider still viable; here, we choose to set this
-cut-off as a low quantile ($5\%$) of the overall distribution of
-intensity values in $R_1$ channel. 
-To determine such intensity threshold for $R_1$ channel, we first need to
-remove the plate-to-plate variations (step \textbf{(a)}) and therefore 
-make the distribution of intensities 
-in the three plates comparable. 
-This is performed by applying plate median scaling
-to each replicate and channel:
+Returning to our data set, in order to distinguish between changes in
+the readout caused by depletion of specific pathway components versus
+changes in the overall cell number, we summarize the channels
+intensities by normalizing the pathway-inducible readout ($R_2$)
+against the constitutive reporter ($R_1$) - step \textbf{(b)}.  Since
+in this experiment, reporter 1 ($R_1$) monitors cell viability, wells
+with low intensities in $R_1$ should be masked: these cells are not
+responding to a specific perturbation of the studied signaling
+pathway, but show a more unspecific cell viability phenotype.  There
+is no obvious choice for a threshold for the minimum intensity $R_1$
+that we consider still viable; here, we choose to set this cut-off as
+a low quantile ($5\%$) of the overall distribution of intensity values
+in $R_1$ channel.  To determine such intensity threshold for $R_1$
+channel, we first need to remove the plate-to-plate variations (step
+\textbf{(a)}) and therefore make the distribution of intensities in
+the three plates comparable.  This is performed by applying plate
+median scaling to each replicate and channel:
 %
 <<plateMedianChannels>>=
 xn <- normalizePlates(x, scale="multiplicative", method="median", 
@@ -365,21 +377,28 @@ points(R[posC,r],F[posC,r], col="red", pch=20, cex=0.9)
 points(R[negC,r],F[negC,r], col="green", pch=20, cex=0.9)
 ind <- which(Data(xn)[,r,1] <= ctoff)
 points(R[ind,r],F[ind,r], col="grey", pch=20, cex=0.9)
-#legend("topleft", col=c("grey", "red", "green"), legend=c("masked", "positive controls","negative controls"),  bty="n", pch=20, cex=0.9)
+#legend("topleft", col=c("grey", "red", "green"), legend=c("masked", 
+#"positive controls","negative controls"),  bty="n", pch=20, cex=0.9)
  }
 @ 
 %
-\myincfig{twoChannels-FvsRcorrected}{\textwidth}{Scatterplot of the plate median 
-corrected intensity values in the signal-dependent channel ($R_2$) against 
-the plate median corrected intensity values in the constitutive channel 
-($R_1$) for replicate 1 (left) and replicate 2 (right). Masked values are shown in grey, while positive and negative controls are shown in red and green, respectively.}
+\myincfig{twoChannels-FvsRcorrected}{\textwidth}{Scatterplot of the
+  plate median corrected intensity values in the signal-dependent
+  channel ($R_2$) against the plate median corrected intensity values
+  in the constitutive channel ($R_1$) for replicate 1 (left) and
+  replicate 2 (right). Masked values are shown in grey, while positive
+  and negative controls are shown in red and green, respectively.}
 %
 
-Figure~\ref{twoChannels-FvsRcorrected} shows the plate median corrected intensities in $R_2$ versus $R_1$ channels, together with the calculated threshold and the positive and negative controls of the pathway-inducible reporter $R_2$. 
-The wells with intensity values below the 
-calculated threshold are shown in grey and will be set to "NA". 
+Figure~\ref{twoChannels-FvsRcorrected} shows the plate median
+corrected intensities in $R_2$ versus $R_1$ channels, together with
+the calculated threshold and the positive and negative controls of the
+pathway-inducible reporter $R_2$.  The wells with intensity values
+below the calculated threshold are shown in grey and will be set to
+"NA".
 
-The above procedure of data masking and channel summarization can be carried out at once using the function \Rfunction{summarizeChannels}:
+The above procedure of data masking and channel summarization can be
+carried out at once using the function \Rfunction{summarizeChannels}:
 %
 <<summarizeChannels>>=
 xn1 <- summarizeChannels(xn, fun = function(r1, r2, 
@@ -388,17 +407,18 @@ xn1 <- summarizeChannels(xn, fun = function(r1, r2,
 @
 %
 %
-The summarized channel intensities are stored in the slot 
-\Robject{assayData}. And we can see that the obtained \Robject{cellHTS} object contains only one channel:
+The summarized channel intensities are stored in the slot
+\Robject{assayData}. And we can see that the obtained
+\Robject{cellHTS} object contains only one channel:
 %
 <<show summarized object>>=
 dim(Data(xn1))
 @
 %
-After channel summarization, we apply step \textbf{(b)}. 
-In this particular case, we take the $\log_2$ and re-apply plate median scaling 
-(in this case, the plate median correction consists of subtracting each 
-plate value by the median of values in that plate, 
+After channel summarization, we apply step \textbf{(b)}.  In this
+particular case, we take the $\log_2$ and re-apply plate median
+scaling (in this case, the plate median correction consists of
+subtracting each plate value by the median of values in that plate,
 since after $log_2$ transformation the data are in an additive scale):
 %
 <<redo plate correction>>=
@@ -406,9 +426,10 @@ xn1 <- normalizePlates(xn1, scale="multiplicative", log=TRUE, method="median",
                        varianceAdjust="none") 
 @
 %
-Below, we call functions \Rfunction{scoreReplicates} and \Rfunction{summarizeReplicates} to determine the 
-$z$-score values for each replicate (step \textbf{(d)}), and then summarize 
-the replicated $z$-score values by taking the average (step \textbf{(e)}).
+Below, we call functions \Rfunction{scoreReplicates} and
+\Rfunction{summarizeReplicates} to determine the $z$-score values for
+each replicate (step \textbf{(d)}), and then summarize the replicated
+$z$-score values by taking the average (step \textbf{(e)}).
 
 %
 <<score and summarize replicates>>=
@@ -416,12 +437,11 @@ xsc <- scoreReplicates(xn1, sign="-", method="zscore")
 xsc <- summarizeReplicates(xsc, summary="mean") 
 @ 
 %
-The resulting single $z$-score value per probe are stored in the
-slot \Robject{assayData} of \Robject{xsc}. 
-The left side of Figure~\ref{twoChannels-scores} shows the boxplots of 
-the $z$-scores for the different types of probes, while the right side 
-of the figure shows 
-the $z$-scores for the whole screen as an image plot.
+The resulting single $z$-score value per probe are stored in the slot
+\Robject{assayData} of \Robject{xsc}.  The left side of
+Figure~\ref{twoChannels-scores} shows the boxplots of the $z$-scores
+for the different types of probes, while the right side of the figure
+shows the $z$-scores for the whole screen as an image plot.
 %
 <<scores, fig=TRUE, include=FALSE, width=7, height=6>>=
 par(mfrow=c(1,2))
@@ -430,17 +450,17 @@ boxplot(Data(xsc) ~ wellAnno(xsc), col="lightblue", outline=FALSE, ylim=ylim)
 imageScreen(xsc, zrange=c(-2,4))
 @ 
 %
-\myincfig{twoChannels-scores}{0.7\textwidth}{$z$-scores for the screen. 
-Left Panel: Boxplots of $z$-scores for the different types of probes. 
-Right Panel: Screen-wide image plot.}
+\myincfig{twoChannels-scores}{0.7\textwidth}{$z$-scores for the
+  screen.  Left Panel: Boxplots of $z$-scores for the different types
+  of probes.  Right Panel: Screen-wide image plot.}
 %
-Now that the data have been preprocessed, scored and summarized 
-between replicates, we call again 
-\Rfunction{writeReport} and use a web browser to view the resulting report.
-But first, we have to redefine the positive and negative controls for 
-the normalized data 
-stored in \Robject{xn1}, because it now corresponds to a single channel. 
-The controls for the normalized data values are the same as those of the raw data channel $R_2$.
+Now that the data have been preprocessed, scored and summarized
+between replicates, we call again \Rfunction{writeReport} and use a
+web browser to view the resulting report.  But first, we have to
+redefine the positive and negative controls for the normalized data
+stored in \Robject{xn1}, because it now corresponds to a single
+channel.  The controls for the normalized data values are the same as
+those of the raw data channel $R_2$.
 %
 <<RedefineControls>>=
 ## Define the controls for the normalized intensities (only one channel):
@@ -463,18 +483,18 @@ out <- writeReport(raw=x, normalized=xn1, scored=xsc,
                    posControls=posControls, negControls=negControls)
 @
 %
-The quality reports have been created in the folder \Robject{logRatio} 
+The quality reports have been created in the folder \Robject{logRatio}
 in the working directory.
 
 <<browse2, eval=FALSE>>=
 browseURL(out)
 @ 
 % 
-The quality reports have been created in the folder \Robject{logRatio} 
+The quality reports have been created in the folder \Robject{logRatio}
 in the working directory.
 %
-Finally, we will save the scored and summarized \Rclass{cellHTS} object 
-to a file. 
+Finally, we will save the scored and summarized \Rclass{cellHTS}
+object to a file.
 %
 <<savex>>=
 save(xsc, file=paste(experimentName, ".rda", sep=""))
