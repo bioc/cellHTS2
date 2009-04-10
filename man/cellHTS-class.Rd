@@ -17,6 +17,8 @@
 \alias{compare2cellHTS,cellHTS,cellHTS-method}
 \alias{meanSdPlot}
 \alias{meanSdPlot,cellHTS-method}
+\alias{coerce,chtsImage,data.frame-method}
+
 
 \title{A class for data from cell-based high-throughput assays
   performed in plate format.}
