@@ -7,7 +7,7 @@ pdf:	twoChannels.tex cellhts2.tex twoWay.tex
 	texi2dvi --pdf --clean twoWay.tex
 	make clean
 
-cellhts2Complete: cellhts2Complete.tex
+cellhts2Complete:
 	unzip -o ../scripts/cellhts2Complete.zip
 
 clean:
