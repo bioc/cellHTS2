@@ -1,4 +1,5 @@
 <<biomaRt, results=hide>>=
+require("cellHTS2")
 library("biomaRt")
 @ 
 %
@@ -33,8 +34,8 @@ query). We use the \Rfunction{getBM} function of the package
 %
 <<myGetBM>>=
 myGetBM = function(att)
-  getBM(attributes=c("ensembl_gene_id", att), 
-        filter="ensembl_gene_id", 
+  getBM(attributes=c("flybasecgid_gene", att), 
+        filter="flybasecgid_gene", 
         values=unique(geneAnno(xsc)), mart=mart)
 @ 
 % 
@@ -47,16 +48,16 @@ especially from gene ID to GO categories~\cite{GO}.
 %
 <<getBM>>=
 bm1 <- myGetBM(c("chromosome_name", "start_position", "end_position", "description"))
-bm2 <- myGetBM(c("flybasename_gene"))
+bm2 <- myGetBM(c("flybasename_gene", "flybase_gene_id"))
 #bm3 <- getGO(unique(geneAnno(xsc)),type="ensembl_gene_id",mart=mart)[,1:3]
-bm3 = myGetBM(c("go", "go_description"))
+bm3 = myGetBM(c("go_biological_process_id", "go_biological_process_description"))
 @ 
 %
 There are only a few CG-identifiers for which we were not able to
 obtain chromosomal locations: 
 %
 <<setDiff>>=
-unique(setdiff(geneAnno(xsc), bm1$ensembl_gene_id)) 
+length(unique(setdiff(geneAnno(xsc), bm1$flybasecgid_gene)))
 @ 
 %
 Below, we add the results
