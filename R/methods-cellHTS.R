@@ -273,6 +273,26 @@ setMethod("batch", signature(object="cellHTS"),
           })
 
 
+setReplaceMethod("batch",
+                 signature=signature(
+                   object="cellHTS",
+                   value="data.frame"),
+                 function(object, value) {
+                     oldbatch <- batch(object)
+                     if(!all(dim(oldbatch) == dim(value)))
+                        stop("Replacement value for the batch information ",
+                             "must be a data frame with ",
+                             nrow(oldbatch), " rows and ", ncol(oldbatch),
+                             " columns.", call.=FALSE)
+                        dimnames(value) <- dimnames(oldbatch)
+                     if(!all(is.numeric(value)))
+                         stop("Replacement value for the batch information ",
+                             "must all be integers.", call.=FALSE)
+                     slot(object, "plateData")$Batch <- value
+                     validObject(object)
+                     return(object)
+                 })
+
 
 setMethod("nbatch", signature(object="cellHTS"),
           function(object) {

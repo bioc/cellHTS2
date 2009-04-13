@@ -2,27 +2,42 @@
 \alias{batch}
 \alias{batch<-}
 \alias{batch,cellHTS-method}
-\alias{batch<-,cellHTS,array-method}
+\alias{batch<-,cellHTS,data.frame-method}
 
 
-\title{Access and replace the batch slot of a cellHTS object}
-\description{
-This method accesses and replaces the data stored in the slot \code{batch}
-of a \code{\linkS4class{cellHTS}} object.
+\title{
+
+  Access and replace the batch information of a cellHTS object
+  
 }
+
+
+\description{
+  
+This method accesses and replaces the batch data stored in the slot
+\code{plateData} of a \code{\linkS4class{cellHTS}} object.
+
+}
+
 \usage{
 batch(object)
 batch(object) <- value
 }
 \arguments{
+  
   \item{object}{object of class \code{\linkS4class{cellHTS}}.}
-  \item{value}{a 3D array of integer values giving the batch number for each plate, sample and channel. Its dimensions should be equal to dim(object)[1] (this corresponds to the total number of features: number of wells per plate x number of plates) x dim(object)[2] (this corresponds to the number of samples or replicates) x number of channels.}
+  
+  \item{value}{a dataframe of integer values giving the batch number for
+    each plate, and sample.}
 }
 
 \value{
-  \code{Data} returns a 3D array containing the contents of slot \code{batch}. This array has dimensions number of features (product between the number of wells per plates and the number of plates) x number of samples (or replicates) x number of channels of the current \code{\linkS4class{cellHTS}} object.
+  
+  \code{batch} returns a dataframe containing the contents of slot
+  \code{plateData$Batch}. This dataframe has dimensions number of plates
+  x number of samples of the \code{\linkS4class{cellHTS}} object.
 
-See class \code{\linkS4class{cellHTS}} for details.
+  See class \code{\linkS4class{cellHTS}} for details.
 }
 
 \references{

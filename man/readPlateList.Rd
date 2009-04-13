@@ -2,64 +2,93 @@
 \alias{readPlateList}
 \title{Read a collection of plate reader data files}
 \description{
-  Reads a collection of plate reader data files into a \code{cellHTS} object.
-  The names of the files, plus additional information
-  (plate number, repeat number, assay/treatment/condition)
-  is expected in a tab-delimited table specified
-  by the argument \code{filename}.  
+  
+  Reads a collection of plate reader data files into a \code{cellHTS}
+  object.  The names of the files, plus additional information (plate
+  number, repeat number, assay/treatment/condition) is expected in a
+  tab-delimited table specified by the argument \code{filename}.
+  
 }
 \usage{
+
 readPlateList(filename, path=dirname(filename), name, importFun, verbose=interactive())
-}
-\arguments{
-  \item{filename}{the name of the file table (see details).
-    This argument is just passed on to the \code{\link{read.table}}
-    function, so any of the valid argument
-    types for \code{\link{read.table}} are valid here, too.}
-  \item{path}{a character of length 1 indicating the path in
-    which to find the plate reader files.}
-  \item{name}{a character of length 1 with the experiment name.}
-  \item{importFun}{a function to read the data files.
-    The default function works for a certain file format,
-    such as that of the example files provided with this package.
-    If your plate reader software produces files with a different
-    format, the import function needs to be adapted. See details.}
-  \item{verbose}{a logical value, if TRUE, the function reports
-    some of its intermediate progress.}
+
 }
 
-\details{The file table is expected to be a tab-delimited file with at
-  least three columns named \code{Filename}, \code{Plate},
-  and \code{Replicate}. The contents of the columns \code{Plate} and
-  \code{Replicate} are expected to be integers. Further columns are
-  allowed, and can be used to denote, for example, different variants of the
-  assay, treatments, incubation times, conditions, etc.
+\arguments{
+  
+  \item{filename}{the name of the file table (see details).  This
+    argument is just passed on to the \code{\link{read.table}} function,
+    so any of the valid argument types for \code{\link{read.table}} are
+    valid here, too.}
+
+  \item{path}{a character of length 1 indicating the path in which to
+    find the plate reader files.}
+
+  \item{name}{a character of length 1 with the experiment name.}
+
+  \item{importFun}{a function to read the data files.  The default
+    function works for a certain file format, such as that of the
+    example files provided with this package.  If your plate reader
+    software produces files with a different format, the import function
+    needs to be adapted. See details.}
+  
+  \item{verbose}{a logical value, if TRUE, the function reports some of
+    its intermediate progress.}
+  
+}
+
+\details{
+
+  The file table is expected to be a tab-delimited file with at least
+  three columns named \code{Filename}, \code{Plate}, and
+  \code{Replicate}. The contents of the columns \code{Plate} and
+  \code{Replicate} are expected to be integers. The optional
+  \code{Batch} column can be used to supply batch information for an
+  experiment, e.g., when a reagent has been changed or the experiment
+  has been run over several days.
+
+  Further columns are allowed, and can be used to denote, for example,
+  different variants of the assay, treatments, incubation times,
+  conditions, etc.
 
   \code{importFun} can be used to define a custom function to import
-  data files. The \code{importFun} function should accept as its first argument
-  names from the \code{Filename} column of the file table (which in
-  principle do not need to be individual files, they could also be handles for
-  database entries or pointers into relevants parts of a file). It
-  should return a list with two components:
+  data files. The \code{importFun} function should accept as its first
+  argument names from the \code{Filename} column of the file table
+  (which in principle do not need to be individual files, they could
+  also be handles for database entries or pointers into relevants parts
+  of a file). It should return a list with two components:
+
   \itemize{
-    \item The first component should be a \code{data.frame} with the following columns
+    
+    \item The first component should be a \code{data.frame} with the
+    following columns
+
     \itemize{
-     \item \code{well}, a character vector with the well identifier in the plate.
-     \item \code{val}, the intensity values measured in that well.
-   }
-   and with as many rows as there are wells in the plate.
-   \item The second component should be a character vector containing a
-   copy of the imported input data file
-   (such as the output of \code{\link[base:readLines]{readLines}}).
-   It should be suitable to be used as input for
-   \code{\link[base:writeLines]{writeLines}}, since it will be used to
-   reproduce the intensity files that are linked in the HTML quality
-   reports generated by \code{\link[cellHTS2:writeReport]{writeReport}}.
+  
+      \item \code{well}, a character vector with the well identifier in
+      the plate.
+
+      \item \code{val}, the intensity values measured in that well.
+   
+    }
+    
+   and with as many rows as there are wells in the plate.  \item The
+   second component should be a character vector containing a copy of
+   the imported input data file (such as the output of
+   \code{\link[base:readLines]{readLines}}).  It should be suitable to
+   be used as input for \code{\link[base:writeLines]{writeLines}}, since
+   it will be used to reproduce the intensity files that are linked in
+   the HTML quality reports generated by
+   \code{\link[cellHTS2:writeReport]{writeReport}}.
+  
  }
- For example, to import plate data files from EnVision plate reader,
- set \code{importFun=getEnVisionRawData} or
- \code{importFun=getEnvisionCrosstalkCorrectedData}.
- See function \code{\link[cellHTS2]{getEnVisionRawData}}.
+ 
+ For example, to import plate data files from EnVision plate reader, set
+ \code{importFun=getEnVisionRawData} or
+ \code{importFun=getEnvisionCrosstalkCorrectedData}.  See function
+ \code{\link[cellHTS2]{getEnVisionRawData}}.
+ 
 }
 
 \value{

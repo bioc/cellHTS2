@@ -37,7 +37,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \title{End-to-end analysis of cell-based screens: from raw intensity readings
   to the annotated hit list}
 %------------------------------------------------------------
-\author{Michael Boutros, L\'igia Br\'as and Wolfgang Huber}
+\author{Michael Boutros, L\'igia Br\'as, Florian Hahne and Wolfgang Huber}
 \maketitle
 \tableofcontents
 

@@ -39,9 +39,10 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \tableofcontents
 
 \section{Introduction}
-This techical report is a supplement of the main vignette 
-\textit{End-to-end analysis of cell-based screens: from raw intensity readings
-to the annotated hit list} that is given as part of the \Rpackage{cellHTS2} 
+This techical report is a supplement of the main vignette
+\textit{End-to-end analysis of cell-based screens: from raw intensity
+  readings to the annotated hit list} that is given as part of the
+\Rpackage{cellHTS2}
 package. %It accompanies the paper \textit{Analysis
 %of cell-based RNAi screens} by Michael Boutros, L\'igia Br\'as and
 %Wolfgang Huber~\cite{Boutros2006}. 

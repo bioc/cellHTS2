@@ -65,128 +65,120 @@
 }
 
 \section{Slots}{
+  
   \describe{
 
-  \item{\code{plateList}:}{
-    a \code{\link{data.frame}} containing what was read from input measurement data files
-    plus a column \code{status} of type character containing the string "OK" if the data import
-    appeared to have gone well, and the respective error or warning
-    message otherwise.}
+    \item{\code{plateList}:}{ a \code{\link{data.frame}} containing what
+      was read from input measurement data files plus a column
+      \code{status} of type character containing the string "OK" if the
+      data import appeared to have gone well, and the respective error
+      or warning message otherwise.}
 
-  \item{\code{intensityFiles}:}{
-    a list, where each component contains a
-    copy of the imported input data files. Its length corresponds to the
-    number of rows of \code{plateList}.
-   }
+    \item{\code{intensityFiles}:}{ a list, where each component contains
+      a copy of the imported input data files. Its length corresponds to
+      the number of rows of \code{plateList}.  }
 
+    \item{\code{state}:}{ a logical vector of length 4 representing the
+      processing status of the object. It must have the names
+      "configured", "normalized", "scored" and "annotated".  }
 
-  \item{\code{state}:}{
-    a logical vector of length 4 representing the processing status of
-    the object. It must have the names "configured", "normalized", "scored" and "annotated".
-    }
+    \item{\code{plateConf}:}{ a \code{\link{data.frame}} containing what
+      was read from the \emph{configuration file} for the experiment
+      (except the first two header rows). It contains at least three
+      columns named \code{Plate}, \code{Well} and \code{Content}.
+      Columns \code{Plate} and \code{Well} are allowed to contain
+      regular expressions.  }
 
+    \item{\code{screenLog}:}{ a \code{\link{data.frame}} containing what
+      was read from the \emph{screen log file} for the experiment, in
+      case it exists. Contains at least three columns, and column names
+      \code{Plate}, \code{Well}, and \code{Flag}. Additional columns are
+      \code{Sample} (when there are replicates or more than one sample
+      or condition) and \code{Channel} (when there are multiple
+      channels).  }
 
-  \item{\code{plateConf}:}{
-  a \code{\link{data.frame}} containing what was read from the \emph{configuration file} for the experiment (except the first two header rows). It contains at least three columns named \code{Plate}, \code{Well} and \code{Content}. 
-Columns \code{Plate} and \code{Well} are allowed to contain regular expressions.
-    }
+    \item{\code{screenDesc}:}{ a character containing what was read from
+      the \emph{description file} of the experiment.  }
 
-  \item{\code{screenLog}:}{
-  a \code{\link{data.frame}} containing what was read from the \emph{screen log file} for the experiment, in case it exists. Contains at least three columns, and column names \code{Plate}, \code{Well},
-and \code{Flag}. Additional columns are \code{Sample} (when there are replicates or more than one sample or condition) and \code{Channel} (when there are multiple channels).
-      }
+    \item{\code{batch}:}{ a 3D-array with the first two dimensions
+      corresponding to the dimension of each matrix in \code{assayData}
+      slot and the third dimension corresponding to the number of
+      channels in \code{assayData} slot (Features x Samples x Channels).
+      Should contain integer values giving the batch number (1, 2, ...)
+      for each plate, sample and channel.  }
 
+    \item{\code{rowcol.effects}:}{ a 3D array of size Features
+      (i.e. plate size x number of plates) x Samples x Channels
+      containing estimated row and column plate spatial offsets.  }
 
-  \item{\code{screenDesc}:}{
-    a character containing what was read from the \emph{description file} of the experiment.
-       }
+    \item{\code{overall.effects}:}{ a 3D array of size Features x
+      Samples x Channels containing estimated plate overall offsets.}
 
-  \item{\code{batch}:}{
-    a 3D-array with the first two dimensions corresponding to the dimension of 
-    each matrix in \code{assayData} slot and the third dimension corresponding to the number of channels in 
-    \code{assayData} slot (Features x Samples x Channels). 
-    Should contain integer values giving the batch number (1, 2, ...)
-    for each plate, sample and channel. 
-   }
+    \item{\code{assayData}:}{ Object of class
+      \code{\link[Biobase:class.AssayData]{AssayData}}, usually an
+      environment containing matrices of identical size. Each matrix
+      represents a single channel. Columns in each matrix correspond to
+      samples (or replicate), rows to features (probes).  Once created,
+      \code{cellHTS} manages coordination of samples and channels.  }
 
- \item{\code{rowcol.effects}:}{
-   a 3D array of size Features (i.e. plate size x number of plates) x
-    Samples x Channels containing estimated row and column plate spatial offsets.
-   }
+    \item{\code{plateData}:}{ A list of data frames, with number of rows
+      of each frame equal to the number of plates used in the assay and
+      number of columns equal to the number of samples. Each data frame
+      in the list should contain factorial annotation information
+      relevant for the individual plates, like experimental batches or
+      varying types of micro-titre plates. Currently, this information
+      will be used for between-batch normalization and quality
+      assessment.  }
 
- \item{\code{overall.effects}:}{
-   a 3D array of size Features x Samples x Channels containing estimated plate overall offsets.}
+    \item{\code{phenoData}:}{ Object of class
+      \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}}.
+      Please see the documentation of the \code{phenoData} slot of
+      \code{\link[Biobase:class.NChannelSet]{NChannelSet}} for more
+      details.
 
- \item{\code{assayData}:}{
-   Object of class \code{\link[Biobase:class.AssayData]{AssayData}}, usually
-   an environment containing matrices of identical size. Each matrix
-   represents a single channel. Columns in each matrix correspond to
-   samples (or replicate), rows to features (probes). 
-   Once created, \code{cellHTS} manages coordination of samples and channels.
- }
+      It contains information about the screens, and it must have the
+      following columns in its \code{data} component: \code{replicate}
+      and \code{assay}, where \code{replicate} is expected to be a
+      vector of integers giving the replicate number, while \code{assay}
+      is expected to be a vector of characters giving the name of the
+      biological assay. Both of these vectors should have the same
+      length as the number of Samples.
 
- \item{\code{plateData}:}{
-   A list of data frames, with number of rows of each frame equal to the
-   number of plates used in the assay and number of columns equal to the
-   number of samples. Each data frame in the list should contain
-   factorial annotation information relevant for the individual plates,
-   like experimental batches or varying types of micro-titre
-   plates. Currently, this information will be used for between-batch
-   normalization and quality assessment.
- }
+      Once created, \code{cellHTS} coordinates selection and subsetting
+      of channels in \code{phenoData}.  }
 
- \item{\code{phenoData}:}{
-   Object of class \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}}.
-   Please see the documentation of the \code{phenoData} slot of
-   \code{\link[Biobase:class.NChannelSet]{NChannelSet}} for more details.
+    \item{\code{featureData}:}{ Object of class
+      \code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}},
+      containing information about the reagents: plate, well, column,
+      the well annotation (sample, control, etc.), etc.  For a
+      \code{\linkS4class{cellHTS}} object, this slot must contain in its
+      \code{data} component at least three mandatory columns named
+      \code{plate}, \code{well} and \code{controlStatus}. Column
+      \code{plate} is expected to be a numeric vector giving the plate
+      number (e.g. 1, 2, ...), \code{well} should be a vector of
+      characters (alphanumeric characters) giving the well ID within the
+      plate (e.g. A01, B01, H12, etc.).  Column \code{controlStatus}
+      should be a factor specifying the annotation for each well with
+      possible levels: \emph{empty}, \emph{other}, \emph{neg},
+      \emph{sample}, and \emph{pos}. Other levels besides \emph{pos} and
+      \emph{neg} may be employed for controls.  }
 
-   It contains information about the screens, and it must have the
-   following columns in its \code{data} component:
-   \code{replicate} and \code{assay}, where \code{replicate} is expected
-   to be a vector of integers giving the replicate number, while
-   \code{assay} is expected to be a vector of characters giving the name of
-   the biological assay. Both of these vectors should have the same length
-   as the number of Samples.
+    \item{\code{experimentData}:}{ Object of class
+      \code{\link[Biobase:class.MIAME]{MIAME}} containing descriptions
+      of the experiment.}
 
-   Once created, \code{cellHTS} coordinates selection and subsetting
-   of channels in \code{phenoData}.
- }      
+    \item{\code{annotation}:}{ A \code{"character"} of length 1, which
+      can be used to specify the name of an annotation package that goes
+      with the reagents used for this experiment.}
 
-\item{\code{featureData}:}{
-Object of class
-\code{\link[Biobase:class.AnnotatedDataFrame]{AnnotatedDataFrame}},
-containing information about the reagents: plate, well, column,
-the well annotation (sample, control, etc.), etc.
-For a \code{\linkS4class{cellHTS}} object, this slot must contain in its
-\code{data} component at least three mandatory columns named
-\code{plate}, \code{well} and \code{controlStatus}. Column
-\code{plate} is expected to be a numeric vector giving the plate number
-(e.g. 1, 2, ...), \code{well} should be a vector of characters
-(alphanumeric characters) giving the well ID within the plate (e.g. A01,
-B01, H12, etc.).  Column \code{controlStatus} should be a factor
-specifying the annotation for each well with possible levels:
-\emph{empty}, \emph{other}, \emph{neg}, \emph{sample}, and
-\emph{pos}. Other levels besides \emph{pos} and \emph{neg}
-may be employed for controls.
-}
+    \item{\code{.__classVersion__}:}{ Object of class
+      \code{\link[Biobase:class.Versions]{Versions}}, containing
+      automatically created information about the class definition,
+      Biobase package version, and other information about the user
+      system at the time the instance was created. See
+      \code{\link[Biobase]{classVersion}} and
+      \code{\link[Biobase]{updateObject}} for examples of use.  }
 
-\item{\code{experimentData}:}{
-Object of class \code{\link[Biobase:class.MIAME]{MIAME}} containing
-descriptions of the experiment.}
-
-\item{\code{annotation}:}{
-A \code{"character"} of length 1, which can be used to specify
-the name of an annotation package that goes with the reagents used
-for this experiment.}
-
-\item{\code{.__classVersion__}:}{
-  Object of class \code{\link[Biobase:class.Versions]{Versions}}, containing
-  automatically created information about the class definition,
-  Biobase package version, and other information about the user
-  system at the time the instance was created. See
-  \code{\link[Biobase]{classVersion}} and \code{\link[Biobase]{updateObject}} for
-  examples of use.
-}
   } 
 }
 
@@ -197,21 +189,20 @@ for this experiment.}
 
 
 \section{Methods}{
+  
   Methods with class-specific functionality:
+
   \describe{
 
-% COMPLETE THE CLASS-SPECIFIC METHODS
+    \item{\code{name(object)}}{ \code{signature(object="cellHTS")}.
+      Obtains the name of the assay stored in the \code{object}. This
+      corresponds to the contents of column \code{assay} of the
+      \code{phenoData} slot of the \code{cellHTS} object.  }
 
-    \item{\code{name(object)}}{
-      \code{signature(object="cellHTS")}.
-      Obtains the name of the assay stored in the \code{object}. This corresponds to the contents of column \code{assay} of the \code{phenoData} slot of the \code{cellHTS} object.
-    }
-
-    \item{\code{name(object) <- value}}{
-      \code{signature(object = "cellHTS", value = "character")} assign
-      the character of length one (\code{value}) to the elements in column \code{assay} of the slot \code{phenoData} of
-      \code{object}.
-    }
+    \item{\code{name(object) <- value}}{ \code{signature(object =
+      "cellHTS", value = "character")} assign the character of length
+      one (\code{value}) to the elements in column \code{assay} of the
+      slot \code{phenoData} of \code{object}.  }
 
     \item{\code{pdim(object)}}{
       \code{signature(object = "cellHTS")}.
@@ -223,54 +214,63 @@ for this experiment.}
       Obtain the total number of batches for the data stored in \code{object}.
     }
      
-    \item{\code{compare2cellHTS(x, y)}}{
-      \code{signature(x = "cellHTS", y = "cellHTS")}.
-      Compares two \code{\linkS4class{cellHTS}} objects, \code{x} and \code{y}, returning \code{TRUE} if they are from the same experiment (i.e. if they derive from the same initial \code{cellHTS} object), or \code{FALSE} otherwise.
-    }
+    \item{\code{compare2cellHTS(x, y)}}{ \code{signature(x = "cellHTS",
+      y = "cellHTS")}.  Compares two \code{\linkS4class{cellHTS}}
+      objects, \code{x} and \code{y}, returning \code{TRUE} if they are
+      from the same experiment (i.e. if they derive from the same
+      initial \code{cellHTS} object), or \code{FALSE} otherwise.  }
 
-  }% describe
+  }
 
-  Methods with functionality derived from class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}:
-      \code{channel}, 
-      \code{channelNames}, 
-      \code{selectChannels}, 
-      \code{object[features, samples]}, 
-      \code{sampleNames}      
+  Methods with functionality derived from class
+      \code{\link[Biobase:class.NChannelSet]{NChannelSet}}:
+      \code{channel}, \code{channelNames}, \code{selectChannels},
+      \code{object[features, samples]}, \code{sampleNames}
 
-  Methods with functionality derived from \code{\link[Biobase:class.eSet]{eSet}}:
-  \code{annotation}, \code{assayData}, \code{assayData<-},
-  \code{classVersion}, \code{classVersion<-}, \code{dim}, \code{dims},
-  \code{experimentData}, \code{featureData}, \code{phenoData},
-  \code{phenoData<-}, \code{pubMedIds}, \code{sampleNames},
-  \code{sampleNames<-}, \code{storageMode}, \code{varMetadata},
-  \code{isCurrent}, \code{isVersioned}.
-%, \code{updateObject}.
-
+      Methods with functionality derived from
+      \code{\link[Biobase:class.eSet]{eSet}}: \code{annotation},
+      \code{assayData}, \code{assayData<-}, \code{classVersion},
+      \code{classVersion<-}, \code{dim}, \code{dims},
+      \code{experimentData}, \code{featureData}, \code{phenoData},
+      \code{phenoData<-}, \code{pubMedIds}, \code{sampleNames},
+      \code{sampleNames<-}, \code{storageMode}, \code{varMetadata},
+      \code{isCurrent}, \code{isVersioned}.
+      
   Additional methods: 
   \describe{
-%\code{coerce} (\sQuote(as), to convert between
-%  objects, if possible), 
 
-   \item{\code{initialize}}{used internally for
-  creating objects}
+    \item{\code{initialize}}{used internally for creating objects}
 
-   \item{\code{show}}{invoked automatically when the
-  object is displayed to the screen. It prints a summary of the object.}
+    \item{\code{show}}{invoked automatically when the object is
+      displayed to the screen. It prints a summary of the object.}
 
-    \item{\code{state}}{Access the \code{state} slot of a \code{\linkS4class{cellHTS}} instance.}
+    \item{\code{state}}{Access the \code{state} slot of a
+      \code{\linkS4class{cellHTS}} instance.}
 
-    \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}} object using the \emph{screen annotation file}.}
-    \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}} object using the the \emph{screen description file}, the \emph{screen configuration file} and the \emph{screen log file}.} 
-    \item{\code{writeTab}}{Write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
-%\item{\code{normalizePlates}}{Plate-by-plate correction of raw data from a \code{\linkS4class{cellHTS}} object.}
-\item{\code{ROC}}{Construct an object of S4 class \code{\linkS4class{ROC}},
-  which represents a receiver-operator-characteristic curve,
-  from the data of the annotated positive and negative controls in a
-  scored \code{\linkS4class{cellHTS}} object.}
+    \item{\code{annotate}}{Annotate the \code{\linkS4class{cellHTS}}
+      object using the \emph{screen annotation file}.}
+      \item{\code{configure}}{Configure the \code{\linkS4class{cellHTS}}
+      object using the the \emph{screen description file}, the
+      \emph{screen configuration file} and the \emph{screen log file}.}
+      \item{\code{writeTab}}{Write the contents of \code{assayData} slot
+      of a \code{\linkS4class{cellHTS}} object to a tab-delimited file.}
 
-    \item{\code{meanSdPlot(x)}}{\code{signature(x = "cellHTS")} plots row standard deviations across samples versus row means across samples for data stored in slot \code{assayData} of a \code{cellHTS} object. If there are multiple channels, row standard deviations and row means are calculated across samples for each channel separately. Only wells containing "sample" are considered. See \code{\link[vsn]{meanSdPlot}} for more details about this function.}
+    \item{\code{ROC}}{Construct an object of S4 class
+      \code{\linkS4class{ROC}}, which represents a
+      receiver-operator-characteristic curve, from the data of the
+      annotated positive and negative controls in a scored
+      \code{\linkS4class{cellHTS}} object.}
 
-} %describe
+    \item{\code{meanSdPlot(x)}}{\code{signature(x = "cellHTS")} plots
+      row standard deviations across samples versus row means across
+      samples for data stored in slot \code{assayData} of a
+      \code{cellHTS} object. If there are multiple channels, row
+      standard deviations and row means are calculated across samples
+      for each channel separately. Only wells containing "sample" are
+      considered. See \code{\link[vsn]{meanSdPlot}} for more details
+      about this function.}
+
+  } %describe
 }
 
 \author{Ligia P. Bras \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}}

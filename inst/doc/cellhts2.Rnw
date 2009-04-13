@@ -126,8 +126,11 @@ is contained in a spreadsheet, which we call the \emph{plate list
   file}. This file should contain at least the following columns:
 \emph{Filename}, \emph{Plate} and \emph{Replicate}.  The last two
 columns should be integer numbers, with values ranging from 1 to the
-maximum number of plates or replicates, respectively.  The first few
-lines of an example plate list file are shown in
+maximum number of plates or replicates, respectively. An optional
+\emph{Batch} column can be used to provide batch information about the
+experiment, i.e., changes in reagents, or days for a multi-day
+experiment. See Section~ref{sec:multPlateConfs} for more details. The
+first few lines of an example plate list file are shown in
 Table~\ref{tab:platelist}, while Table~\ref{tab:signalintensity} shows
 the first few lines from one of the plate result files listed in the
 plate list file.
@@ -301,6 +304,16 @@ are:
     \emph{neg} may be employed for the positive and negative controls.
 
   \end{description}
+ 
+\item[plateData] a list of dataframes, where each list item contains
+  plate-specific information. The structure of the individual
+  dataframes is fixed: rows are supposed to be plates and columns are
+  supposed to be samples (i.e., the number of columns has to be the
+  same as the number of columns in the \Robject{assayData}
+  matrices. By default, the only available list item is
+  \Robject{Batch} containing the information about experimental
+  batches in the experiment. Unless explicitely specified in the plate
+  list file, these will all be set to 1.
 
 \item[experimentData] an object of class \Rclass{MIAME} containing
   descriptions of the experiment.
@@ -623,16 +636,17 @@ days, or due to the use of different lots of reagents, etc.
 
 Batch information (expressed in terms of integer values giving the
 batch number: 1, 2, ...) can go into a particular slot called
-\Robject{batch}. This is expected to be a 3D-array (\Robject{Features}
-$\times$ \Robject{Samples} $\times$ \Robject{Channels}) of integer
-values giving the batch number (1, 2, ...) for each plate, sample and
-channel. Its first two dimensions correspond to the dimension of each
-matrix stored in \Robject{assayData} slot and the third dimension
-corresponds to the number of channels in \Robject{assayData} slot.
-This slot should be filled in by the user in case s/he wants to take
-into account this information in the analysis (for example, see
+\Robject{plateData}. This is expected to be a dataframe) of integer
+values giving the batch number (1, 2, ...) for each plate and
+sample. Its first dimension corresponds to the number of individual
+plates, and its second dimension correspond to the number of columns
+of each matrix stored in \Robject{assayData} slot (the samples).
+Batch information can be filled in by the user in case s/he wants to
+take into account this information in the analysis (for example, see
 \Rfunction{normalizePlates} function, which allows to adjust the data
-variance on a per-batch basis).
+variance on a per-batch basis). It can either be provided as an
+optional column in the plate list file, or using the \Rfunction{batch}
+accessor method.
 
 
 %%--------------------------------------------------
