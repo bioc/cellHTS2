@@ -81,7 +81,7 @@ bmAll <- cbind(
 bdgpbiomart <- cbind(fData(xsc), bmAll)
 fData(xsc) <- bdgpbiomart
 fvarMetadata(xsc)[names(bmAll), "labelDescription"] <- sapply(names(bmAll), 
-function(i) sub("_", " ", i) )
+function(i) gsub("_", " ", i) )
 @ 
 
 %% This is how the object is then saved in the data subdirectory of the package:

@@ -12,5 +12,457 @@
 
 \documentclass[11pt]{article}
 \begin{document}
+
+
+<<setup1, eval=FALSE>>=
+library("cellHTS2")
+@
+
+
+<<setup2, eval=FALSE>>=
+## working path:
+workPath <- getwd()
+
+## check if bib file exists
+if (!("cellhts.bib" %in% dir()) )
+  system(sprintf("cp %s/cellhts.bib .", system.file("doc", package="cellHTS2")))
+
+## for debugging:
+options(error=recover)
+## for software development, when we do not want to install 
+## the package after each minor change:
+##   for(f in dir("~/huber/projects/Rpacks/cellHTS2/R", full.names=TRUE, pattern=".R$"))source(f)
+@
+
+
+<<dataPath,eval=FALSE>>=
+experimentName <- "KcViab"
+dataPath <- system.file(experimentName, package="cellHTS2") 
+@
+
+
+<<dirDataPath,eval=FALSE>>=
+dataPath
+rev(dir(dataPath))[1:12]
+@
+
+
+<<readPlateList,eval=FALSE>>=
+x <- readPlateList("Platelist.txt", 
+                   name=experimentName, 
+                   path=dataPath)
+@
+
+
+<<showX,eval=FALSE>>=
+x
+@
+
+
+<<plateFileTable,eval=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list")
+cellHTS2:::tableOutput(file.path(dataPath, names(intensityFiles(x))[1]), 
+                       "signal intensity", header=FALSE)
+@
+
+
+<<see object state,eval=FALSE>>=
+state(x)
+@
+
+
+<<writeReport1Show,eval=FALSE>>=
+## out <- writeReport(raw=x)
+@
+
+
+<<writeReport1Do,eval=FALSE>>=
+out <- writeReport(raw=x, force=TRUE, outdir=tempdir())
+@
+
+
+<<printout,eval=FALSE>>=
+out
+@
+
+
+<<browseReport1,eval=FALSE>>=
+browseURL(out)
+@
+
+
+
+<<annotatePlateRes,eval=FALSE>>=
+x <- configure(x,
+               descripFile="Description.txt", 
+               confFile="Plateconf.txt", 
+               logFile="Screenlog.txt", 
+               path=dataPath)
+@
+
+
+
+<<plateConfscreenLogTable, eval=FALSE>>=
+cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
+                                     "plate configuration", selRows=NULL)
+cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"), 
+                       "screen log", selRows=1:3)
+@
+
+
+<<test,eval=FALSE>>=
+table(wellAnno(x))
+@
+
+
+<<configurationplot,eval=FALSE>>=
+png("cellhts2Complete-configurationplot.png", width=324, height=324)
+configurationAsScreenPlot(x)
+dev.off()
+@
+
+
+<<configurationplotShow,eval=FALSE>>=
+## configurationAsScreenPlot(x)
+@
+
+
+<<normalizePlateMedian,eval=FALSE>>=
+xn <- normalizePlates(x, 
+                      scale="multiplicative", 
+                      log=FALSE, 
+                      method="median", 
+                      varianceAdjust="none")
+@
+
+
+<<compare cellHTs objects,eval=FALSE>>=
+compare2cellHTS(x, xn)
+@
+
+
+<<score replicates,eval=FALSE>>=
+xsc <- scoreReplicates(xn, sign="-", method="zscore") 
+@
+
+
+<<summarize replicates,eval=FALSE>>=
+xsc <- summarizeReplicates(xsc, summary="mean") 
+@
+
+
+<<boxplotzscore,eval=FALSE>>=
+scores <- Data(xsc)
+ylim <- quantile(scores, c(0.001, 0.999), na.rm=TRUE)
+boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE, ylim=ylim)
+@
+
+
+<<callvalues,eval=FALSE>>=
+y <- scores2calls(xsc, z0=1.5, lambda=2)
+png("cellhts2Complete-callvalues.png")
+plot(Data(xsc), Data(y), col="blue", pch=".",
+     xlab="z-scores", ylab="calls", 
+     main=expression(1/(1+e^{-lambda *(z-z[0])})))
+dev.off()
+@
+
+
+<<callvaluesShow,eval=FALSE>>=
+## y <- scores2calls(xsc, z0=1.5, lambda=2)
+## plot(Data(xsc), Data(y), col="blue", pch=".",
+##      xlab="z-scores", ylab="calls", 
+##      main=expression(1/(1+e^{-lambda *(z-z[0])})))
+@
+
+
+<<geneIDs,eval=FALSE>>=
+xsc <- annotate(xsc, geneIDFile="GeneIDs_Dm_HFA_1.1.txt", path=dataPath)
+@
+
+
+<<geneIDsTable,eval=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs_Dm_HFA_1.1.txt"), 
+                       "gene ID", selRows = 3:6)
+@
+
+
+<<bdgpbiomart1,eval=FALSE>>=
+data("bdgpbiomart")
+fData(xsc) <- bdgpbiomart
+fvarMetadata(xsc)[names(bdgpbiomart), "labelDescription"] <- 
+  sapply(names(bdgpbiomart), 
+    function(i) sub("_", " ", i) 
+)
+@
+
+
+<<get path for Rnw files,eval=FALSE>>=
+rnwPath <- system.file("doc/Rnw", package="cellHTS2")
+setwd(rnwPath)
+system(sprintf("cp biomart.tex %s", workPath))
+setwd(workPath)
+@
+
+
+<<runBiomart,eval=FALSE>>=
+## setwd(rnwPath)
+## Sweave("biomart.Rnw")
+## setwd(workPath)
+## stop()
+@
+
+
+<<printxagain,eval=FALSE>>=
+xsc
+@
+
+
+<<savex,eval=FALSE>>=
+save(xsc, file=paste(experimentName, ".rda", sep=""))
+@
+
+
+<<writeReport2,eval=FALSE>>=
+## out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+##                    force=TRUE, plotPlateArgs = TRUE, 
+##                    imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
+@
+
+
+<<browseReport2,eval=FALSE>>=
+## browseURL(out)
+@
+
+
+<<imageScreen,eval=FALSE>>=
+## imageScreen(xsc, ar=1, zrange=c(-3,4))
+@
+
+
+<<exportData,eval=FALSE>>=
+## writeTab(xsc, file="Scores.txt")
+@
+
+
+<<exportOtherData,eval=FALSE>>=
+## # determine the ratio between each well and the plate median
+## y <- array(as.numeric(NA), dim=dim(Data(x)))
+## nrWell <- prod(pdim(x))
+## nrPlate <- max(plate(x))
+## for(p in 1:nrPlate) 
+## {
+##     j <- (1:nrWell)+nrWell*(p-1)
+##     samples <- wellAnno(x)[j]=="sample"
+##     y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3, 
+##                       function(w) w/median(w[samples], na.rm=TRUE)) 
+## }
+## 
+## y <- signif(y, 3)
+## out <- y[,,1]
+## out <- cbind(fData(xsc), out)
+## names(out) = c(names(fData(xsc)), 
+## sprintf("Well/Median_r%d_ch%d", rep(1:dim(y)[2], dim(y)[3]), 
+## rep(1:dim(y)[3], each=dim(y)[2])))
+## write.tabdel(out, file="WellMedianRatio.txt")
+@
+
+
+<<category,eval=FALSE>>=
+library("Category")
+@
+
+
+<<obsolete GO ids,eval=FALSE>>=
+obsolete <- c("GO:0005489", "GO:0015997", "GO:0045034", "GO:0005660")
+@
+
+
+<<cat1,eval=FALSE>>=
+scores <- as.vector(Data(xsc))
+names(scores) <- geneAnno(xsc)
+sel <- !is.na(scores) & (!is.na(fData(xsc)$go))
+goids <- strsplit(fData(xsc)$go[sel], ", ")
+goids <- lapply(goids, function(x) x[!(x %in% obsolete)])
+genes <- rep(geneAnno(xsc)[sel], listLen(goids))
+cache(categs <- cateGOry(genes, unlist(goids, use.names=FALSE)))
+@
+
+
+<<cat2,eval=FALSE>>=
+nrMem <- rowSums(categs) # number of genes per category
+remGO <- which(nrMem < 3 | nrMem > 1000)
+categs <- categs[-remGO,,drop=FALSE]
+# see if there are genes that don't belong to any category after applying the filter
+nrMem <- rowSums(t(categs))
+rem <- which(nrMem==0)
+if(length(rem)!=0) categs <- categs[,-rem, drop=FALSE]
+@
+
+
+<<cat3,eval=FALSE>>=
+stats <- scores[ sel & (names(scores) %in% colnames(categs)) ]
+@
+
+
+<<handle replicates,eval=FALSE>>=
+## handle duplicated genes in stats:
+isDup <- duplicated(names(stats))
+table(isDup)
+dupNames <- names(stats)[isDup]
+sp <- stats[names(stats) %in% dupNames]
+sp <- split(sp, names(sp))
+table(sapply(sp, length)) 
+aux <- stats[!isDup]
+aux[names(sp)] <- sapply(sp, max)
+stats <- aux
+rm(aux)
+@
+
+
+<<arrange probes,eval=FALSE>>=
+m <- match(colnames(categs), names(stats))
+stats <- stats[m]
+stopifnot(colnames(categs)==names(stats))
+@
+
+
+<<cat6,eval=FALSE>>=
+acMean <- applyByCategory(stats, categs)
+acTtest <- applyByCategory(stats, categs, FUN=function(v) t.test(v, stats)$p.value)
+acNum <- applyByCategory(stats, categs, FUN=length)
+isEnriched <- (acTtest<=1e-3) & (acMean>0.5)
+@
+
+
+<<volcano,eval=FALSE>>=
+png("cellhts2Complete-volcano.png", width=180, height=180)
+par(mai=c(0.9,0.9,0.1,0.1))
+px <- cbind(acMean, -log10(acTtest))
+plot(px, main='', xlab=expression(z[mean]), 
+     ylab=expression(-log[10]~p), pch=".", col="black")
+points(px[isEnriched, ], pch=16, col="red", cex=0.7)
+dev.off()
+stopifnot(identical(names(acMean), names(acTtest)),  
+          identical(names(acMean), names(acNum))) 
+@
+
+
+<<enrichedGoCateg,eval=FALSE>>=
+enrichedGOCateg <- names(which(isEnriched))
+require("GO.db")
+res <- data.frame(
+   "$n$" = acNum[isEnriched], 
+    "$z_{\\mbox{\\scriptsize mean}}$" = signif(acMean[isEnriched],2), 
+    "$p$" = signif(acTtest[isEnriched],2),
+    "GOID" = I(enrichedGOCateg),
+    "Ontology" = I(sapply(enrichedGOCateg, function(x) Ontology(get(x, GOTERM)))),
+    "description" = I(sapply(enrichedGOCateg, function(x) Term(get(x, GOTERM)))),
+    check.names=FALSE)
+
+mt <- match(res$Ontology, c("CC", "BP", "MF"))
+stopifnot(!any(is.na(mt)))
+res <- res[order(mt, res$"$p$"), ]
+
+cellHTS2:::dataframeOutput(res, header=TRUE, 
+  caption=sprintf("Top %d Gene Ontology categories with respect to $z$-score.", nrow(res)),
+  label="enrichedGoCateg", gotable=TRUE)
+@
+
+
+<<load file with previous analysis,eval=FALSE>>=
+data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"), header=TRUE, 
+                       as.is=TRUE, sep="\t")
+@
+
+
+<<add the current scored values,eval=FALSE>>=
+i <- data2003$Position + 384*(data2003$Plate-1)
+data2003$ourScore <- as.vector(Data(xsc))[i]
+@
+
+
+<<scoresComparison,eval=FALSE>>=
+require("geneplotter")
+png("cellhts2Complete-scoresComparison.png", width=324, height=324)
+par(mfrow=c(7,9), mai=c(0,0,0,0))
+for(i in 1:max(data2003$Plate)) 
+{
+   sel <- (data2003$Plate==i)
+   plot(data2003$ourScore[sel], data2003$Score[sel], pch=19, cex=0.6)
+}
+dev.off()
+@
+
+
+<<example for description file,eval=FALSE>>=
+out <- templateDescriptionFile("template-Description.txt", force=TRUE)
+out
+readLines(out)
+@
+
+
+<<old plateConfscreenLogTable,eval=FALSE>>=
+cellHTS2:::tableOutput(file.path(dataPath, "old-Plateconf.txt"), 
+                       "cellHTS package-specific plate configuration", selRows=1:28)
+cellHTS2:::tableOutput(file.path(dataPath, "old-Screenlog.txt"), 
+                       "cellHTS package-specific screen log", selRows=1:3)
+@
+
+
+<<Z score method,eval=FALSE>>=
+## xZ <- normalizePlates(x, scale="additive", log=FALSE,
+##                       method="median", varianceAdjust="byPlate") 
+@
+
+
+<<transfplots,eval=FALSE>>=
+library("vsn")
+png("cellhts2Complete-transfplots.png", width=324, height=474)
+par(mfcol=c(3,2))
+myPlots=function(z,...) 
+{
+  hist(z[,1], 100, col="lightblue", xlab="",...)
+  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+  qqnorm(z[,1], pch='.', ...)
+  qqline(z[,1], col='blue')
+}
+dv <- Data(xn)[,,1]
+myPlots(dv, main="untransformed")
+xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
+                        method="median", varianceAdjust="byExperiment")
+dvlog <- Data(xlog)[,,1]
+myPlots(dvlog, main="log2")
+dev.off()
+@
+
+
+<<transfplotsShow,eval=FALSE>>=
+## library("vsn")
+## par(mfcol=c(3,2))
+## myPlots=function(z,...) 
+## {
+##     hist(z[,1], 100, col="lightblue", xlab="",...)
+##     meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+##     qqnorm(z[,1], pch='.', ...)
+##     qqline(z[,1], col='blue')
+## }
+## dv <- Data(xn)[,,1]
+## myPlots(dv, main="untransformed")
+## xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
+##                         method="median", varianceAdjust="byExperiment")
+## dvlog <- Data(xlog)[,,1]
+## myPlots(dvlog, main="log2")
+@
+
+
+<<sessionInfo,eval=FALSE>>=
+toLatex(sessionInfo())
+@
+
+
+
+
+
 \end{document}
 
