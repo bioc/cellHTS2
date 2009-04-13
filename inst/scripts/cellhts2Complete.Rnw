@@ -41,6 +41,10 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 \maketitle
 \tableofcontents
 
+<<Ropts, echo=FALSE, results=hide>>=
+options(width=70)
+@ 
+
 \section{Introduction}\label{sec:Intro}
 The package \Rpackage{cellHTS2} is a revised and improved version of 
 the \Rpackage{cellHTS} package~\footnote{To convert a S3 class 
@@ -833,17 +837,16 @@ z_{k}  &=& \sqrt{\frac{1}{n_{\mbox{\scriptsize rep}_k}} \sum_{r=1}^{n_{\mbox{\sc
 
 Depending on the intended stringency of the analysis, other plausible
 choices of summary function between replicates are the minimum, the
-maximum, the mean or the median. In the first case, the analysis 
-would be particularly conservative: all replicate values have to be 
-high in order for $z_{k}$ to be high. 
-For the cases where both sides of the distribution of $z$-score values are 
-of interest, alternative summary options for the replicates are to select 
-the value closest to zero (conservative approach) by setting \Robject{summary="closestToZero"} 
-or the value furthest from zero 
-(\Robject{summary="furthestFromZero"}).
-In order to compare our results with those
-obtained in the paper of Boutros \textit{et al.}~\cite{Boutros2004},
-we choose to consider the mean as a summary:
+maximum, the mean or the median. In the first case, the analysis would
+be particularly conservative: all replicate values have to be high in
+order for $z_{k}$ to be high.  For the cases where both sides of the
+distribution of $z$-score values are of interest, alternative summary
+options for the replicates are to select the value closest to zero
+(conservative approach) by setting \Robject{summary="closestToZero"}
+or the value furthest from zero ( \Robject{summary="furthestFromZero"}
+).  In order to compare our results with those obtained in the paper
+of Boutros \textit{et al.}~\cite{Boutros2004}, we choose to consider
+the mean as a summary:
 %
 <<summarize replicates>>=
 xsc <- summarizeReplicates(xsc, summary="mean") 
@@ -859,7 +862,8 @@ in Figure~\ref{cellhts2Complete-boxplotzscore}.
 <<boxplotzscore, fig=TRUE, include=FALSE, width=4.5, height=5.5>>=
 scores <- Data(xsc)
 ylim <- quantile(scores, c(0.001, 0.999), na.rm=TRUE)
-boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE, ylim=ylim)
+boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE, 
+        ylim=ylim)
 @ 
 %
 \myincfig{cellhts2Complete-boxplotzscore}{0.5\textwidth}{Boxplots of $z$-scores 
@@ -867,19 +871,23 @@ for the different types of probes.}
 %
 
 
-In the \Rpackage{cellHTS2} package, we provide a further transformation of the $z$-score values to obtain the so-called \emph{calls}. This involves applying a 
-sigmoidal transformation to the $z$-score values, with parameters $z_0$ and 
-$\lambda$ ($>0$), given by:
+In the \Rpackage{cellHTS2} package, we provide a further
+transformation of the $z$-score values to obtain the so-called
+\emph{calls}. This involves applying a sigmoidal transformation to the
+$z$-score values, with parameters $z_0$ and $\lambda$ ($>0$), given
+by:
 
 \begin{equation}
 y_k = \frac{1}{1+e^{-\lambda \,\left(z_k-z_0\right)}} \label{eq:sigtransf}
 \end{equation}
 
-This transformation maps the $z$-score values to the interval 
-$\left[0,\,1\right]$ and is intended to expand the scale of $z$-scores with 
-intermediate values and shrink the ones showing extreme values, therefore making the difference between intermediate phenotypes larger. 
-The parameter $z_0$ defines the centre of the sigmoidal transformation, 
-while $\lambda$ controls the smoothness of the transformation. 
+This transformation maps the $z$-score values to the interval
+$\left[0,\,1\right]$ and is intended to expand the scale of $z$-scores
+with intermediate values and shrink the ones showing extreme values,
+therefore making the difference between intermediate phenotypes
+larger.  The parameter $z_0$ defines the centre of the sigmoidal
+transformation, while $\lambda$ controls the smoothness of the
+transformation.
 
 This transformation can be done by calling the function
 \Rfunction{scores2calls}, as shown in Figure~\ref{cellhts2Complete-callvalues.png}.
@@ -924,7 +932,8 @@ Table~\ref{tab:geneID}, where we have associated each probe with
 CG-identifiers for the genes of \textit{Drosophila melanogaster}.
 %
 <<geneIDs>>=
-xsc <- annotate(xsc, geneIDFile="GeneIDs_Dm_HFA_1.1.txt", path=dataPath)
+xsc <- annotate(xsc, geneIDFile="GeneIDs_Dm_HFA_1.1.txt",
+                path=dataPath)
 @ 
 %% Create the example table:
 <<geneIDsTable, results=hide, echo=FALSE>>=
@@ -1036,7 +1045,8 @@ to others. To produce a comprehensive report, we can call the function
 <<writeReport2, results=hide, eval=FALSE>>=
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
                    force=TRUE, plotPlateArgs = TRUE, 
-                   imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
+                   imageScreenArgs = list(zrange=c( -4, 8), 
+                                          ar=1), map=TRUE) 
 @ 
 %
 and use a web browser to view the resulting report.
@@ -1208,7 +1218,8 @@ for(p in 1:nrPlate)
     j <- (1:nrWell)+nrWell*(p-1)
     samples <- wellAnno(x)[j]=="sample"
     y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3, 
-                      function(w) w/median(w[samples], na.rm=TRUE)) 
+                      function(w) w/median(w[samples], 
+                                           na.rm=TRUE)) 
 }
 
 y <- signif(y, 3)
@@ -1283,11 +1294,13 @@ which are annotated to some of the genes, but are obsolete.
 <<cat1>>=
 scores <- as.vector(Data(xsc))
 names(scores) <- geneAnno(xsc)
-sel <- !is.na(scores) & (!is.na(fData(xsc)$go_biological_process_id))
-goids <- strsplit(fData(xsc)$go_biological_process_id[sel], ", ")
+sel <- !is.na(scores) & 
+       (!is.na(fData(xsc)$go_biological_process_id))
+goids <- strsplit(fData(xsc)$go_biological_process_id[sel], 
+                  ", ")
 goids <- lapply(goids, function(x) x[!(x %in% obsolete)])
 genes <- rep(geneAnno(xsc)[sel], listLen(goids))
-cache(categs <- cateGOry(genes, unlist(goids, use.names=FALSE)))
+categs <- cateGOry(genes, unlist(goids, use.names=FALSE))
 @ 
 % 
 We will select only those categories that contain at least 3 and no
@@ -1296,7 +1309,8 @@ more than 1000 genes.
 nrMem <- rowSums(categs) # number of genes per category
 remGO <- which(nrMem < 3 | nrMem > 1000)
 categs <- categs[-remGO,,drop=FALSE]
-# see if there are genes that don't belong to any category after applying the filter
+##  see if there are genes that don't belong to any category 
+## after applying the filter
 nrMem <- rowSums(t(categs))
 rem <- which(nrMem==0)
 if(length(rem)!=0) categs <- categs[,-rem, drop=FALSE]
@@ -1341,7 +1355,9 @@ Finally, we are ready to call the category summary functions:
 %
 <<cat6>>=
 acMean <- applyByCategory(stats, categs)
-acTtest <- applyByCategory(stats, categs, FUN=function(v) t.test(v, stats)$p.value)
+acTtest <- applyByCategory(stats, categs, 
+                           FUN=function(v) 
+                           t.test(v, stats)$p.value)
 acNum <- applyByCategory(stats, categs, FUN=length)
 isEnriched <- (acTtest<=1e-3) & (acMean>0.5)
 @ 
@@ -1413,8 +1429,8 @@ i.\,e.\, in \Robject{\Sexpr{experimentName}} directory of the
 \Rpackage{cellHTS} package.  First, We will load this file:
 %
 <<load file with previous analysis>>=
-data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"), header=TRUE, 
-                       as.is=TRUE, sep="\t")
+data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"), 
+                       header=TRUE, as.is=TRUE, sep="\t")
 @ 
 % 
 The file contains the columns 
@@ -1495,7 +1511,8 @@ template screen description file that can be edited and modified by
 the user. Below we examplify how such file can be created:
 %
 <<example for description file>>=
-out <- templateDescriptionFile("template-Description.txt", force=TRUE)
+out <- templateDescriptionFile("template-Description.txt",
+                               force=TRUE)
 out
 readLines(out)
 @
@@ -1671,7 +1688,8 @@ follows:
 %
 <<Z score method, eval=FALSE>>=
 xZ <- normalizePlates(x, scale="additive", log=FALSE,
-                      method="median", varianceAdjust="byPlate") 
+                      method="median",
+                      varianceAdjust="byPlate") 
 @ 
 
 %
@@ -1802,14 +1820,17 @@ par(mfcol=c(3,2))
 myPlots=function(z,...) 
 {
   hist(z[,1], 100, col="lightblue", xlab="",...)
-  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 
+                                   0.95, 
+                                   na.rm=TRUE)), ...)
   qqnorm(z[,1], pch='.', ...)
   qqline(z[,1], col='blue')
 }
 dv <- Data(xn)[,,1]
 myPlots(dv, main="untransformed")
 xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
-                        method="median", varianceAdjust="byExperiment")
+                        method="median", 
+                        varianceAdjust="byExperiment")
 dvlog <- Data(xlog)[,,1]
 myPlots(dvlog, main="log2")
 dev.off()
@@ -1820,14 +1841,16 @@ par(mfcol=c(3,2))
 myPlots=function(z,...) 
 {
     hist(z[,1], 100, col="lightblue", xlab="",...)
-    meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)), ...)
+    meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95,
+                                     na.rm=TRUE)), ...)
     qqnorm(z[,1], pch='.', ...)
     qqline(z[,1], col='blue')
 }
 dv <- Data(xn)[,,1]
 myPlots(dv, main="untransformed")
 xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
-                        method="median", varianceAdjust="byExperiment")
+                        method="median", 
+                        varianceAdjust="byExperiment")
 dvlog <- Data(xlog)[,,1]
 myPlots(dvlog, main="log2")
 @ 

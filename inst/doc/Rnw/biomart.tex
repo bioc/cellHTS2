@@ -1,3 +1,4 @@
+
 \begin{Schunk}
 \begin{Sinput}
 > require("cellHTS2")
@@ -72,7 +73,8 @@ which we select the \textit{D. melanogaster} dataset.
 %
 \begin{Schunk}
 \begin{Sinput}
-> mart <- useMart("ensembl", dataset = "dmelanogaster_gene_ensembl")
+> mart <- useMart("ensembl", 
++                 dataset="dmelanogaster_gene_ensembl")
 \end{Sinput}
 \end{Schunk}
 % 
@@ -94,9 +96,10 @@ query). We use the \Rfunction{getBM} function of the package
 %
 \begin{Schunk}
 \begin{Sinput}
-> myGetBM = function(att) getBM(attributes = c("flybasecgid_gene", 
-+     att), filter = "flybasecgid_gene", values = unique(geneAnno(xsc)), 
-+     mart = mart)
+> myGetBM <- function(att)
++     getBM(attributes=c("flybasecgid_gene", att), 
++           filter="flybasecgid_gene", 
++           values=unique(geneAnno(xsc)), mart=mart)
 \end{Sinput}
 \end{Schunk}
 % 
@@ -109,10 +112,11 @@ especially from gene ID to GO categories~\cite{GO}.
 %
 \begin{Schunk}
 \begin{Sinput}
-> bm1 <- myGetBM(c("chromosome_name", "start_position", "end_position", 
-+     "description"))
+> bm1 <- myGetBM(c("chromosome_name", "start_position", 
++                  "end_position", "description"))
 > bm2 <- myGetBM(c("flybasename_gene", "flybase_gene_id"))
-> bm3 = myGetBM(c("go_biological_process_id", "go_biological_process_description"))
+> bm3 = myGetBM(c("go_biological_process_id", 
++                 "go_biological_process_description"))
 \end{Sinput}
 \end{Schunk}
 %
@@ -141,12 +145,15 @@ where necessary.
 \begin{Schunk}
 \begin{Sinput}
 > id <- geneAnno(xsc)
-> bmAll <- cbind(oneRowPerId(bm1, id), oneRowPerId(bm2, id), oneRowPerId(bm3, 
-+     id))
+> bmAll <- cbind(
++    oneRowPerId(bm1, id),
++    oneRowPerId(bm2, id),
++    oneRowPerId(bm3, id)) 
 > bdgpbiomart <- cbind(fData(xsc), bmAll)
 > fData(xsc) <- bdgpbiomart
-> fvarMetadata(xsc)[names(bmAll), "labelDescription"] <- sapply(names(bmAll), 
-+     function(i) sub("_", " ", i))
+> fvarMetadata(xsc)[names(bmAll), "labelDescription"] <- 
++     sapply(names(bmAll), 
++            function(i) gsub("_", " ", i) )
 \end{Sinput}
 \end{Schunk}
 
