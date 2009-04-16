@@ -383,7 +383,6 @@ data2003$ourScore <- as.vector(Data(xsc))[i]
 
 
 <<scoresComparison,eval=FALSE>>=
-require("geneplotter")
 png("cellhts2Complete-scoresComparison.png", width=324, height=324)
 par(mfrow=c(7,9), mai=c(0,0,0,0))
 for(i in 1:max(data2003$Plate)) 

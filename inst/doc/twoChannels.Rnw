@@ -360,7 +360,6 @@ negC <- which(regexpr(negControls[2], as.character(wellAnno(x)), perl=TRUE)>0)
 
 ylim <- range(F, na.rm=TRUE)
 xlim <- range(R, na.rm=TRUE)
-require("geneplotter")
 
 par(mfrow=c(1,ncol(F)), mai=c(1.15,1.15, 0.3,0.3))
 for (r in 1:ncol(F)) {
