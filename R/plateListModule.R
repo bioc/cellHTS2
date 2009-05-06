@@ -569,19 +569,23 @@ histFun <- function()
             if (r %in% whHasData[[ch]])
             {
                 makePlot(file.path(basePath, subPath), con=con,
-                         name=sprintf("hist_Channel%d_%02d",ch,r), w=plsiz, h=plsiz*0.6, fun = function() 
+                         name=sprintf("hist_Channel%d_%02d",ch,r), w=plsiz,
+                         h=plsiz*0.6, fun=function() 
                      {
                          par(mai=c(0.7,0.25,0.01,0.1))
                          hist(platedat[,,r,ch], xlab ="", breaks=brks[[ch]],
                               col = gray(0.95), yaxt = "n", main="")
                          rug(platedat[,,r,ch])
-                         for(jj in aa) rug(platedat[,,r,ch][mtt[[ch]]==jj], col=wellTypeColor[jj])
+                         for(jj in aa) rug(platedat[,,r,ch][mtt[[ch]]==jj],
+                                           col=wellTypeColor[jj])
                      }
                          , print=FALSE)
                 img <- c(img, sprintf("hist_Channel%d_%02d.png",ch,r))
-                cnam <- paste("Dynamic range ", ifelse(maxRep>1, sprintf("(replicate %d)", r), ""))
+                cnam <- paste("Dynamic range ", ifelse(maxRep>1,
+                                                       sprintf("(replicate %d)", r), ""))
                 dynRange <- as.vector(qmsummary[[sprintf("Channel %d", ch)]][cnam])
-                caption <- c(caption, ifelse(is.na(dynRange), "", sprintf("Dynamic range: %s", dynRange)))
+                caption <- c(caption, ifelse(is.na(dynRange), "",
+                                             sprintf("Dynamic range: %s", dynRange)))
                 title <- c(title, sprintf("Replicate %d", r))
             } 
             else 
@@ -591,8 +595,10 @@ histFun <- function()
                 title <- c(title, NA)
             }			
         }## for r
-        imgList[[tabTitle]] <- chtsImage(data.frame(title=title, shortTitle=title, thumbnail=img,
-                                                 fullImage=gsub("png$", "pdf", img), caption=caption))
+        imgList[[tabTitle]] <- chtsImage(data.frame(title=title, shortTitle=title,
+                                                    thumbnail=img,
+                                                    fullImage=gsub("png$", "pdf", img),
+                                                    caption=caption))
         chList[[ch]] <- c(chList[[ch]], imgList)      
     } ## for channel
     return(chList)
@@ -777,7 +783,7 @@ chanCorrFun <- function()
                          name=sprintf("scp_Rep%d", r), w=plsiz, h=plsiz, fun = function()
                      {
                          par(mai=c(0.5,0.5,0.1,0.1))
-                         ylim=c(min(platedat, na.rm=TRUE), max(platedat, na.rm=TRUE))
+                         ylim <- range(platedat, na.rm=TRUE, finite=TRUE)
                          plot(platedat[,,r,1], platedat[,,r,2], pch=16, cex=0.5,
                               ylim=ylim, xlab="Channel 1", ylab="Channel 2", col=wellTypeColor[mtt[[r]]])
                          abline(a=0, b=1, col="lightblue")

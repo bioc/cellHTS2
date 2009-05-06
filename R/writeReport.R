@@ -298,8 +298,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
         }
    
         ## Define the bins for the histograms (channel-dependent)
-        brks <- apply(if(overallState["normalized"]) xnorm else xraw, 3, range, na.rm=TRUE)
-        brks <-apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10)))
+        brks <- apply(if(overallState["normalized"]) xnorm else xraw, 3, range, na.rm=TRUE, finite=TRUE)
+        brks <- apply(brks, 2, function(s) pretty(s, n=ceiling(nrWell/10)))
         ## Coerce to list also for the case ch=1 or for the case when brks have equal length
         ## for each channel 
         if(!is.list(brks))

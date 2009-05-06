@@ -144,23 +144,35 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
 
 boxplotwithNA <- function(x, batch, ...)
 {
-    sel <- apply(x,2,function(x) all(is.na(x)))
-    bc <- rep(1, ncol(x))
-    bc[sel] <- NA
-    xsp <- split(x, col(x))
-    bp <- boxplot(xsp, plot=FALSE)
-    border <- IQR(x, na.rm=TRUE)/10
-    lowerLim <- min(bp$stats[1,], na.rm=TRUE)-border
-    upperLim <- max(bp$stats[5,], na.rm=TRUE)+border
-    boxplot(xsp, ..., ylim=c(lowerLim, upperLim), border=bc)
-    if(ncol(x)==1)
-        axis(1, 1)
-    bdiff <- diff(batch)
-    if(sum(bdiff, na.rm=TRUE)>0)
+    if(!all(is.na(x)))
     {
-        ind <- 1:length(batch)
-        abline(v=which(as.logical(bdiff))+0.5, lty=1)
-    } 
+        sel <- apply(x,2,function(x) all(is.na(x)))
+        bc <- rep(1, ncol(x))
+        bc[sel] <- NA
+        xsp <- split(x, col(x))
+        bp <- boxplot(xsp, plot=FALSE)
+        border <- IQR(x, na.rm=TRUE)/10
+        lowerLim <- min(bp$stats[1,], na.rm=TRUE)-border
+        upperLim <- max(bp$stats[5,], na.rm=TRUE)+border
+        boxplot(xsp, ..., ylim=c(lowerLim, upperLim), border=bc)
+        if(ncol(x)==1)
+            axis(1, 1)
+        bdiff <- diff(batch)
+        if(sum(bdiff, na.rm=TRUE)>0)
+        {
+            ind <- 1:length(batch)
+            abline(v=which(as.logical(bdiff))+0.5, lty=1)
+        }
+    }
+    else
+    {
+        args <- list(...)
+        tks <- 1:ncol(x)
+        plot(tks, tks, type="n", axes=FALSE, xlab=args$xlab,
+             ylab=args$ylab, xlim=c(0, max(tks)), main=args$main)
+        axis(1, at=tks-0.5, labels=tks)
+        box()
+    }
 }
 
 
@@ -214,7 +226,7 @@ densityplot <- function(values, zfacs, ...)
 
 controlsplot <- function(xvals, yvals, batch, ...)
 {
-    ylim <- range(unlist(yvals), na.rm=TRUE)
+    ylim <- range(unlist(yvals), na.rm=TRUE, finite=TRUE)
     inc <- 0.2*diff(ylim)
     ylim <- ylim+c(-inc, inc)
     cols <- colors4Controls(xvals)

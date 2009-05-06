@@ -165,9 +165,11 @@ setMethod("Data", signature(object="cellHTS"),
           dat=NULL
           if(length(ch)) {
               dat <- array(NA, dim=c(dim(object), "Channels"=length(ch)))
-                                        #NB: we assume that sampleNames is identical across channels
-              dimnames(dat)=list(Features=featureNames(object), Sample=sampleNames(object)[[1]],
-                      Channels=ch)
+              ## NB: we assume that sampleNames is identical across channels
+              dimnames(dat)=list(Features=featureNames(object),
+                                 ##Sample=sampleNames(object)[[1]],
+                                 Sample=sampleNames(object),
+                                 Channels=ch)
               dat[] <- sapply(ch, function(i) assayDataElement(object, i))
           }
           return(dat) 
@@ -190,9 +192,9 @@ setReplaceMethod("Data",
                  if(any(dim(value)!=d))
                      stop(sprintf(paste("'value' should be an array with dimensions 'Features",
                                         "x Samples x Channels' (%s)."), paste(d, collapse=" x "))) 
-                 ##NB: we assume that sampleNames is identical across channels
                  if(is.null(dimnames(value)))
-                     dimnames(value) <- list(featureNames(object), sampleNames(object)[[1]],
+                     dimnames(value) <- list(featureNames(object),
+                                             sampleNames(object),
                                              channelNames(object))
                  for(i in c(1:length(ch)))
                      assayDataElement(object, ch[i]) <- matrix(value[,,i], nrow=d[1], ncol=d[2], 
@@ -201,7 +203,7 @@ setReplaceMethod("Data",
                  if(any(dimnames(value)[[3]]!=channelNames(object)))
                      channelNames(object) <- dimnames(value)[[3]]
                  ## in case 'value' had different sample names in it.
-                 sampleNames(phenoData(object)) <- sampleNames(object)[[1]] 
+                 sampleNames(phenoData(object)) <- sampleNames(object)
                  featureNames(object) <- dimnames(value)[[1]]
 
                  ## sampleNames(assayData(object)) <- sampleNames(phenoData(object))

@@ -133,9 +133,10 @@ readPlateList <- function(filename,
         batch[pd$Plate[i], pd$Replicate[i]] <- if(!is.null(bt)) bt else 1
 
     } ## for
+    
 
     if(verbose)
-        cat("\rRead", nrow(pd), "plates.             \n\n")
+        cat("\rRead", nrow(pd), "plates.                                                \n\n")
 
     ## ----  Store the data as a "cellHTS" object ----
     ## arrange the assayData slot:
@@ -179,11 +180,19 @@ readPlateList <- function(filename,
 
     ## output the possible errors that were encountered along the way:
     whHadProbs <- which(status!="OK")
+    #if(length(whHadProbs) == length(pd$Filename))
+    #    stop("None of the raw data files could be read without errors.\nAborting data import.",
+    #         call.=FALSE)
     if(length(whHadProbs)>0 & verbose) {
         idx <- whHadProbs[1:min(5, length(whHadProbs))]
+        tab <- cbind(c("Filename", plateList(res)$Filename[idx]),
+                     c("Error", gsub("simpleError: ", "", gsub("simpleWarning: ", "", status[idx]))))
+        fl <- max(nchar(tab[,1]))+2
+        fill <- sapply(seq_along(tab[,1]), function(i)
+                       paste(rep(" ", max(0, fl-nchar(tab[i,1]))), collapse=""))
+        tab[,1] <- paste(tab[,1], fill, sep="")
         msg <- paste("Please check the following problems encountered while reading the data:\n",
-                     "\tFilename \t Error\n", "\t",
-                     paste(plateList(res)$Filename[idx], status[idx], sep="\t", collapse="\n\t"),
+                     paste(tab[,1], tab[,2], sep="", collapse="\n"),
                      if(length(whHadProbs)>5) sprintf("\n\t...and %d more.\n",
                                                       length(whHadProbs)-5), "\n", sep="")
         warning(msg, call.=FALSE)

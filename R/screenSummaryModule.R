@@ -29,7 +29,8 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
                         fun=function(x=xsc)
                     {
                         par(mai=c(0.8,0.8,0.2,0.2))
-                        qqnorm(Data(x), main=NULL, cex.lab=1.3)
+                        qqnorm(Data(x), main=NULL, cex.lab=1.3,
+                               ylim=range(Data(x), na.rm=TRUE, finite=TRUE))
                         qqline(Data(x), col="darkgray", lty=3)
                     },
                         print=FALSE)
