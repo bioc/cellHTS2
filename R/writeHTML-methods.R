@@ -254,10 +254,10 @@ setAs(from="chtsImage", to="data.frame", def=function(from)
       tt <- if(!length(from@tooltips)) rep(NA, ltm) else from@tooltips
       df <- data.frame(ID=seq_len(ltm), Title=I(ti), Caption=I(ca), FullImage=I(fi),
                        Pdf=I(sapply(fi, function(y) ifelse(is.na(y), "", "pdf"))),
-                       Thumbnail=I(tm), Class=from@jsclass, AdditionalCode=ac, Map=map,
+                       Thumbnail=I(tm), Class=from@jsclass, AdditionalCode=ac, Map=I(map),
                        row.names=NULL)
        if(any(is.na(df)))
-           df[is.na(df)] <- ""
+           df[is.na(df)] <- I("")
       return(df)
   })
 

@@ -18,12 +18,14 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
                                      args=append(list(object=xsc, map=map),
                                      imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
                         print=FALSE, isImageScreen=TRUE)
-        imgList[["Scores"]] <- chtsImage(data.frame(title="Screen-wide image plot of the scored values",
-                                                    thumbnail="imageScreen.png", 
-                                                    fullImage="imageScreen.pdf",
-                                                    map=if(!is.null(res)) screenImageMap(object=res$obj,
-                                                    tags=res$tag, "imageScreen.png",
-                                                    cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs) else NA))
+        imgList[["Scores"]] <-
+            chtsImage(data.frame(title="Screen-wide image plot of the scored values",
+                                 thumbnail="imageScreen.png", 
+                                 fullImage="imageScreen.pdf",
+                                 map=if(!is.null(res)) screenImageMap(object=res$obj,
+                                 tags=res$tag, "imageScreen.png",
+                                 cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs)
+                                 else NA))
                                                     
         qqn <- makePlot(outdir, con=con, name="qqplot", w=7, h=7, psz=8,
                         fun=function(x=xsc)
@@ -63,8 +65,9 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
 
 
 
-## This function is used to split the Screen-wide image plot of the scored values into rectangle
-## areas for a HTML imageMap in order that clicking on a plate will link to its quality report.
+## This function is used to split the Screen-wide image plot of the
+## scored values into rectangle areas for a HTML imageMap in order
+## that clicking on a plate will link to its quality report.
 screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
                            imageScreenArgs=imageScreenArgs)
 {			
@@ -104,7 +107,8 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
                                    paste(toAdd[j,], collapse=","),"\"", sep=""),
                              paste(" ", paste(names(tags), "=\"",
                                               c(paste('Plate', plateCounter,sep=' '),
-                                                paste("..", plateCounter, 'index.html', sep='/')),
+                                                paste("..", plateCounter, 'index.html',
+                                                      sep='/')),
                                               "\"", sep=""), collapse=" "), " alt=\"\"/>\n",
                              sep="")
             out <- paste(out, newLine)	

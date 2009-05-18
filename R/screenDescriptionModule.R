@@ -1,5 +1,5 @@
-## The workhorse function for the 'Screen Results module': a downloadable ASCII table of
-## the screening results and a sortable HTML table. 
+## The workhorse function for the 'Screen Description module': a separate page with the info
+## from the description file
 writeHtml.screenDescription <- function(cellHTSList, module, overallState, outFile, con, ...)
 {
     if(overallState["configured"])

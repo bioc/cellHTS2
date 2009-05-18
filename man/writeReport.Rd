@@ -18,7 +18,8 @@ writeReport(
   imageScreenArgs=NULL,
   posControls,
   negControls,
-  mainScriptFile=NA)
+  mainScriptFile=NA,
+  gseaModule=NULL)
 }
 
 \arguments{
@@ -70,8 +71,10 @@ writeReport(
 
   \item{mainScriptFile}{ The path to the R script generating the current
     report. We strongly advice to store this script in the compendium
-    for future reference. }
-  
+    for future reference.}
+
+  \item{gseaModule}{Add the output of a gene set enrichment analysis to
+    the report. This is totally experimental at this time.}
 }
 
 \details{
