@@ -178,7 +178,8 @@ identifiers.  } \seealso{ \code{\link[prada:plotPlate]{plotPlate}},
 \author{
 
   Florian Hahne \email{fhahne@fhcrc.org}, Ligia P. Bras
-  \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk}
+  \email{ligia@ebi.ac.uk}, Wolfgang Huber \email{huber@ebi.ac.uk},
+  Gabor Bakos
 
 }
 
