@@ -583,22 +583,65 @@ td.plateConfModule.legend
 /* Sortable tables */
 table.sortable
 {
-    border:1px solid gray;
     font-family:Helvetica;
-    font-size:12px;
-    
+    font-size:12px; 
+}
+
+
+table.sortable.gsea
+{
+    position:relative;
+    left:-39px;
 }
 
 table.sortable td
 {
     border:none;
+    padding:2px 10px;
 }
 
-table.sortable thead {
+table.sortable td.sorttable_nosort
+{
+    background-color:white;
+    cursor: default;
+}
+
+table.sortable thead 
+{
+    text-align:center;
     background-color:#eee;
     color:#666666;
+    font-size:13px;
     font-weight: bold;
-    cursor: default;
+    cursor: pointer;
+}
+
+
+table.sortable td a
+{
+    text-decoration:none;
+    color:darkblue;
+}
+
+table.sortable td a:hover
+{
+    color:#4f4f4f;
+}
+
+table.sortable td.details
+{
+    width:15px;
+    height:15px;
+    padding:0px;
+    background-image:url(lupeSmall.png);
+    background-repeat:no-repeat;
+    background-position:center;
+}
+
+table.sortable td.details:hover
+{
+    background-image:url(lupeSmallbw.png);
+    cursor:pointer;
 }
 
 div.download

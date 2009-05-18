@@ -37,8 +37,19 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
         imgList[["Q-Q Plot"]] <- chtsImage(data.frame(title="Normal Q-Q Plot",
                                                       thumbnail="qqplot.png",
                                                       fullImage="qqplot.pdf"))
+        dens <- makePlot(outdir, con=con, name="density", w=7, h=7, psz=8,
+                        fun=function(x=xsc)
+                    {
+                        par(mai=c(0.8,0.8,0.2,0.2))
+                        plot(density(Data(x), na.rm=TRUE), main="", cex.lab=1.3)
+                    },
+                        print=FALSE)
+        imgList[["Distribution"]] <- chtsImage(data.frame(title="Density Distribution",
+                                                      thumbnail="density.png",
+                                                      fullImage="density.pdf"))
+        
         stack <- chtsImageStack(list(imgList), id="imageScreen",
-                                tooltips=addTooltip(names(imgList), "Help"))        
+                                tooltips=addTooltip(names(imgList), ""))        
         writeHtml.header(con)
         writeHtml(stack, con)
         writeHtml.trailer(con)

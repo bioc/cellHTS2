@@ -118,7 +118,7 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
           </td>
           %s", red[i], stat[i],
                addTooltip(sprintf("Detailed QC information for plate %s across all replicates and channels.", i),
-                          "Help", FALSE), pl))
+                          "", FALSE), pl))
         curPlate <- curPlate+red[i]
         class <- if(class=="odd") "even" else "odd"
     }
@@ -468,7 +468,7 @@ QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, gen
     chList <- myCall(chanCorrFun, env)
     names(chList) <- channelNames
     stack <- chtsImageStack(chList, id="perExpQC", title=paste("Experiment report for", name),
-                            tooltips=addTooltip(names(chList[[1]]), "Help"))
+                            tooltips=addTooltip(names(chList[[1]]), ""))
     writeHtml(stack, con=con, vertical=FALSE)
     return(list(url=fn, qmsummary=qmsummary)) 
 }

@@ -1417,6 +1417,94 @@ cellHTS2:::dataframeOutput(res, header=TRUE,
 @ 
 %
 
+We have recently added an experimental feature to the
+\Rpackage{cellHTS2} package in order to integrate such category
+analyses into the HTML report framework. It leverages functionality
+from the \Rpackage{GSEABase} package, which was specifically designed
+to deal with gene sets. The feature is exemplyfied using the KEGG
+pathway information available though the \Rpackage{KEGG.db} package.
+
+First we have to create an object of class \Rclass{GeneSetCollection}
+which represents the mapping of genes to KEGG pathways. The geneIDs in
+the gene set collection are supposed to map to the geneIDs of the
+assay scores. From the \Rpackage{KEGG.db} package we get a list of
+pathway mapping to FlyBase identifiers.
+<<geneset>>=
+library(KEGG.db)
+library(GSEABase)
+kegg <- as.list(KEGGPATHID2EXTID)
+kegg <- kegg[grep("dme", names(kegg))]
+gsc <- 
+    GeneSetCollection(mapply(function(keggId, geneId)
+                             GeneSet(unique(geneId), 
+                                     geneIdType=EntrezIdentifier(),
+                                     collectionType=KEGGCollection(keggId),
+                                     setName=keggId), 
+                             names(kegg), kegg))
+@ 
+%
+In a subsequent step we want to filter out all the assay scores
+without proper annotation (e.g., control wells) and also restrict our
+collection of gene sets to those containing at least 5 genes. The gene
+annotations of our assay are the old CG identifiers, but we have
+retrieved a mapping to proper FlyBase identifiers in the previous
+\Rpackage{biomaRt} step.
+<<filterGeneset>>=
+scores <- as.vector(Data(xsc))
+names(scores) <- fData(xsc)$flybase_gene_id
+sel <- !is.na(scores) & !is.na(names(scores))
+scores <- scores[sel]
+                                
+## Only consider set with more than 5 genes
+gsc <- gsc[sapply(gsc, length) > 5]
+gsNames <- mget(gsub("dme", "", names(gsc)), KEGGPATHID2NAME)
+ann <- data.frame(Name=I(unlist(gsNames)))
+rownames(ann) <- names(gsc)
+@ 
+%
+Finally, we need to bundle up the assay scores and the gene set
+collection and define one or several summary statistics to show in the
+HTML report. Each of these statistics is supposed to be created by a
+separate function, which takes one mandatory and one optional
+argument. The mandatory argument is simply a vector of assay scores
+for the respective gene set. The optional second argument is a numeric
+vector of all available scores. This setup allows to compute simple
+statistics like means or medians, but also more complicated test
+statistics, for instance a $t$-test. The container for this
+information is an object of class \Rclass{gseaModule} and there is a
+convenient constructor which does most of the job.
+
+In the following example, we define four test statistics (mean,
+$p$-value of a $t$-test, its $t$-statistic and the number of genes in
+the gene set) and pass them to the constructor as a list. We also add
+a data.frame with further gene set annotation (in this case more human
+readable names for the pathways) and the vector of assays scores. Note
+that if no explicit vector is given, the scores of the
+\Rclass{cellHTS} object are used. In our case their identifiers don't
+match the gene sets FlyBase identifiers, and we also wanted to do a
+couple of extra filtering steps.
+<<gseamodule>>=
+gmod <- gseaModule(gsc, list("Mean"=function(x,...) mean(x),
+                             "P-value"=function(x,y) t.test(x, y)$p.value,
+                             "T-statistic"=function(x,y) t.test(x, y)$statistic,
+                             "NrGenes"=function(x,...) length(x)),
+                   annotation=ann, scores=scores)
+@ 
+%
+We can now re-write the \Rclass{cellHTS} report using the familiar
+Rfunction{writeReport} function with the addition \Robject{gseaModule}
+argument.
+<<rewriteReport>>=
+## Now load the cellHTS objects and rewrite the report
+out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+                   force=TRUE, plotPlateArgs = TRUE,
+                   outdir=tempdir(), gseaModule=gmod,
+                   imageScreenArgs = list(zrange=c( -4, 8), 
+                                          ar=1), map=TRUE) 
+browseURL(out)
+@ 
+
+
 %------------------------------------------------------------
 \section{Comparison with the results previously reported}
 %------------------------------------------------------------

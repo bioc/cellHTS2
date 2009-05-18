@@ -142,21 +142,30 @@ sorttable = {
 	        // sort based on the sort keys, and then put the rows back in order
 	        // which is a lot faster because you only do getInnerText once per row
 	        row_array = [];
+		class_array = [];
 	        col = this.sorttable_columnindex;
 	        rows = this.sorttable_tbody.rows;
 	        for (var j=0; j<rows.length; j++) {
-	          row_array[row_array.length] = [sorttable.getInnerText(rows[j].cells[col]), rows[j]];
+	            row_array[row_array.length] = [sorttable.getInnerText(rows[j].cells[col]), rows[j]];
+		    class_array[class_array.length] = rows[j].cells[1].className;
 	        }
 	        /* If you want a stable sort, uncomment the following line */
 	        //sorttable.shaker_sort(row_array, this.sorttable_sortfunction);
-	        /* and comment out this one */
+	          /* and comment out this one */
 	        row_array.sort(this.sorttable_sortfunction);
 	        
-	        tb = this.sorttable_tbody;
-	        for (var j=0; j<row_array.length; j++) {
-	          tb.appendChild(row_array[j][1]);
+	          tb = this.sorttable_tbody;
+		  for (var j=0; j<row_array.length; j++) {
+		      for (var k=0; k<row_array[j][1].cells.length; k++) {
+			  if(row_array[j][1].cells[k].className == "even" ||
+			     row_array[j][1].cells[k].className == "odd")
+			  {
+		      	      row_array[j][1].cells[k].className=class_array[j];
+			  }
+		      }
+		      tb.appendChild(row_array[j][1]);
 	        }
-	        
+		  	        
 	        delete row_array;
 	      });
 	    }

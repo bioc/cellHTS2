@@ -9,11 +9,10 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
                       colnames(out))
          sel <- !(is.na(out$score))
          out <- out[sel,keep]
-         rownames(out) <- NULL
          writeHtml.header(con)
          writeLines(sprintf(paste("<div class=\"download\"%s><a href=\"%s\" target=\"_new\"><img",
                                   "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
-                            addTooltip("downloadTable", "Help"),
+                            addTooltip("downloadTable", ""),
                             file.path("..", "in", basename(file))), con)
          if(length(unlist(out)) > 20000)
          {
@@ -22,7 +21,11 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
          }
          else
          {
-             hwrite(out, table.class="sortable", border=FALSE, center=TRUE, page=con)
+             #out <- rbind(colnames(out), out)
+             classes <- plateListClass(out, rep(1, nrow(out)))
+             #classes[1,] <- NA
+             hwrite(out, table.class="sortable", border=FALSE, center=TRUE, page=con, class=classes,
+                    row.names=FALSE)
          }             
          writeHtml.trailer(con)
          return(NULL)

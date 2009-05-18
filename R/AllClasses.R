@@ -2,6 +2,23 @@
 ##------------------------------------------------------------------------------
 ## Validity functions
 ##------------------------------------------------------------------------------
+## Check for the class of object x and its length and cast error if wrong
+checkClass <- function(x, class, length=NULL, verbose=FALSE,
+                       mandatory=TRUE)
+{
+    if(mandatory && missing(x))
+        stop("Argument '", substitute(x), "' missing with no default",
+             call.=verbose)
+    msg <- paste("'", substitute(x), "' must be object of class ",
+                 paste("'", class, "'", sep="", collapse=" or "), sep="")
+    fail <- !any(sapply(class, function(c, y) is(y, c), x))
+    if(!is.null(length) && length(x) != length){
+        fail <- TRUE
+        msg <- paste(msg, "of length", length)
+    }
+    if(fail) stop(msg, call.=verbose) else invisible(NULL)     
+}
+
 ## Pretty self-explainatory...
 equalOrZero <- function(i, j) ((i==j)||(i==0))
 
@@ -275,3 +292,110 @@ chtsImageStack <- function(stack=list(list()), id, title=as.character(NULL), too
         stop("'tooltips' must be a vector of the same length as number of replicates")
     new("chtsImageStack", stack=stack, id=id, title=title, tooltips=tooltips)
 }
+
+
+
+
+
+## Input for GSEA module, a separate class with a constructor
+##   1) GeneSetCollection object
+##   2) list of functions creating per set stats. These will be called by applyByCategory
+##      and need to be able to handle two mandatory arguments: x are the scores for
+##      the respective category, and y are all scores of the whole assay. This allows for
+##      things like t.test(x,y)...
+##   3) optional vector of scores, where names of the vector items are geneIDs mapping
+##      to the IDs in the GeneSetCollection
+## FIXME: how is preprocessing handled? In the function? Or should geneSets be dropped
+##        before? We could have a system for the obvious filtering steps somewhat similar
+##        to the unspecific filtering function for array data.
+setClass("gseaModule",
+         representation(geneSets="GeneSetCollection",
+                        statFuns="list",
+                        scores="matrix",
+                        annotation="data.frame"),
+         validity=function(object)
+     {
+         msg <- TRUE
+         if(!all(sapply(object@statFuns, is, "function")))
+             msg <- paste("All list items in slot 'stats' have to be functions returning a",
+                          "numeric vector.")
+         if(length(object@scores) && is.null(rownames(object@scores)))
+             msg <- "Items in the optional 'scores' matrix have to be named."
+         if(nrow(object@annotation) != length(object@geneSets) &&
+            ! all(rownames(object@annotation) == names(object@geneSet)))
+             msg <- paste("The data frame in the 'annotation' slot has to be of equal length as",
+                          "the geneSet collection and its rownames have to match the geneSet names.")
+         msg
+     },
+         prototype=list(statFuns=list(values=function(x, ...) x), scores=matrix(nrow=0, ncol=0),
+         annotation=data.frame()))
+
+## Constructor
+gseaModule <- function(geneSets, statFuns, scores, annotation)
+{
+    if(missing(annotation)){
+        annotation <- as.data.frame(matrix(ncol=0, nrow=length(geneSets)))
+        rownames(annotation) <- names(geneSets)
+    }
+    if(missing(scores))
+        scores <- matrix(nrow=0, ncol=0)
+    checkClass(geneSets, "GeneSetCollection")
+    checkClass(statFuns, "list")
+    if(is.numeric(scores))
+        scores <- as.matrix(scores, ncol=2)
+    obj <- new("gseaModule", geneSets=geneSets, statFuns=statFuns, scores=scores,
+               annotation=annotation)
+    validObject(obj)
+    return(obj)
+}
+
+myApplyByCategory <- 
+function (stats, Amat, FUN = mean, ...) 
+{
+    if (ncol(Amat) != nrow(stats)) 
+        stop("wrong dimension for Amat")
+    if (is.matrix(Amat)) 
+        if (!is.logical(Amat)) 
+            Amat = (Amat == 0)
+    res <- apply(Amat, 1, function(x) FUN(stats[x,], ...))
+    ## if(is.list(res) || length(res)!=nrow(Amat))
+    ##         stop("The return value of the function has to be a vector of the same ",
+    ##              "length as nrow(Amat).")
+    names(res) <- rownames(Amat)
+    return(res)
+}
+
+
+evalGseaModule <- function(module, scores)
+{
+    Am <- incidence(module@geneSets)
+    Am <- Am[, intersect(rownames(scores), colnames(Am))]
+    ## Filter out Categories with less than three scores
+    ## FIXME: Later there should be a more generic filtering scheme to archive this
+    #ns <- rowSums(Am)>3
+    #Am <- Am[ns,]
+    stats <- scores[colnames(Am),,drop=FALSE]
+    
+
+    ## This produces a qqnorm plot from the scores
+    ## tA <- as.vector(Am2 %*% stats) 
+    ## tAadj <- tA/sqrt(rowSums(Am2)) 
+    ## names(tA) <- names(tAadj) <- rownames(Am2) 
+    ## qqnorm(tAadj) 
+    Aml <- as.logical(Am)
+    dim(Aml) <- dim(Am)
+    dimnames(Aml) <- dimnames(Am)
+
+    res <- NULL
+    sfuns <- module@statFuns
+    for(i in 1:length(sfuns))
+        res <- cbind(res, myApplyByCategory(stats, Aml, sfuns[[i]], stats))
+    colnames(res) <- names(sfuns)
+    values <- myApplyByCategory(stats, Aml, function(x) x)
+    return(list(stats=res, values=values))
+}
+
+
+setMethod("length",
+          signature("GeneSet"),
+          definition=function(x) length(geneIds(x)))

@@ -1,8 +1,12 @@
 importFrom("methods", "show")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
-importFrom("prada", "devDims", "plotPlate")
+importFrom("prada", "devDims", "plotPlate", "devRes")
 importFrom("graphics", "plot", "lines")
+
+importFrom("GSEABase", "GeneSetCollection")
+
+importFrom("Category", "applyByCategory")
 
 exportClasses("cellHTS", "ROC")
 
@@ -16,7 +20,8 @@ export("oneRowPerId",
        "getDynamicRange",
        "getMeasureRepAgreement",
        "getTopTable",
-       "getZfactor",       
+       "getZfactor",
+       "gseaModule",
        "imageScreen",
        "normalizePlates",
        "plotSpatialEffects",

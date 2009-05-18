@@ -61,6 +61,11 @@ createGlossary <- function()
     completeDef <- ""
     glossary <- setDefinition(glossary, "Plate Summaries", simpleDef, completeDef)
 
+    ## The GSEA module
+    simpleDef <- "A basic gene set enrichment analysis. Output is a table and plots of user-defined functions that compute per gene set statistics based on the assays scores. Further drill-down is available to the actual assays scores of each gene set"
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "GSEA", simpleDef, completeDef)
+
     simpleDef <- "A comprehensive plot of the the experiment results. The scored values for each plate are indicated by color coding on a rectangular grid."
     completeDef <- ""
     glossary <- setDefinition(glossary, "Screen Summary", simpleDef, completeDef)
@@ -117,6 +122,22 @@ createGlossary <- function()
     simpleDef <- "The correlation of the measurement values between two channels in a scatter plot. Depending on the experimental design, the two channels can be completely independent, and strong correlation could indicate problems."
     completeDef <- ""
     glossary <- setDefinition(glossary, "Channel Correlation", simpleDef, completeDef)
+
+     simpleDef <- "Download the result table of the gene set enrichment analysis as a tab-delimited ASCII file. You can import this file into any spreadsheet program of your choice."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "downloadStatsTable", simpleDef, completeDef)
+
+    simpleDef <- "Clickable image plot of assay scores, startified by plates."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Scores", simpleDef, completeDef)
+
+    simpleDef <- "Normal Q-Q plot of assay scores. Deviations from the line indicate non-normally distributed values."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Q-Q Plot", simpleDef, completeDef)
+
+    simpleDef <- "Density plot of the assay score distribution."
+    completeDef <- ""
+    glossary <- setDefinition(glossary, "Distribution", simpleDef, completeDef)
        
     return(glossary)
 }

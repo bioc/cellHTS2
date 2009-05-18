@@ -38,12 +38,12 @@ writeHtml.trailer <- function(con)
  
 
 ## Add markup and javascript for a tooltip bubble
-addTooltip <- function(word, title="Definition", fromGlossary=TRUE, link=FALSE)
+addTooltip <- function(word, title="Definition", fromGlossary=TRUE, link=FALSE, trailer="\"")
 {
     link <- if(link) " onClick=if(tt_Enabled) linkToFile('glossary.html');" else ""
     desc <- if(fromGlossary) getDefinition(word, createGlossary()) else word
-    sprintf(" onmouseover=\"Tip('%s', WIDTH, 250, TITLE, '%s', OFFSETX, 1);\" onmouseout=\"UnTip();\"%s",
-            desc, title, link)
+    sprintf(" onmouseover=\"Tip('%s', WIDTH, 250, TITLE, '%s', OFFSETX, 1);\" onmouseout=\"UnTip();%s%s",
+            desc, title, trailer, link)
 }
 
 
@@ -165,7 +165,7 @@ writeHtml.mainpage <- function(title, tabs, con)
       </tr>
       <tr class=\"border middle\">
         <td class=\"border left\"></td>
-        <td class=\"main\">", addTooltip("switchHelp", "Help"),
+        <td class=\"main\">", addTooltip("switchHelp", ""),
                        title, format(Sys.time(), "%a %b %d %H:%M %Y")), con)
     tabs <- tabs[!apply(tabs, 1, function(y) all(is.na(y))),]
     writeHtml.tabCollection(tabs, size="medium", con=con)
@@ -231,7 +231,7 @@ setMethod("writeHtml",
           title <- if(!length(x@title)) NA else x@title
           res <- data.frame(title=title, url=url,
                             script=sprintf("toggleTabById('%s', this, '%s');\"%s",
-                            "mainTab", url, addTooltip(title, "Help")))
+                            "mainTab", url, addTooltip(title, "")))
           if(!is.null(tmp) && is.list(tmp) && names(tmp) %in% c("id", "total", "class"))
               res <- cbind(res, tmp)
           return(invisible(res))
@@ -308,7 +308,7 @@ setMethod("writeHtml",
                   </tr>",
                                         imgs[i, "Thumbnail"],
                                         imgs[i, "Map"], imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
-                                        addTooltip("pdf", "Help"), imgs[i, "Pdf"]))
+                                        addTooltip("pdf", ""), imgs[i, "Pdf"]))
               out <- c(out, "</table>")
               if(length(st)>1 && i < nrow(tabs) && !vertical)
                   out <- c(out, "</td>\n<td>")

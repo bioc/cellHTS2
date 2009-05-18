@@ -197,7 +197,7 @@ createOutputFolder <- function(outdir, xr, force)
 ##    Step 7 -  Screen-wide image plot (only if scored data are available)	
 writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, outdir,
                         force=FALSE, map=FALSE, plotPlateArgs=FALSE, imageScreenArgs=NULL,
-                        posControls, negControls, mainScriptFile=NA)
+                        posControls, negControls, mainScriptFile=NA, gseaModule=NULL)
 {
     ## Verification of the arguments
     ## We are very particular about the values in cellHTSlist
@@ -620,7 +620,17 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                       funArgs=list(mainScriptFile=mainScriptFile,
                                       outputFile=file.path(outdir, "in", "mainScript.R")))
     tab <- rbind(tab, writeHtml(screenScript.module))
-        
+
+    ## The 'GSEA module': A basic gene set enrichment analysis.  The workhorse function to produce
+    ## the necessary HTML code is 'writeHtml.gseaModule'.
+    if(!is.null(gseaModule))
+    {
+        gsea.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "gseaModule.html"),
+                                  htmlFun=writeHtml.gseaModule, title="GSEA",
+                                  funArgs=list(gmod=gseaModule, outdir=outdir))
+        tab <- rbind(tab, writeHtml(gsea.module))
+    }
+    
     ## Create the main navgation page from the tab data.frame. This includes the basic screen information
     ## as well as the tabs to navigate to the different modules.
     indexFile <- file.path(outdir, "index.html")
