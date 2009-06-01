@@ -129,8 +129,8 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
     redHTML <- c(redHTML, "</tr></table>")
     if(configured)
     {
-        x <- x[,-1]
-        url <- url[,-1]
+        x <- x[,-1, drop=FALSE]
+        url <- url[,-1, drop=FALSE]
     }
     url[,"status"] <- NA
     em <- xr@plateList$errorMessage
