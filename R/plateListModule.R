@@ -10,7 +10,7 @@ writeHtml.plateList <- function(cellHTSList, module, exptab, links, center, glos
     links[!is.na(links[, "Filename"]),"Filename"] <- nn
     sel <- !is.na(links[, "status"])
     links[sel,"status"] <- file.path("../", links[sel,"status"])
-    links <- links[expOrder,]
+    #links <- links[expOrder,]
     writeQCTable(exptab, url=links, con=con, glossary=glossary, configured=configured,
                  xr=cellHTSList$raw)
     writeHtml.trailer(con)

@@ -268,7 +268,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     progress <-  myUpdateProgress(progress, "step0")
 
     ## Step 1 : Creating the output directory and write the screen description if present	
-        outdir <- createOutputFolder(outdir, xr, force)	
+    outdir <- createOutputFolder(outdir, xr, force)	
     if(overallState["configured"])
     {
         nm <- file.path("in", "Description.txt")
@@ -564,7 +564,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     plateList.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(),
-                                   links=url[expOrder,,drop=FALSE], exptab=exptab[expOrder,],
+                                   links=url[expOrder,,drop=FALSE], exptab=exptab[expOrder,,drop=FALSE],
                                    outdir=outdir, htmldir=htmldir,  expOrder=expOrder,
                                    configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
