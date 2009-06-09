@@ -135,8 +135,8 @@ readPlateList <- function(filename,
     } ## for
 
     if(verbose)
-        cat("\rRead", nrow(pd), "plates.             \n\n")
-
+        cat("\rRead", nrow(pd), "plates.                                                \n\n")
+        
     ## ----  Store the data as a "cellHTS" object ----
     ## arrange the assayData slot:
     dat <- lapply(seq_len(nrChannel), function(ch) 
@@ -188,16 +188,17 @@ readPlateList <- function(filename,
                                                       length(whHadProbs)-5), "\n", sep="")
         warning(msg, call.=FALSE)
     }
-
-    ## We only need the error code in the plateList, the full error message can be supplied as an additional
-    ## column, which we later use to create the tooltips.
+    ## We only need the error code in the plateList, the full error
+    ## message can be supplied as an additional column, which we later
+    ## use to create the tooltips.
     res@plateList$errorMessage <- NA
     if(any(whHadProbs))
     {
         res@plateList[whHadProbs, "errorMessage"] <- gsub("'", "", status[whHadProbs])
         res@plateList$status <- gsub("File not found.*", "ERROR",
                                      gsub("simpleError.*", "ERROR",
-                                          gsub("simpleWarning.*", "WARNING",  res@plateList$status)))
+                                          gsub("simpleWarning.*", "WARNING",
+                                               res@plateList$status)))
     }
     return(res)
 }
