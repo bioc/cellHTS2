@@ -463,32 +463,33 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                 if(!qmHaveBeenAdded)
                 {
                     TableNames <-
-                        if(twoWay)
-                        {
-                            c(paste("Replicate dynamic range",
-                                    c("(Activators)", "(Inhibitors)"), sep=" "),
-                              paste("Average dynamic range",
-                                    c("(Activators)", "(Inhibitors)"), sep=" "),
-                              "Spearman rank correlation")
-                        }
-                        else
-                        {
-                            if(length(namePos)==1 && namePos=="pos")
-                            { 
-                                c("Replicate dynamic range",
-                                  "Average dynamic range", "Repeatability standard deviation",
-                                  sprintf("Spearman rank correlation %s",
-                                          ifelse(nrReplicate==2, "", "(min - max)")))
-                            }
-                            else
-                            {
-                                c(sprintf("Replicate dynamic range (%s)", namePos), 
-                                  sprintf("Average dynamic range (%s)", namePos),
-                                  "Repeatability standard deviation", 
-                                  sprintf("Spearman rank correlation %s",
-                                          ifelse(nrReplicate==2, "", "(min - max)")))
-                            }
-                        }
+                        unique(
+                               if(twoWay)
+                           {
+                               c(paste("Replicate dynamic range",
+                                       c("(Activators)", "(Inhibitors)"), sep=" "),
+                                 paste("Average dynamic range",
+                                       c("(Activators)", "(Inhibitors)"), sep=" "),
+                                 "Spearman rank correlation")
+                           }
+                               else
+                           {
+                               if(length(namePos)==1 && namePos=="pos")
+                               { 
+                                   c("Replicate dynamic range",
+                                     "Average dynamic range", "Repeatability standard deviation",
+                                     sprintf("Spearman rank correlation %s",
+                                             ifelse(nrReplicate==2, "", "(min - max)")))
+                               }
+                               else
+                               {
+                                   c(sprintf("Replicate dynamic range (%s)", namePos), 
+                                     sprintf("Average dynamic range (%s)", namePos),
+                                     "Repeatability standard deviation", 
+                                     sprintf("Spearman rank correlation %s",
+                                             ifelse(nrReplicate==2, "", "(min - max)")))
+                               }
+                           })
                     url <- cbind(url,  matrix(as.character(NA), nrow=nrow(url),
                                               ncol=length(TableNames)))
                     for(j in TableNames)
@@ -564,8 +565,10 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     plateList.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
                                    funArgs=list(center=TRUE, glossary=createGlossary(),
-                                   links=url[expOrder,,drop=FALSE], exptab=exptab[expOrder,,drop=FALSE],
-                                   outdir=outdir, htmldir=htmldir,  expOrder=expOrder,
+                                   links=url[expOrder,,drop=FALSE],
+                                   exptab=exptab[expOrder,,drop=FALSE],
+                                   outdir=outdir, htmldir=htmldir,
+                                   expOrder=expOrder,
                                    configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
     progress <- myUpdateProgress(progress, "step3",

@@ -10,7 +10,6 @@ writeHtml.plateList <- function(cellHTSList, module, exptab, links, center, glos
     links[!is.na(links[, "Filename"]),"Filename"] <- nn
     sel <- !is.na(links[, "status"])
     links[sel,"status"] <- file.path("../", links[sel,"status"])
-    #links <- links[expOrder,]
     writeQCTable(exptab, url=links, con=con, glossary=glossary, configured=configured,
                  xr=cellHTSList$raw)
     writeHtml.trailer(con)
@@ -77,18 +76,22 @@ dataframeColor <- function(dataframe,
 ## The function creating the HTML table of QC scores including all links
 writeQCTable <- function(x, url, glossary, configured, xr, con)
 {
-    ## The glossary
+    ## The glossary. We need to fuzzy match the colnames to the glossary because
+    ## stuff can be added in parentheses at the end if multiple controls are present.
     if(!is.null(glossary))
     {
         cn <- colnames(x)
-        common <- intersect(glossary$word, cn)
+        cns <- gsub(" \\(.*", "", cn)
+        cns[grep("Spearman rank correlation (min - max)", cn, fixed=TRUE)] <-
+            "Spearman rank correlation (min - max)"
+        sel <- cns %in% intersect(glossary$word, cns)
         rownames(glossary) <- glossary$word
-        cn[match(common, cn)] <- paste("<span onmouseover=\"Tip('",
-                                       glossary[colnames(x[common]),2],
+        cn[sel] <- paste("<span onmouseover=\"Tip('",
+                                       glossary[cns[sel],2],
                                        "', WIDTH, 250, TITLE, 'Definition', OFFSETX, 1)\"",
                                        " onmouseout=\"UnTip();\" onClick=\"if(tt_Enabled) ",
                                        "linkToFile('glossary.html');\">",
-                                       colnames(x[common]),"</span>", sep="")
+                                       cn[sel],"</span>", sep="")
     }
     ## Finding the redundant plates
     ## hwriter does not allow for rowspans, so we have to fake an additional line
@@ -217,8 +220,6 @@ QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, gen
     con <- file(file.path(basePath, fn), open="w")
     on.exit(close(con))
     writeHtml.header(con, path="../html")
-    ##hwrite(paste("Experiment report for", name), con, center=TRUE, heading=1, br=TRUE) 
-    ## hwrite("",con, br=TRUE)
 	
     ## which of the replicate plates has not just all NA values
     whHasData <- list()
@@ -525,9 +526,9 @@ corrFun <- function()
     {
         imgList <- list()
         nrRep <- nrRepCh[ch]
-        img <- sprintf("scp_Channel%d.png", ch)
         if(nrRep==2) 
         {
+            img <- sprintf("scp_Channel%d.png", ch)
             title <- "Scatterplot between replicates"
             caption <- sprintf("Spearman rank correlation: %s<br>%s",
                                qmsummary[[sprintf("Channel %d", ch)]]["Spearman rank correlation "],
@@ -554,6 +555,7 @@ corrFun <- function()
         else if(nrRep>2)
         {
             title <- "Correlation between replicates"
+            img <- sprintf("Correlation_ch%d.png", ch)
             caption <- NA
             cm <- cor(platedat[,,whHasData[[ch]],ch], method="spearman",
                       use="pairwise.complete.obs")
@@ -570,7 +572,7 @@ corrFun <- function()
                      box()
                      axis(side=1, at=c(1:3), labels=paste("Rep", 1:3)) 
                      axis(side=2, at=c(1:3), labels=paste("Rep", 1:3))
-                     par( mar=c(4, 4, 2, 2))
+                     par(mar=c(4, 4, 2, 2))
                      image(m.legend, col="MyCol"(10), axes=FALSE)
                      box()
                      axis(side=1, at=seq(0, 1, 0.2))
@@ -753,12 +755,12 @@ intensFun <- function()
                                              xrange=plotPlateArgs$xrange[[ch]])
                                }
                                    , print=FALSE, isPlatePlot=TRUE)
-                    imap <- c(imap, if(plotPlateArgs$map) 
-                        myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
-                                                              ": value=",
-                                                              round(platedat[,,r,ch],3),
-                                                              sep="")), 
-                                   sprintf("pp_Channel%d_%d.png", ch, r)) else "")
+                    imap <- c(imap, if(plotPlateArgs$map)
+                              myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
+                                                                    ": value=",
+                                                                    round(platedat[,,r,ch],3),
+                                                                    sep="")), 
+                                         sprintf("pp_Channel%d_%d.png", ch, r)) else "")
                     img <- c(img, sprintf("pp_Channel%d_%d.png",ch,r))
                     caption <- c(caption, NA)
                 } 
