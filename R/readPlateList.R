@@ -48,16 +48,11 @@ readPlateList <- function(filename,
 
     ## auto-determine the plate format
     well <- as.character(importFun(f[1])[[1]]$well)
-    let <- substr(well, 1, 1)
-    num <- substr(well, 2, 3)
-    let <- match(let, LETTERS)
-    num <- as.integer(num)
-    if(any(is.na(let))||any(is.na(num)))
+    codes <- parseLetNum(well)
+    if(any(is.na(codes$lindex)) || any(is.na(codes$numbers)))
         stop(sprintf("Malformated column 'well' in input file %s", f[1]))
-
-    dimPlate <- c(nrow=max(let), ncol=max(num))
+    dimPlate <- c(nrow=max(codes$lindex), ncol=max(codes$numbers))
     nrWell <- prod(dimPlate)
-
     if(verbose)
         cat(sprintf("%s: found data in %d x %d (%d well) format.\n", name,
                     dimPlate[1], dimPlate[2], nrWell))
@@ -180,35 +175,128 @@ readPlateList <- function(filename,
 
     ## output the possible errors that were encountered along the way:
     whHadProbs <- which(status!="OK")
-    #if(length(whHadProbs) == length(pd$Filename))
-    #    stop("None of the raw data files could be read without errors.\nAborting data import.",
-    #         call.=FALSE)
     if(length(whHadProbs)>0 & verbose) {
         idx <- whHadProbs[1:min(5, length(whHadProbs))]
-        tab <- cbind(c("Filename", plateList(res)$Filename[idx]),
-                     c("Error", gsub("simpleError: ", "", gsub("simpleWarning: ", "", status[idx]))))
-        fl <- max(nchar(tab[,1]))+2
-        fill <- sapply(seq_along(tab[,1]), function(i)
-                       paste(rep(" ", max(0, fl-nchar(tab[i,1]))), collapse=""))
-        tab[,1] <- paste(tab[,1], fill, sep="")
         msg <- paste("Please check the following problems encountered while reading the data:\n",
-                     paste(tab[,1], tab[,2], sep="", collapse="\n"),
+                     "\tFilename \t Error\n", "\t",
+                     paste(plateList(res)$Filename[idx], status[idx], sep="\t", collapse="\n\t"),
                      if(length(whHadProbs)>5) sprintf("\n\t...and %d more.\n",
                                                       length(whHadProbs)-5), "\n", sep="")
         warning(msg, call.=FALSE)
     }
-
-    ## We only need the error code in the plateList, the full error message can be supplied as an additional
-    ## column, which we later use to create the tooltips.
+    ## We only need the error code in the plateList, the full error
+    ## message can be supplied as an additional column, which we later
+    ## use to create the tooltips.
     res@plateList$errorMessage <- NA
     if(any(whHadProbs))
     {
         res@plateList[whHadProbs, "errorMessage"] <- gsub("'", "", status[whHadProbs])
         res@plateList$status <- gsub("File not found.*", "ERROR",
                                      gsub("simpleError.*", "ERROR",
-                                          gsub("simpleWarning.*", "WARNING",  res@plateList$status)))
+                                          gsub("simpleWarning.*", "WARNING",
+                                               res@plateList$status)))
     }
     return(res)
 }
+
+
+
+
+## parse the LetterNumber representation of well coordinates into something
+## more amenable for computational processing. The output is a list of three
+## items:
+##   - letters: the letters part
+##   - numbers: the numbers part
+##   - lindex: a numerical index for the letters (i.e., the row indices)
+parseLetNum <- function(well)
+{
+    well <- gsub(" ", "", well)
+    s <- strsplit(well[1], "")[[1]]
+    nl <- length(unlist(sapply(s, function(x) grep("[A-Za-z]", x))))
+    if(nl>2)
+        stop("Too many letters in the well identifier.")
+    let <- substr(well, 1, nl)
+    num <- as.integer(substr(well, nl+1, 100))
+    letInd <- if(nl==1) match(let, LETTERS) else
+    (match(substr(let,1,1), LETTERS)-1) * 26 + match(substr(let,2,2), LETTERS)
+    if(any(is.na(num)) || any(is.na(letInd)))
+        stop("Malformated well identifier.")
+    return(list(letters=let, numbers=num, lindex=letInd))
+}
+
+
+## convert from one representation to another
+convertWellCoordinates <- function(x, pdim, type="384")
+{
+    if(!missing(pdim))
+    {
+        if(!missing(type))
+            stop("Please specify either 'pdim' or 'type' but not both.")
+        storage.mode(pdim) <- "integer"
+        if(!(all(names(pdim) %in% c("nrow", "ncol")) && (length(names(pdim))==2L)))
+            stop("'pdim' should be a vector of length 2 with names 'nrow' and 'ncol'.")
+        if(any(is.na(pdim)))
+            stop("'pdim' contains invalid values: %s", paste(as.character(pdim),
+                                                             collapse="\n"))
+    }
+    else
+    {
+        if(!(is.character(type)&&(length(type)==1L)))
+            stop("'type' must be a character of length 1.")
+        pdim <- switch(type,
+                      "24"  = c(nrow= 4L, ncol= 6L),
+                      "96"  = c(nrow= 8L, ncol=12L),
+                      "384" = c(nrow=16L, ncol=24L),
+                      stop("Invalid 'type': %s", type))
+    }
+    
+
+    if(is.character(x))
+    {
+        ## If coordinates are passed in as a matrix (when would that happen?!?)
+        if(is.matrix(x))
+            x <- apply(x, 1L, paste, collapse="") 
+
+        ## Parse to something machine-readble
+        tmp <- parseLetNum(x)
+        let <- tmp$letters
+        num <- tmp$numbers
+        let.num <- cbind(let, num)
+        letnum <- x
+        irow <- tmp$lindex
+        icol <- as.integer(num)
+        if( any(is.na(irow)) || any(irow>pdim["nrow"]) || any(irow<1L) ||
+           any(is.na(icol)) || any(icol>pdim["ncol"]) || any(icol<1L) )
+            stop("Invalid position IDs in 'x'.")
+        num <- (irow-1L) * pdim["ncol"] + icol
+      }
+    else if(is.numeric(x))
+    {
+        ## x is of the form 1, 14, 18, ...
+        num <- as.integer(x)
+        if(any(num<1L)||any(num>prod(pdim))) 
+            stop(sprintf("Invalid values in 'x', must be between 1 and %d.", prod(pdim)))
+
+        irow <- 1L + (num-1L) %/% pdim["ncol"]
+        icol <- 1L + (num-1L) %%  pdim["ncol"]
+        letters <- if(max(irow) <= 26) LETTERS[irow] else cbind(LETTERS[((irow-1) %/% 26)+1],
+                         LETTERS[((irow-1) %% 26)+1])
+        let.num <- cbind(letters, sprintf("%02d", icol))
+        letnum <- apply(let.num, 1L, paste, collapse="")
+    }
+    else if(!length(x))
+    {
+        letnum <- let.num <- num <- NULL
+    }
+    else
+    {
+        stop("'x' must be either a character vector with alphanumeric well IDs ",
+             "(e.g. 'B03' or c('B', '03'))\n or a vector of integers with position ",
+             "IDs within a plate (e.g. 27).")
+    }
+    return(list(letnum = letnum, let.num = let.num, num = num))
+}
+
+
 
 

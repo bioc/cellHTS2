@@ -122,10 +122,10 @@ setMethod("pdim", signature(object="cellHTS"),
       {
           pdim <- NULL
           if(!is.null(well(object)))
-          { 
-              let <- substr(well(object), 1,1)
-              pdim <- c("nrow"=max(match(let, LETTERS)),
-                        "ncol"=max(as.integer(substr(well(object), 2,3))))
+          {
+              tmp <- parseLetNum(well(object))
+              pdim <- c("nrow"=max(tmp$lindex),
+                        "ncol"=max(tmp$numbers))
           }
           return(pdim)
       })
