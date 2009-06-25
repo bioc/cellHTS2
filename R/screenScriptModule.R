@@ -5,8 +5,8 @@ writeHtml.screenScript <- function(cellHTSList, module, mainScriptFile, outputFi
     if(is.na(mainScriptFile))
     {
         warning("The R script which produced this cellHTS2 report has not been provided ",
-                "via the 'mainScriptFile' argument.\nWe strongly recommend storing these ",
-                "scripts for future reference along with the report.", call.=FALSE)
+                "via the 'mainScriptFile' argument.\nWe recommend storing this ",
+                "script for future reference along with the report.", call.=FALSE)
         return(NA)
     }
     else
