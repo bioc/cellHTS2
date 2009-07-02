@@ -171,6 +171,9 @@
       can be used to specify the name of an annotation package that goes
       with the reagents used for this experiment.}
 
+    \item{\code{processingInfo}:}{A list containing information about
+      which normalization and summarization methods have been used.}
+
     \item{\code{.__classVersion__}:}{ Object of class
       \code{\link[Biobase:class.Versions]{Versions}}, containing
       automatically created information about the class definition,

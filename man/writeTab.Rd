@@ -10,16 +10,22 @@
 
 
 \usage{
-\S4method{writeTab}{cellHTS}(x, file=paste(name(x), "txt", sep="."))
+\S4method{writeTab}{cellHTS}(object, file=paste(name(object), "txt", sep="."))
 }
 
 \arguments{
-  \item{x}{a \code{cellHTS} object.}
+  \item{object}{a \code{cellHTS} object.}
   \item{file}{the name of the output file.}
 }
 
 \details{
-This function is a wrapper for function \code{\link{write.table}} to write the contents of \code{assayData} slot of a \code{\linkS4class{cellHTS}} object to a tab-delimited file. If the object is already annotated, the probe information (\code{fData(object)@GeneID}) is also added.
+  
+This function is a wrapper for function \code{\link{write.table}} to
+write the contents of \code{assayData} slot of a
+\code{\linkS4class{cellHTS}} object to a tab-delimited file. If the
+object is already annotated, the probe information
+(\code{fData(object)@GeneID}) is also added.
+
 }
 
 \value{
