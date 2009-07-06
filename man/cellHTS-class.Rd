@@ -100,13 +100,6 @@
     \item{\code{screenDesc}:}{ a character containing what was read from
       the \emph{description file} of the experiment.  }
 
-    \item{\code{batch}:}{ a 3D-array with the first two dimensions
-      corresponding to the dimension of each matrix in \code{assayData}
-      slot and the third dimension corresponding to the number of
-      channels in \code{assayData} slot (Features x Samples x Channels).
-      Should contain integer values giving the batch number (1, 2, ...)
-      for each plate, sample and channel.  }
-
     \item{\code{rowcol.effects}:}{ a 3D array of size Features
       (i.e. plate size x number of plates) x Samples x Channels
       containing estimated row and column plate spatial offsets.  }
