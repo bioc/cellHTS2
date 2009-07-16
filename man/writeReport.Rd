@@ -112,7 +112,10 @@ scheme for the standard deviation plate plot, \code{sdrange}, the sd
 range to which the colors are mapped, \code{xcol}, the color scheme for
 the intensity plate plot, \code{xrange}, the intensity range to which
 the colors are mapped.  If an element is not specified, default values
-are used.
+are used. Both \code{sdrange} and \code{xrange} can also be provided as
+functions, which take the values to be plotted by \code{platePlot} as a
+single argument and has to return a numeric vector of length 2. See its
+documentation for details.
 
 The following elements are recognized for \code{imageScreenArgs} and
 passed on to \code{\link[cellhts2]{imageScreen}}: \code{ar}, aspect
