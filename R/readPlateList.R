@@ -1,7 +1,7 @@
 ## Read in the list of plates in the 'Platelist' file and create a cellHTS object
 readPlateList <- function(filename,
                           path=dirname(filename),
-                          name,
+                          name="anonymous",
                           importFun,
                           verbose=interactive())
 {
@@ -33,7 +33,8 @@ readPlateList <- function(filename,
     }
   
     ## check if the data files are in the given directory
-    a <- unlist(sapply(pd$Filename, function(z) grep(z, dfiles, ignore.case=TRUE)))
+    a <- unlist(sapply(pd$Filename, function(z) grep(paste("^", z, "$", sep=""),
+                                                     dfiles, ignore.case=TRUE)))
     if (length(a)==0)
         stop(sprintf("None of the files were found in the given 'path': %s", path))
   
@@ -105,7 +106,8 @@ readPlateList <- function(filename,
         if(verbose)
             cat("\rReading ", i, ": ", pd$Filename[i], sep="")
 
-        ff <- grep(pd[i, "Filename"], dfiles, ignore.case=TRUE)
+        ff <- grep(paste("^", pd[i, "Filename"], "$", sep=""),
+                   dfiles, ignore.case=TRUE)
 
         if (length(ff)!=1) {
             f <- file.path(path, pd[i, "Filename"])
