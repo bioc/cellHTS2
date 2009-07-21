@@ -13,8 +13,8 @@ makePlot <- function(path, con, name, w, h=devDims(w)$height, fun, psz=12, print
 
     if (isPlatePlot) 
     {
-        wd <- devDims(w)$pwidth
-        hg <- devDims(w)$pheight
+        wd <- if(missing(w)) devDims(w)$pwidth else w*nrppi
+        hg <- if(missing(h)) devDims(w)$pheight else h*nrppi
     } 
     else 
     {

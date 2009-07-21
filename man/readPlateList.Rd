@@ -11,7 +11,7 @@
 }
 \usage{
 
-readPlateList(filename, path=dirname(filename), name, importFun, verbose=interactive())
+readPlateList(filename, path=dirname(filename), name="anonymous", importFun, verbose=interactive())
 
 }
 

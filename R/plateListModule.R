@@ -681,8 +681,10 @@ sdFun <- function()
             {
                 if(is.null(plotPlateArgs$sdrange[[ch]]))
                     plotPlateArgs$sdrange[[ch]]=c(0, quantile(psd, 0.95, na.rm=TRUE))
+                odim <- optimalDevDims(pdim["nrow"], pdim["ncol"], plsiz+2, 7)
                 pp <- makePlot(file.path(basePath, subPath), con=con,
-                               name=sprintf("ppsd_Channel%d",ch), w=plsiz+2, fun=function() 
+                               name=sprintf("ppsd_Channel%d",ch), w=odim[1], h=odim[2],
+                               fun=function() 
                            {
                                return(plotPlate(psd, nrow=pdim["nrow"], ncol=pdim["ncol"],
                                                 main="Standard Deviations",
@@ -742,9 +744,10 @@ intensFun <- function()
                     if(is.null(plotPlateArgs$xrange[[ch]]))
                         plotPlateArgs$xrange[[ch]] <- quantile(platedat[,,,ch],
                                                                c(0.025, 0.975), na.rm=TRUE)
+                    odim <- optimalDevDims(pdim["nrow"], pdim["ncol"], plsiz+1, (plsiz+1)*0.66)
                     pp <- makePlot(file.path(basePath, subPath), con=con,
-                                   name=sprintf("pp_Channel%d_%d",ch,r), w=plsiz+1,
-                                   h=(plsiz+1)*0.66,
+                                   name=sprintf("pp_Channel%d_%d",ch,r), w=odim[1],
+                                   h=odim[2],
                                    fun=function() 
                                {
                                    plotPlate(platedat[,,r,ch], nrow=pdim["nrow"],
@@ -867,4 +870,17 @@ chanCorrFun <- function()
             chList[[i]] <- c(chList[[i]], "Channel Correlation"=img)
     }## if nrChannel
     return(chList)
+}
+
+
+## Return the optimal dimensions for the plate plot in inches.
+optimalDevDims <- function(nrow, ncol, width, height)
+{
+    if(ncol>nrow)
+    {
+        height <- min(height, width/(((ncol+1)*0.1+ncol+1)/((nrow+1)*0.1+nrow+1)))
+    }else{
+        width <- min(width, height/(((nrow+1)*0.1+nrow+1)/((ncol+1)*0.1+ncol+1)))
+    }
+    return(c(width=width, height=height))
 }
