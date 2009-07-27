@@ -129,7 +129,7 @@ columns should be integer numbers, with values ranging from 1 to the
 maximum number of plates or replicates, respectively. An optional
 \emph{Batch} column can be used to provide batch information about the
 experiment, i.e., changes in reagents, or days for a multi-day
-experiment. See Section~ref{sec:multPlateConfs} for more details. The
+experiment. See Section~\ref{sec:multPlateConfs} for more details. The
 first few lines of an example plate list file are shown in
 Table~\ref{tab:platelist}, while Table~\ref{tab:signalintensity} shows
 the first few lines from one of the plate result files listed in the
@@ -266,7 +266,7 @@ are:
   correspond to features or reporters (e.\,g.\ siRNAs, dsRNAs) and the
   colums to samples (different conditions and/or replicates).
   
-\item[phenoData] a dataframe (more precisely, an object of class
+\item[phenoData] a data frame (more precisely, an object of class
   \Rclass{AnnotatedDataFrame}) containing information about the
   screens, such as the replicate number and the type of biological
   assay.  It must have the following columns in its data component:
@@ -285,7 +285,7 @@ are:
   \emph{phenoData} for this structure is unfortunate, it has nothing
   to do with phenotypes.
 
-\item[featureData] a dataframe (more precisely, an object of class
+\item[featureData] a data frame (more precisely, an object of class
   \Rclass{AnnotatedDataFrame}) that contains information about the
   reagents used in the experiment. There are three mandatory columns,
   in addition there can be an arbitrary number of additional columns,
@@ -305,9 +305,9 @@ are:
 
   \end{description}
  
-\item[plateData] a list of dataframes, where each list item contains
+\item[plateData] a list of data frames, where each list item contains
   plate-specific information. The structure of the individual
-  dataframes is fixed: rows are supposed to be plates and columns are
+  data frames is fixed: rows are supposed to be plates and columns are
   supposed to be samples (i.e., the number of columns has to be the
   same as the number of columns in the \Robject{assayData}
   matrices. By default, the only available list item is
@@ -326,7 +326,7 @@ that are used to store the input files used to assemble the
 
 \begin{description}
 
-\item[plateList] a dataframe containing names and metadata about input
+\item[plateList] a data frame containing names and metadata about input
   measurement data files, plus a column named \emph{status}, of type
   \Rclass{character}, whose elements are the string "OK" if the data
   import appeared to have gone well, and the respective error or
@@ -405,8 +405,8 @@ briefly described as follows:
 
 The steps of data normalization, replicate scoring and summarization
 constitute the preprocessing work-flow of the screening data.  They
-alter the contents of \Robject{assayData} slot and even the number of
-channels of the \Rclass{cellHTS} object.  The complete analysis
+alter the contents of the \Robject{assayData} slot and even the number
+of channels of the \Rclass{cellHTS} object.  The complete analysis
 project is contained in a set of \Rclass{cellHTS} objects that reflect
 different preprocessing stages and that can be shared with others and
 stored for subsequent computational analyses.
@@ -440,13 +440,13 @@ output, one can provide the path to an ASCII script file using the
 reproducible research mentioned before, and we strongly suggest to
 make use of this feature. In fact, the function will issue a warning
 if no script file is supplied. This said, we will not make use of the
-\Robject{mainScriptFile} arguments, since we don't really have
-scripting files at hand; all commands are contained in this document.
+\Robject{mainScriptFile} arguments here since we don't really have
+scripting files at hand; luckily, all commands are contained in this
+document.
 
 It can take a while to run this function, since it creates a large
-number of graphics files. After this function has finished, the index
-page of the report will be in the file indicated by the variable
-\Robject{out},
+number of graphics files. After it has finished, the index page of the
+report will be in the file indicated by the variable \Robject{out},
 %
 <<printout>>=
 out
@@ -470,25 +470,25 @@ input files specific of the screening experiment:
 
 \begin{itemize}
   
-\item \emph{Screen description file} contains a general description of
-  the screen, its goal, the conditions under which it was performed,
-  references, and any other information that is pertinent to the
-  biological interpretation of the experiments.  In
-  \Rpackage{cellHTS2} package we provide a function that creates a
+\item The \emph{Screen description file} contains a general
+  description of the screen, its goal, the conditions under which it
+  was performed, references, and any other information that is
+  pertinent to the biological interpretation of the experiments.  In
+  the \Rpackage{cellHTS2} package we provide a function that creates a
   template description file whose entries can be edited and completed
   by the user. Type \Robject{? templateDescriptionFile}.  This file
   contains the entries compliant with the \Rclass{MIAME} class and
   also additional fields specific for the \Rclass{cellHTS} class.
 
-\item \emph{Plate configuration file} is used to annotate the measured
-  data with information on controls.  The content of this file for the
-  example data set analysed here is shown in
+\item The \emph{Plate configuration file} is used to annotate the
+  measured data with information on controls.  The content of this
+  file for the example data set analysed here is shown in
   Table~\ref{tab:plateconfiguration} and the expected format for this
   file is explained in Section~\ref{sec:plateconf}.
 
-\item \emph{Screen log file} (optional) is used to flag individual
-  measurements as invalid.  The first 5 lines of this file are shown
-  in Table~\ref{tab:screenlog}, and the layout for the
+\item Thea \emph{Screen log file} (optional) is used to flag
+  individual measurements as invalid.  The first 5 lines of this file
+  are shown in Table~\ref{tab:screenlog}, and the layout for the
   \emph{screen log file} is detailed in Section~\ref{sec:screenlog}.\\
 
 \end{itemize}
@@ -636,13 +636,13 @@ days, or due to the use of different lots of reagents, etc.
 
 Batch information (expressed in terms of integer values giving the
 batch number: 1, 2, ...) can go into a particular slot called
-\Robject{plateData}. This is expected to be a dataframe) of integer
-values giving the batch number (1, 2, ...) for each plate and
-sample. Its first dimension corresponds to the number of individual
-plates, and its second dimension correspond to the number of columns
-of each matrix stored in \Robject{assayData} slot (the samples).
-Batch information can be filled in by the user in case s/he wants to
-take into account this information in the analysis (for example, see
+\Robject{plateData}. This is expected to be a data frame) of integer
+values giving the batch number for each plate and sample. Its first
+dimension corresponds to the number of individual plates, and its
+second dimension correspond to the number of columns of each matrix
+stored in \Robject{assayData} slot (the samples).  Batch information
+can be filled in by the user in case s/he wants to take into account
+this information in the analysis (for example, see
 \Rfunction{normalizePlates} function, which allows to adjust the data
 variance on a per-batch basis). It can either be provided as an
 optional column in the plate list file, or using the \Rfunction{batch}
