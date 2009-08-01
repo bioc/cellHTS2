@@ -88,6 +88,8 @@ getMeasureRepAgreement <- function(x, corr.method="spearman")
                     }
                     else
                     {
+                        corrCoef.min[p,ch] <- zcor
+                        corrCoef.max[p,ch] <- zcor
                         corrCoef[p,ch] <- zcor
                     }
 
