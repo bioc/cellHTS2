@@ -83,11 +83,13 @@ getMeasureRepAgreement <- function(x, corr.method="spearman")
                     
                     if (length(zcor)>1)
                     { 
-                        corrCoef.min[p,ch] <- min(zcor)
-                        corrCoef.max[p,ch] <- max(zcor)
+                        corrCoef.min[p,ch] <- min(zcor, na.rm=TRUE)
+                        corrCoef.max[p,ch] <- max(zcor, na.rm=TRUE)
                     }
                     else
                     {
+                        corrCoef.min[p,ch] <- zcor
+                        corrCoef.max[p,ch] <- zcor
                         corrCoef[p,ch] <- zcor
                     }
 

@@ -530,8 +530,9 @@ corrFun <- function()
         {
             img <- sprintf("scp_Channel%d.png", ch)
             title <- "Scatterplot between replicates"
+            whc <- grep("Spearman rank correlation", names(qmsummary[[sprintf("Channel %d", ch)]]))
             caption <- sprintf("Spearman rank correlation: %s<br>%s",
-                               qmsummary[[sprintf("Channel %d", ch)]]["Spearman rank correlation "],
+                               qmsummary[[sprintf("Channel %d", ch)]][whc],
                                wellCount[1,ch])
             makePlot(file.path(basePath, subPath), con=con,
                      name=sprintf("scp_Channel%d", ch), w=plsiz+1, h=plsiz+1, fun=function() 
@@ -561,19 +562,19 @@ corrFun <- function()
                       use="pairwise.complete.obs")
             legend <- seq(0,1,0.2)
             m.legend <- as.matrix(legend)
-            MyCol <- colorRampPalette(c("#052947", "white"), 10)
+            MyCol <- colorRampPalette(c("#052947", "#E3E7EA"), 10)
             makePlot(file.path(basePath, subPath), con=con, 
                      name=sprintf("Correlation_ch%d", ch), w=6, h=6, fun=function() 
                  {
                      layout(t(matrix(c(rep(c(3, c(rep(1,10)), 4), 5), 3, rep(2, 10), 4),
                                      ncol=6)))
-                     image(seq_len(nrow(cm)), seq_len(nrow(cm)), cm, col="MyCol"(10), 
+                     image(seq_len(nrow(cm)), seq_len(nrow(cm)), cm, col=MyCol(10), 
                            axes=FALSE, zlim=c(0,1), xlab="", ylab="")
                      box()
                      axis(side=1, at=c(1:3), labels=paste("Rep", 1:3)) 
                      axis(side=2, at=c(1:3), labels=paste("Rep", 1:3))
                      par(mar=c(4, 4, 2, 2))
-                     image(m.legend, col="MyCol"(10), axes=FALSE)
+                     image(m.legend, col=MyCol(10), axes=FALSE)
                      box()
                      axis(side=1, at=seq(0, 1, 0.2))
                  }
@@ -772,6 +773,7 @@ intensFun <- function()
                     caption <- c(caption, paste("Replicate ", r, " is missing"))
                     img <- c(img, NA)
                     title <- c(title, NA)
+                    imap <- c(imap, NA)
                 }## else if r %in% whHasData[[ch]]
             } # maxRep
             imgList$Intensities <- chtsImage(data.frame(title=title, shortTitle=title,
