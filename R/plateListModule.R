@@ -47,8 +47,9 @@ writeIntensityFiles <- function(outdir, xr, htmldir)
 
 
 
-## Function to outogenerate a matrix of class labels from a data frame, where common rows as
-## denoted by nrPlates alternate between 'odd' and 'even'
+## Function to autogenerate a matrix of class labels from a data
+## frame, where common rows as denoted by nrPlates alternate between
+## 'odd' and 'even'
 plateListClass <-  function(df, nrPlates, classes=c("odd", "even"))
 {
     mclass <- matrix(classes[1], ncol=ncol(df), nrow=nrow(df))
@@ -59,8 +60,8 @@ plateListClass <-  function(df, nrPlates, classes=c("odd", "even"))
 
 
 ## Function using hwriter to color a data.frame in a checkerboard way
-## returns a matrix of colors
-## dataframe : dataframe to be colored in the html table
+## returns a matrix of colors dataframe : dataframe to be colored in
+## the html table
 dataframeColor <- function(dataframe,
                            basicColors=matrix(c("#D5DDF3","#f0f0ff","#d0d0f0","#e0e0ff"),
                            ncol=2, byrow=TRUE))
@@ -94,60 +95,36 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
                                        cn[sel],"</span>", sep="")
     }
     ## Finding the redundant plates
-    ## hwriter does not allow for rowspans, so we have to fake an additional line
-    ## in a separate table, all pretty ugly.
+    ## hwriter does not allow for rowspans, so we have to infuse this into our table
     red <- table(x$Plate)
-    redHTML <- "
-      <table class=\"plate\">
-        <tr>
-          <td>
-        </td>
-          <td class=\"header\">
-            Plate
-          </td>
-        </tr>"
-    curPlate <- 1
-    class <- "odd"
     stat <- split(url[,"status"], rep(seq_along(red), as.integer(red)))
     stat <- sapply(stat, function(z) if(all(is.na(z))) NA else unique(z[!is.na(z)]))
-    for(i in seq_along(red))
-    {
-        pl <- paste(sprintf("
-          <td class=\"plate %s\">
-            %s
-          </td>
-        </tr>", class, x$Plate[curPlate:(curPlate+red[i]-1)]),
-                    collapse="\n      <tr>\n")
-        redHTML <- c(redHTML, sprintf("
-        <tr>
-          <td rowspan=\"%s\" class=\"details\" onClick=\"linkToFile('%s')\"%s>
-            &nbsp&nbsp&nbsp
-          </td>
-          %s", red[i], stat[i],
-               addTooltip(sprintf("Detailed QC information for plate %s across all replicates and channels.", i),
-                          "", FALSE), pl))
-        curPlate <- curPlate+red[i]
-        class <- if(class=="odd") "even" else "odd"
-    }
-    redHTML <- c(redHTML, "</tr></table>")
-    if(configured)
-    {
-        x <- x[,-1, drop=FALSE]
-        url <- url[,-1, drop=FALSE]
-    }
+    infuse <- sapply(seq_along(red), function(i)
+                     sprintf(paste("</a></td><td rowspan=\"%s\" class=\"details\" ",
+                                   "onClick=\"linkToFile('%s')\"%s>&nbsp&nbsp&nbsp</td><a>"),
+                                   red[i], stat[i],
+                                   addTooltip(sprintf(paste("Detailed QC information for ",
+                                                            "plate %s across all ",
+                                                            "replicates and channels."), i),
+                                              "", FALSE)))
+    url <- cbind(NA, url)
+    x <- cbind(I(""), x)
     url[,"status"] <- NA
     em <- xr@plateList$errorMessage
     sel <- !is.na(em)
     if(any(sel))
         x[sel, "status"] <-
-            sprintf("<span %s>%s</span>", addTooltip(xr@plateList$errorMessage[sel], "Details", FALSE),
+            sprintf("<span %s>%s</span>", addTooltip(xr@plateList$errorMessage[sel],
+                                                     "Details", FALSE),
                     x[sel, "status"])
     url <- rbind(NA, url)
-    tabClasses <- rbind("header", plateListClass(x, red))
+    tabClasses <- rbind("header", cbind(I(""), plateListClass(x[,-1], red)))
+    tabClasses[1,1] <- ""
     fn <- which(colnames(url)=="Filename")
     tabClasses[-1,fn] <- paste(tabClasses[-1,fn], "link")
-    x <- rbind(if(configured) cn[-1] else colnames(x), x)
-
+    x <- rbind(I(as.character(colnames(x))), x)
+    x[cumsum(red)-red+2, 1] <- paste(infuse, x[cumsum(red)-red+2, 1], sep="")
+    x[1,1] <- "</a></td><td><a>"
     ## No need to produce output for empty lines
     empty <- apply(x[-1,], 2, function(z) all(z == "" | is.na(z)))
     if(any(empty))
@@ -156,20 +133,17 @@ writeQCTable <- function(x, url, glossary, configured, xr, con)
         tabClasses <- tabClasses[,!empty]
         url <- url[,!empty]
     }
+    ## There are no details if the object hasn't been configured, hence no links
+    if(!configured)
+    {
+        x <- x[,-1]
+        url <- url[,-1]
+        tabClasses <- tabClasses[,-1]
+    }
     tabHTML <-  hwrite(x, row.names=FALSE, col.names=FALSE, class=tabClasses,
                        border=0, table.class="rest", link=url)
-    out <- sprintf("
-<table class=\"plateList\" align=\"center\">
-  <tr>
-    <td>
-      %s
-    </td>
-    <td>
-      %s
-    </td>
-  </tr>
-</table>", ifelse(configured, paste(redHTML, collapse="\n"), ""), paste(tabHTML, collapse="\n"))
-    writeLines(out, con)
+    writeLines(hwrite(paste(tabHTML, collapse="\n"), table=TRUE, border=0,
+                      table.class="plateList", table.align="center"), con)
 }
 
 

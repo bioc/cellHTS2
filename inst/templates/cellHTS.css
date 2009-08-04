@@ -678,25 +678,18 @@ table.plateList
  margin-top:10px;
 }
 
-table.plate
-{
-    position:relative;
-    left:4px;
-    text-align:center;
-}
 
 table.rest
 {
     text-align:center;
 }
 
-table.plate td, table.rest td
+table.rest td
 {
     font-size:13px;
     height:25px;
     padding-left:5px;
     padding-right:5px;
-    white-space:nowrap;
 }
 
 table.rest td.header a
@@ -726,15 +719,7 @@ table.rest td.link a
     color:#232f61;
 }
 
-
-
-
-table.plate td
-{
-    padding-top:2px;
-}
-
-table.plate td.details
+table.rest td.details
 {
     width:20px;
     background-image:url(lupe.png);
@@ -743,13 +728,13 @@ table.plate td.details
     border-right:5px solid white;
 }
 
-table.plate td.details:hover
+td.details:hover
 {
     background-image:url(lupebw.png);
     cursor:pointer;
 }
 
-table.plate td.header, table.rest td.header
+table.rest td.header
 {
     font-weight:bold;
     background-color:#6699cc;
