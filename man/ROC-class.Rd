@@ -21,8 +21,8 @@ Container for data that represent a receiver-operator-characteristic curve, and 
 \section{Creating Objects}{
   \code{new("ROC")}
 
-  \S4method{ROC}{cellHTS}(object, positives, negatives)
-     with \code{object} being an \code{\linkS4class{cellHTS}} instance.
+  \code{ROC(object, positives, negatives)} with \code{object} being an
+  \code{\linkS4class{cellHTS}} instance.
 }
 
 
