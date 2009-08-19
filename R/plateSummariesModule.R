@@ -53,27 +53,45 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
         for (r in 1:nrReplicate)
         {
             ## batch information
-            btr <- if(!is.null(batch(xr)))  if(hasNormData) batch(xn)[,r] else  batch(xr)[,r] else rep(1L, nrPlate)
+            btr <- if(!is.null(batch(xr)))
+                {
+                    if(hasNormData)
+                    {
+                        batch(xn)[,r]
+                    }
+                    else
+                    {
+                        batch(xr)[,r]
+                    }
+                }
+            else rep(1L, nrPlate)
             
-            ## Create the boxplot of measurement values before and after normalization (if applicable)
-            makePlot(path, con=con, name=sprintf("boxplot_%d_%d", r, ch), w=5*(nrbxp-hasLessCh),
-                     h=3, fun = function()
+            ## Create the boxplot of measurement values before and
+            ## after normalization (if applicable)
+            settings <- chtsGetSetting(c("plateSummaries", "boxplot"))
+            width <- settings$size*(nrbxp-hasLessCh)
+            height <- 4.5
+            makePlot(path, name=sprintf("boxplot_%d_%d", r, ch), w=width, h=height,
+                     font=settings$font, thumbFactor=settings$thumbFactor,
+                     psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                     col=settings$col, fun = function(col, ...)
                  {
                      par(mfrow=c(1, (nrbxp-hasLessCh)), mai=c(0.8, 0.8, 0.2, 0.2),
                          mgp=c(2.5,1,0))
+                     col <- rep(col,2)
                      if (!hasLessCh)
                      {
                          xbp <- matrix(Data(xr)[,r,ch], ncol=nrPlate, nrow=nrWell)
-                         boxplotwithNA(xbp, col="pink", outline=FALSE, main="", xlab="plate",
-                                       ylab="raw intensity", batch=btr)
+                         boxplotwithNA(xbp, col=col[1], outline=FALSE, main="", xlab="plate",
+                                       ylab="raw value", batch=btr)
                      }
                      if(hasNormData)
                      {
                          xbp <- matrix(Data(xn)[,r,ch], ncol=nrPlate, nrow=nrWell)
-                         boxplotwithNA(xbp, col="lightblue", outline=FALSE, main="", xlab="plate",
-                                       ylab="normalized intensity", batch=btr)
+                         boxplotwithNA(xbp, col=col[2], outline=FALSE, main="", xlab="plate",
+                                       ylab="normalized value", batch=btr)
                      }
-                 }, print=FALSE)
+                 })
             caption <- 
                 if(hasNormData & !hasLessCh)
                     sprintf("Left: raw, right: normalized", r)
@@ -93,8 +111,14 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
                 yvals$act <- xbp[actCtrls[[ch]]]
                 if (!all(is.na(unlist(yvals))))
                 {
-                    makePlot(path, con=con,
-                             name=sprintf("Controls_%d_%d", r, ch), w=5*nrbxp, h=3, fun = function()
+                    settings <- chtsGetSetting(c("plateSummaries", "controls"))
+                    width <- settings$size*(nrbxp)
+                    height <- 4.5
+                    makePlot(path, name=sprintf("Controls_%d_%d", r, ch),
+                             w=width, h=height,
+                             font=settings$font, thumbFactor=settings$thumbFactor,
+                             psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                             fun = function(...)
                          {
                              par(mfrow=c(1, nrbxp), mai=c(0.8, 0.8, 0.2, 0.2),
                                  mgp=c(2.5,1,0))
@@ -114,7 +138,7 @@ QMexperiment <- function(xn, xr, path, con, allControls, allZfac)
                                              zfacs= sapply(names(allZfac),
                                              function(i) allZfac[[i]][r,ch]), main="")
                              }
-                         }, print=FALSE)					
+                         })					
                     img <- c(img, sprintf("Controls_%d_%d.png", r, ch))
                     title <- c(title, "Controls Plot")
                     caption <- c(caption, NA)
@@ -213,12 +237,15 @@ densityplot <- function(values, zfacs, ...)
         dens[[i]] <- theDens
         names(dens)[i] <- names(values)[i]
     }
-    plot(dens[[1]], xlim = c(xmin, xmax), ylim=c(0, ymax*1.2), col=cols[names(dens)[1]], yaxt="n",ylab="",
-         xlab="normalized intensity", ...)
+    plot(dens[[1]], xlim = c(xmin, xmax), ylim=c(0, ymax*1.2), col=cols[names(dens)[1]],
+         yaxt="n",ylab="",
+         xlab="normalized value", ...)
     for(i in 2:length(dens))
         lines(dens[[i]], col=cols[names(dens)[i]])
-    legend("top", legend=paste("'", names(dens), "' controls", sep=""), pch=16, col=cols[names(dens)],
-           bg="white", cex=0.7, title = paste(sprintf("Z'-factor (%s) = %g", names(zfacs), round(zfacs,2)),
+    legend("top", legend=paste("'", names(dens), "' controls", sep=""), pch=16,
+           col=cols[names(dens)],
+           bg="white", cex=0.7, title = paste(sprintf("Z'-factor (%s) = %g", names(zfacs),
+                                round(zfacs,2)),
                                 collapse=" "), horiz=TRUE, pt.cex=0.5, bty="n") 
 }
 
@@ -235,7 +262,8 @@ controlsplot <- function(xvals, yvals, batch, ...)
     yvals <- yvals[sel!=0]
     stopifnot(names(xvals) == names(yvals))
 	
-    plot(xvals[[1]], yvals[[1]], pch=16, cex=0.5, ylim=ylim, xlab="plate", ylab="normalized intensity",
+    plot(xvals[[1]], yvals[[1]], pch=16, cex=0.5, ylim=ylim, xlab="plate",
+         ylab="normalized value",
          col=cols[names(xvals)[1]], xaxt="n", ...)
     legend("top",legend=paste("'", names(xvals), "' controls", sep=""), col=cols[names(xvals)],
            horiz=TRUE, pch=16, pt.cex=0.5, bg="white", cex=0.7, bty="n")

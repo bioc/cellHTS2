@@ -1,9 +1,9 @@
 Package: cellHTS2
-Version: 2.9.17
+Version: 2.9.18
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras <ligia@ebi.ac.uk>, Wolfgang Huber <huber@ebi.ac.uk>, Michael Boutros <m.boutros@dkfz.de>, Gregoire Pau <gpau@ebi.ac.uk>, Florian Hahne <fhahne@fhcrc.org>
 Maintainer: Florian Hahne <fhahne@fhcrc.org>
-Depends: R (>= 2.6.0), RColorBrewer, Biobase (>= 2.5.5), methods, genefilter (>= 1.11.2), splots (>= 1.3.2), vsn (>= 3.0.15), hwriter (>= 0.90)
+Depends: R (>= 2.6.0), RColorBrewer, Biobase (>= 2.5.5), methods, genefilter (>= 1.11.2), splots (>= 1.11.1), vsn (>= 3.0.15), hwriter (>= 0.90)
 Suggests: locfit (>= 1.5-3)
 Imports: prada, GSEABase, Category
 Description: Analysis of cell-based RNA interference screens. See ?cellHTS2 for a brief introduction.
@@ -17,7 +17,6 @@ Collate: AllClasses.R
 	 adjustVariance.R
 	 checkColumns.R
 	 checkControls.R
-	 configurationAsScreenPlot.R
 	 convertOldCellHTS.R
 	 envisionPlateReader.R
 	 getDynamicRange.R
@@ -45,6 +44,7 @@ Collate: AllClasses.R
 	 screenDescriptionModule.R
 	 screenScriptModule.R
 	 screenSummaryModule.R
+	 settings.R
 	 summarizeReplicates.R
 	 tableOutput.R
 	 templateDescriptionFile.R

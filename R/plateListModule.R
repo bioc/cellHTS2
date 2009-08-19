@@ -179,7 +179,8 @@ myImageMap <- function(object, tags, imgname)
 
 ## Create the per plate quality control page
 QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, genAnno, mt,
-                      plotPlateArgs, brks, finalWellAnno, activators, inhibitors, positives,
+                      #plotPlateArgs,
+                      brks, finalWellAnno, activators, inhibitors, positives,
                       negatives, isTwoWay, namePos, wellTypeColor, plateDynRange, plateWithData,
                       repMeasures)
 {
@@ -461,15 +462,41 @@ QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, gen
     plsiz <- 4
     env <- environment()
     ## Correlation between replicates
-    chList <- myCall(corrFun, env)
+    chList <- myCall(corrFun, env, list(nrChannel=nrChannel, nrRepCh=nrRepCh,
+                                        wellCount=wellCount, qmsummary=qmsummary,
+                                        wellTypeColor=wellTypeColor,
+                                        basePath=basePath, subPath=subPath,
+                                        platedat=platedat, whHasData=whHasData,
+                                        mtt=mtt))
+                     
     ## Histograms of replicate and channel intensities
-    chList <- myCall(histFun, env)
+    chList <- myCall(histFun, env,list(nrChannel=nrChannel, nrRepCh=nrRepCh,
+                                       maxRep=maxRep, iwells=iwells, brks=brks,
+                                       basePath=basePath, subPath=subPath,
+                                       platedat=platedat, whHasData=whHasData,
+                                       wellTypeColor=wellTypeColor, mtt=mtt,
+                                       qmsummary=qmsummary))
     ## Plate plot of standard deviations across replicates 
-    chList <- myCall(sdFun, env)
+    chList <- myCall(sdFun, env, list(nrChannel=nrChannel, platedat=platedat,
+                                      pneg=pneg, ppos=ppos, isTwoWay=isTwoWay,
+                                      pact=pact, pinh=pinh, qmsummary=qmsummary,
+                                      pdim=pdim, basePath=basePath, subPath=subPath,
+                                      genAnno=genAnno))
     ## Plate plot of replicate and channel intensities
-    chList <- myCall(intensFun, env)
+    chList <- myCall(intensFun, env, list(nrChannel=nrChannel, platedat=platedat,
+                                          pneg=pneg, ppos=ppos, isTwoWay=isTwoWay,
+                                          pact=pact, pinh=pinh, maxRep=maxRep,
+                                          qmsummary=qmsummary, whHasData=whHasData,
+                                          pdim=pdim, basePath=basePath, subPath=subPath,
+                                          genAnno=genAnno))
     ## Correlation between channels
-    chList <- myCall(chanCorrFun, env)
+    chList <- myCall(chanCorrFun, env, list(nrChannel=nrChannel, maxRep=maxRep,
+                                            pneg=pneg, ppos=ppos, isTwoWay=isTwoWay,
+                                            pact=pact, pinh=pinh, wellTypeColor=wellTypeColor,
+                                            mt=mt, finalWellAnno=finalWellAnno,
+                                            iwells=iwells, whHasData=whHasData,
+                                            plsiz=plsiz, basePath=basePath, subPath=subPath,
+                                            platedat=platedat))
     names(chList) <- channelNames
     stack <- chtsImageStack(chList, id="perExpQC", title=paste("Experiment report for", name),
                             tooltips=addTooltip(names(chList[[1]]), ""))
@@ -479,10 +506,10 @@ QMbyPlate <- function(platedat, pdim, name, channelNames, basePath, subPath, gen
 
 
 
-myCall <- function(fun, env)
+myCall <- function(fun, env, args=list())
 {
     environment(fun) <- env
-    fun()
+    do.call(fun, args)
 }
 
 ## The scatterplots or image plots for between replicate
@@ -494,7 +521,8 @@ myCall <- function(fun, env)
 ## called through myCall.  The object chList holds the lists of
 ## chtsImage objects for each channel, and new modules will simply be
 ## appended
-corrFun <- function()
+corrFun <- function(nrChannel, nrRepCh, qmsummary, wellCount, basePath,
+                    subPath, platedat, whHasData, wellTypeColor, mtt)
 {
     for (ch in 1:nrChannel)
     {
@@ -508,18 +536,23 @@ corrFun <- function()
             caption <- sprintf("Spearman rank correlation: %s<br>%s",
                                qmsummary[[sprintf("Channel %d", ch)]][whc],
                                wellCount[1,ch])
-            makePlot(file.path(basePath, subPath), con=con,
-                     name=sprintf("scp_Channel%d", ch), w=plsiz+1, h=plsiz+1, fun=function() 
+            settings <- chtsGetSetting(c("plateList", "correlation"))
+            makePlot(file.path(basePath, subPath),
+                     name=sprintf("scp_Channel%d", ch), w=settings$size, h=settings$size,
+                     font=settings$font, thumbFactor=settings$thumbFactor,
+                     psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                     pdfArgs=list(main="Correlation between replicates"),
+                     fun=function(main="", ...)
                  {
                      par(mai=c(0.8,0.8,0.2,0.2), mgp=c(2.5, 1, 0))
                      ylim <- range(platedat[,,,ch], na.rm=TRUE, finite=TRUE)
                      plot(platedat[,,whHasData[[ch]][1],ch], platedat[,,whHasData[[ch]][2],ch],
-                          pch=20, cex=0.6, ylim=ylim,
+                          pch=20, cex=0.6, ylim=ylim, main=main,
                           xlab=paste("Replicate", whHasData[[ch]][1], sep=" "), 
                           ylab=paste("Replicate", whHasData[[ch]][2], sep=" "), 
-                          col=wellTypeColor[mtt[[ch]]]); abline(a=0, b=1, col="lightblue")
-                 }
-                     , print=FALSE)
+                          col=wellTypeColor[mtt[[ch]]])
+                     abline(a=0, b=1, col="lightblue")
+                 })
             imgList$Correlation <- chtsImage(data.frame(title=title, shortTitle=title,
                                                         thumbnail=img,
                                                         fullImage=gsub("png$", "pdf", img),
@@ -537,13 +570,18 @@ corrFun <- function()
             legend <- seq(0,1,0.2)
             m.legend <- as.matrix(legend)
             MyCol <- colorRampPalette(c("#052947", "#E3E7EA"), 10)
-            makePlot(file.path(basePath, subPath), con=con, 
-                     name=sprintf("Correlation_ch%d", ch), w=6, h=6, fun=function() 
+            settings <- chtsGetSetting(c("plateList", "correlation"))
+            makePlot(file.path(basePath, subPath), name=sprintf("Correlation_ch%d", ch),
+                     w=settings$size, h=settings$size,
+                     font=settings$font, thumbFactor=settings$thumbFactor,
+                     psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                     pdfArgs=list(main="Correlation between replicates"),
+                     fun=function(main="", ...) 
                  {
                      layout(t(matrix(c(rep(c(3, c(rep(1,10)), 4), 5), 3, rep(2, 10), 4),
                                      ncol=6)))
                      image(seq_len(nrow(cm)), seq_len(nrow(cm)), cm, col=MyCol(10), 
-                           axes=FALSE, zlim=c(0,1), xlab="", ylab="")
+                           axes=FALSE, zlim=c(0,1), xlab="", ylab="", main=main)
                      box()
                      axis(side=1, at=c(1:3), labels=paste("Rep", 1:3)) 
                      axis(side=2, at=c(1:3), labels=paste("Rep", 1:3))
@@ -551,8 +589,7 @@ corrFun <- function()
                      image(m.legend, col=MyCol(10), axes=FALSE)
                      box()
                      axis(side=1, at=seq(0, 1, 0.2))
-                 }
-                     , print=FALSE)
+                 })
             imgList$Correlation <- chtsImage(data.frame(title=title, shortTitle=title,
                                                         thumbnail=img,
                                                         fullImage=gsub("png$", "pdf", img),
@@ -571,7 +608,9 @@ corrFun <- function()
 
 
 ## The histograms of intensities for the respective replicates and channels.
-histFun <- function()
+histFun <- function(nrChannel, nrRepCh, maxRep, iwells, basePath,
+                    subPath, platedat, whHasData, wellTypeColor, mtt,
+                    brks, qmsummary)
 {
     for (ch in 1:nrChannel)
     {
@@ -584,18 +623,23 @@ histFun <- function()
         for (r in 1:maxRep) {
             if (r %in% whHasData[[ch]])
             {
-                makePlot(file.path(basePath, subPath), con=con,
-                         name=sprintf("hist_Channel%d_%02d",ch,r), w=plsiz,
-                         h=plsiz*0.6, fun=function() 
+                settings <- chtsGetSetting(c("plateList", "histograms"))
+                makePlot(file.path(basePath, subPath),
+                         name=sprintf("hist_Channel%d_%02d",ch,r),
+                         w=settings$size, h=settings$size*0.6,
+                         font=settings$font, thumbFactor=settings$thumbFactor,
+                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                         pdfArgs=list(main=sprintf("Distribution Channel %d Replicate %d",
+                                      ch, r)),
+                     fun=function(main="", ...) 
                      {
-                         par(mai=c(0.7,0.25,0.01,0.1))
+                         par(mai=c(0.7,0.25,0.3,0.1))
                          hist(platedat[,,r,ch], xlab ="", breaks=brks[[ch]],
-                              col=gray(0.95), yaxt="n", main="")
+                              col=gray(0.95), yaxt="n", main=main)
                          rug(platedat[,,r,ch])
                          for(jj in aa) rug(platedat[,,r,ch][mtt[[ch]]==jj],
                                            col=wellTypeColor[jj])
-                     }
-                         , print=FALSE)
+                     })
                 img <- c(img, sprintf("hist_Channel%d_%02d.png",ch,r))
                 cnam <- paste("Dynamic range ", ifelse(maxRep>1,
                                                        sprintf("(replicate %d)", r), ""))
@@ -623,9 +667,13 @@ histFun <- function()
 
 
 ## Plate plot of standard deviations between replicates
-sdFun <- function()
+sdFun <- function(nrChannel, platedat, pneg, ppos, isTwoWay, pact, pinh, qmsummary,
+                  pdim, basePath, subPath, genAnno)
 {
-    if(is.list(plotPlateArgs)) 
+    ## Load the settings for the reproducibility plate plots and only
+    ## produce them if include==TRUE
+    settings <- chtsGetSetting(c("plateList", "reproducibility"))
+    if(settings$include) 
     {
         title <- "Standard deviation across replicates"
         for(ch in 1:nrChannel) 
@@ -654,23 +702,25 @@ sdFun <- function()
             psd <- apply(platedat[,,,ch,drop=FALSE], 1, sdWithNA)
             if(!all(is.na(psd)))
             {
-                if(is.null(plotPlateArgs$sdrange[[ch]]))
-                    plotPlateArgs$sdrange[[ch]]=c(0, quantile(psd, 0.95, na.rm=TRUE))
-                odim <- optimalDevDims(pdim["nrow"], pdim["ncol"], plsiz+2, 7)
-                pp <- makePlot(file.path(basePath, subPath), con=con,
-                               name=sprintf("ppsd_Channel%d",ch), w=odim[1], h=odim[2],
-                               fun=function() 
+                odim <- optimalDevDims(pdim["nrow"], pdim["ncol"],
+                                       settings$size, settings$size*0.66)
+                pp <- makePlot(file.path(basePath, subPath),
+                               name=sprintf("ppsd_Channel%d",ch),
+                               w=odim[1], h=odim[2],
+                               font=settings$font, thumbFactor=settings$thumbFactor,
+                               psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                               pdfArgs=list(main="Standard deviations"),
+                               fun=function(main="", ...) 
                            {
                                return(plotPlate(psd, nrow=pdim["nrow"], ncol=pdim["ncol"],
-                                                main="Standard Deviations",
+                                                main=main,
                                                 na.action="xout",
-                                                col=plotPlateArgs$sdcol, char=char,
-                                                xrange=plotPlateArgs$sdrange[[ch]]))
-                           }
-                               , print=FALSE, isPlatePlot=TRUE)
-                imap <- if(plotPlateArgs$map) 
+                                                col=settings$col, char=char,
+                                                xrange=settings$range))
+                           })
+                imap <- if(settings$map) 
                     myImageMap(object=pp$coord, tags=list(title=paste(genAnno, ": sd=",
-                                                          signif(psd,3),
+                                                          signif(psd, 3),
                                                           sep="")), img) else ""
                 imgList$Reproducibility <- chtsImage(data.frame(title=title, shortTitle=title,
                                                                 thumbnail=img,
@@ -692,9 +742,13 @@ sdFun <- function()
 
 
 ## plate plot of intensities for all replicates and channels
-intensFun <- function()
+intensFun <- function(nrChannel, platedat, pneg, ppos, isTwoWay, pact, pinh, maxRep,
+                      qmsummary, whHasData, pdim, basePath, subPath, genAnno)
 {
-    if(is.list(plotPlateArgs)) 
+    ## Load the settings for the intensity plate plots and only
+    ## produce them if include==TRUE
+    settings <- chtsGetSetting(c("plateList", "intensities"))
+    if(settings$include) 
     {
         for(ch in 1:nrChannel) 
         {
@@ -716,24 +770,25 @@ intensFun <- function()
                 if (r %in% whHasData[[ch]])
                 {
                     title <- c(title, paste("Replicate ",r))
-                    if(is.null(plotPlateArgs$xrange[[ch]]))
-                        plotPlateArgs$xrange[[ch]] <- quantile(platedat[,,,ch],
-                                                               c(0.025, 0.975), na.rm=TRUE)
-                    odim <- optimalDevDims(pdim["nrow"], pdim["ncol"], plsiz+1, (plsiz+1)*0.66)
-                    pp <- makePlot(file.path(basePath, subPath), con=con,
-                                   name=sprintf("pp_Channel%d_%d",ch,r), w=odim[1],
-                                   h=odim[2],
-                                   fun=function() 
+                    odim <- optimalDevDims(pdim["nrow"], pdim["ncol"],
+                                           settings$size, settings$size*0.66)
+                    pp <- makePlot(file.path(basePath, subPath),
+                                   name=sprintf("pp_Channel%d_%d",ch,r),
+                                   w=odim[1], h=odim[2],
+                                   font=settings$font, thumbFactor=settings$thumbFactor,
+                                   psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                                   pdfArgs=list(main=sprintf("Intensities Channel %s Replicate %s",
+                                                ch,r)),
+                                   fun=function(main="", ...) 
                                {
                                    plotPlate(platedat[,,r,ch], nrow=pdim["nrow"],
                                              ncol=pdim["ncol"], 
                                              na.action="xout",
-                                             main="Intensities",
-                                             col=plotPlateArgs$xcol, char=char,
-                                             xrange=plotPlateArgs$xrange[[ch]])
-                               }
-                                   , print=FALSE, isPlatePlot=TRUE)
-                    imap <- c(imap, if(plotPlateArgs$map)
+                                             main=main,
+                                             col=settings$col, char=char,
+                                             xrange=settings$range)
+                               })
+                    imap <- c(imap, if(settings$map)
                               myImageMap(object=pp$coord, tags=list(title=paste(genAnno, 
                                                                     ": value=",
                                                                     round(platedat[,,r,ch],3),
@@ -765,7 +820,9 @@ intensFun <- function()
 
 
 ## Scatterplot of intensities between channels (only if there are two channels
-chanCorrFun <- function()
+chanCorrFun <- function(nrChannel, maxRep, isTwoWay, pact, pinh, pneg, ppos,
+                        wellTypeColor, mt, finalWellAnno, iwells, whHasData,
+                        basePath, subPath, plsiz, platedat)
 {
     if (nrChannel==2) 
     {	
@@ -813,7 +870,7 @@ chanCorrFun <- function()
         {			
             if((r %in% whHasData[[1]]) & (r %in% whHasData[[2]])){
                 ## scatterplot between channels
-                makePlot(file.path(basePath, subPath), con=con,
+                makePlot(file.path(basePath, subPath),
                          name=sprintf("scp_Rep%d", r), w=plsiz, h=plsiz, fun=function()
                      {
                          par(mai=c(0.5,0.5,0.1,0.1))
@@ -822,7 +879,7 @@ chanCorrFun <- function()
                               ylim=ylim, xlab="Channel 1", ylab="Channel 2",
                               col=wellTypeColor[mtt[[r]]])
                          abline(a=0, b=1, col="lightblue")
-                     }, print=FALSE)
+                     })
                 img <- c(img, sprintf("scp_Rep%d.png", r))
                 title <- c(title, sprintf("Replicate %s", r))
                 addCode <- c(addCode, sprintf("<div class=\"scatterLegend\">%s</div>",

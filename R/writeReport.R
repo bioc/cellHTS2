@@ -92,10 +92,16 @@ cellHTSlistVerification <- function(xr, xn, xsc, cellHTSlist)
 ## plotPlateArgs verification
 plotPlateArgsVerification <- function(plotPlateArgs, map)
 {
+    if(is.null(plotPlateArgs))
+        plotPlateArgs <- FALSE
+    else
+        warning("The plotPlateArgs argument is deprecated. Please use the settings ",
+                "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
     if(is.logical(plotPlateArgs))
     {
         if(plotPlateArgs)
-            plotPlateArgs <- list(map=map)
+            chtsSetSetting(list(plateList=list(reproducibility=list(include=TRUE, map=map),
+                                intensities=list(include=TRUE, map=map))))
     }
     else
     {
@@ -105,8 +111,11 @@ plotPlateArgsVerification <- function(plotPlateArgs, map)
             stop("Only elements 'sdcol', 'sdrange', 'xcolx' and 'xrange' are allowed for ",
                  "'plotPlateArgs' list!")
         plotPlateArgs$map <- map
+        chtsSetSetting(list(plateList=list(reproducibility=c(list(include=TRUE),
+                                           plotPlateArgs), 
+                            intensities=c(list(include=TRUE, plotPlateArgs)))))
     }
-    return(plotPlateArgs)
+    return(invisible())
 }
 
 
@@ -117,21 +126,33 @@ imageScreenArgsVerification <- function(imageScreenArgs, map, ar=1)
 {	
     if(is.list(imageScreenArgs))
     {
-        if(!("map" %in% names(imageScreenArgs)))
-            imageScreenArgs$map=map
-        if(!("ar" %in% names(imageScreenArgs)))
-            imageScreenArgs$ar=ar
         if(!all(names(imageScreenArgs) %in% c("ar", "zrange", "map","anno"))) 
             stop("Only elements 'ar', 'zrange', 'map' and 'anno'are allowed for ",
                  "'imageScreenArgs' list!")
+        if(!("map" %in% names(imageScreenArgs)))
+            imageScreenArgs$map <- map
+        if(!("ar" %in% names(imageScreenArgs)))
+        {
+            imageScreenArgs$aspect <- ar
+        }
+        else
+        {
+            imageScreenArgs$aspect <- imageScreenArgs$ar
+            imageScreenArgs$ar <- NULL
+        }
+        chtsSetSetting(list(screenSummary=list(scores=imageScreenArgs)))
+        warning("The imageScreenArgs argument is deprecated. Please use the settings ",
+                 "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
     }
     else
     {
         if(!is.null(imageScreenArgs)) 
             stop("'imageScreenArgs' must either be a list or NULL.")
-        imageScreenArgs <- list(map=map, ar=ar)
+        warning("The imageScreenArgs argument is deprecated. Please use the settings ",
+                "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
+        chtsSetSetting(list(screenSummary=list(scores=list(map=map))))
     }	
-    return(imageScreenArgs)
+    return(invisible())
 }
 
 
@@ -184,7 +205,7 @@ createOutputFolder <- function(outdir, xr, force)
 ##                 'scored' - cellHTS object comprising scored data.
 ##                 NOTE: the argument is deprecated, the list items should now be supplied
 ##                       via separate arguments of the same names
-##                       e.g. writeReportraw=xr, normalized=xn, scored=xsc)
+##                       e.g. writeReport(raw=xr, normalized=xn, scored=xsc)
 ##
 ## Steps inside writeReport:
 ##    Step 1 - creating the output directory
@@ -194,10 +215,11 @@ createOutputFolder <- function(outdir, xr, force)
 ##             in the 'in' folder of the report' 
 ##    Step 5 - Per experiment QC
 ##    Step 6 - topTable  (only if scored data are available)
-##    Step 7 -  Screen-wide image plot (only if scored data are available)	
+##    Step 7 - Screen-wide image plot (only if scored data are available)	
 writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, outdir,
-                        force=FALSE, map=FALSE, plotPlateArgs=FALSE, imageScreenArgs=NULL,
-                        posControls, negControls, mainScriptFile=NA, gseaModule=NULL)
+                        force=FALSE, map=FALSE, plotPlateArgs=NULL, imageScreenArgs=NULL,
+                        posControls, negControls, mainScriptFile=NA, gseaModule=NULL,
+                        settings=list())
 {
     ## Verification of the arguments
     ## We are very particular about the values in cellHTSlist
@@ -205,6 +227,11 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                            cellHTSlist=cellHTSlist)
     if (!is.logical(map))
         stop("'map' must be a logical value.")
+
+    ## Deal with settings
+    oldSettings <- chtsGetSetting()
+    on.exit(chtsSettings[["report"]] <- oldSettings)
+    chtsSetSetting(settings)
     
     ## Initialization
     nm <- names(cellHTSlist)
@@ -249,10 +276,11 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     exptab <- cbind(exptab[,mt], exptab[,-mt, drop=FALSE])
     url <- matrix(as.character(NA), nrow=nrow(exptab), ncol=ncol(exptab))
     colnames(url) <- colnames(exptab)
-    qmHaveBeenAdded <- FALSE		
-    plotPlateArgs <- plotPlateArgsVerification(plotPlateArgs, map)
-    imageScreenArgs <-imageScreenArgsVerification(imageScreenArgs, map,
-                                                  ar=pdim(xr)[1]/pdim(xr)[2])
+    qmHaveBeenAdded <- FALSE
+    ## FIXME: This should go away after the next release since all settings
+    ## are handled by the chtsSettings infrastructure.
+    plotPlateArgsVerification(plotPlateArgs, map)
+    imageScreenArgsVerification(imageScreenArgs, map, ar=pdim(xr)[1]/pdim(xr)[2])
 
     ## Set up the progress report and status output
     progress <- createProgressList(nrReplicate, nrChannel, nrPlate, plotPlateArgs,
@@ -395,43 +423,6 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
         wellTypeColor <- c("black", colPal[c(2:4, 5, 7)], if(twoWay) colPal[c(1,6)] else
                            colPal[1])
         names(wellTypeColor) <- wellTypeNames
-        
-        ## assign common arguments for the plate plots
-        if(is.list(plotPlateArgs))
-        {
-            ## Currently, it does not allows to use different colors for different channels
-            if(is.null(plotPlateArgs$sdcol)) 
-                plotPlateArgs$sdcol <- brewer.pal(9, "YlOrRd")
-            if(is.null(plotPlateArgs$xcol))
-                plotPlateArgs$xcol <- rev(brewer.pal(9, "RdBu"))
-			
-            ## set this argument as a list with the same length as the number of channels
-            if(is.null(plotPlateArgs$xrange))
-            { 
-                plotPlateArgs$xrange <- vector("list", length=dim(dat)[3])
-            }
-            else
-            {
-                if (!is.list(plotPlateArgs$xrange))
-                {
-                    plotPlateArgs$xrange <- list(plotPlateArgs$xrange)
-                    length(plotPlateArgs$xrange) <- dim(dat)[3]} 
-            }
-            
-            ## set this argument as a list with the same length as the number of channels
-            if(is.null(plotPlateArgs$sdrange))
-            {
-                plotPlateArgs$sdrange <- vector("list", length=dim(dat)[3])
-            }
-            else
-            {
-                if (!is.list(plotPlateArgs$sdrange))
-                {
-                    plotPlateArgs$sdrange <- list(plotPlateArgs$sdrange)
-                    length(plotPlateArgs$sdrange) <- dim(dat)[3]
-                } 
-            }	
-        }
                    	
         ##  Step 3 : QC per plate & channel
 	## writes a report for each Plate, and prepare argument for the writing of the table
@@ -452,7 +443,6 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                  subPath=p, 
                                  genAnno=geneAnnotation[nrWell*(p-1)+(1:nrWell)], 
                                  mt=allmt[nrWell*(p-1)+(1:nrWell)],
-                                 plotPlateArgs=plotPlateArgs, 
                                  brks=brks,
                                  finalWellAnno=xrawWellAnno[,p,,, drop=FALSE], 
                                  activators=act, inhibitors=inh, positives=pos, negatives=neg, 
@@ -599,7 +589,6 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     screenSummary.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenImage.html"),
                                      htmlFun=writeHtml.screenSummary, title="Screen Summary",
                                      funArgs=list(nrPlate=nrPlate,
-                                     imageScreenArgs=imageScreenArgs,
                                      overallState=overallState))
     tab <- rbind(tab, writeHtml(screenSummary.module))
     progress <- myUpdateProgress(progress, "step5")
@@ -654,7 +643,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## navigate to the different modules.
     indexFile <- file.path(outdir, "index.html")
     con <- file(indexFile, open="w")
-    on.exit(close(con))
+    on.exit(close(con), add=TRUE)
     writeHtml.mainpage(title=name(xr), tabs=tab, con=con)
     progress <- myUpdateProgress(progress, "step7")
     

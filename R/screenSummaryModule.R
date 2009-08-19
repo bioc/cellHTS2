@@ -2,7 +2,7 @@
 ## for the whole screen, possibly with an underlying HTML imageMap to allow for drill-down
 ## to the quality report page of the respective plates. Also a Normal Q-Q plot of the scores
 ## data.
-writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overallState,
+writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                                   nrPlate, con)
 {
     outdir <- dirname(module@url)
@@ -13,42 +13,55 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
             if(overallState["annotated"]) "Table of scored <br/> and annotated probes" else
         "Table of scored probes"
         xsc <- cellHTSList$scored
-        res <- makePlot(outdir, con=con, name="imageScreen", w=7, h=7, psz=8,
-                        fun=function(map=imageScreenArgs$map) do.call("imageScreen",
-                                     args=append(list(object=xsc, map=map),
-                                     imageScreenArgs[!names(imageScreenArgs) %in% "map"])),
-                        print=FALSE, isImageScreen=TRUE)
+        settings <- chtsGetSetting(c("screenSummary", "scores"))
+        res <- makePlot(outdir, name="imageScreen", w=settings$size, h=settings$size,
+                        font=settings$font, thumbFactor=settings$thumbFactor,
+                        psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                        pngArgs=list(map=settings$map), ar=settings$aspect,
+                        zrange=settings$zrange, anno=settings$anno, col=settings$col,
+                        fun=function(x=xsc, map=FALSE, ar, zrange, anno, col, ...)
+                        {
+                            imageScreen(object=x, map=map, ar=ar, col=col, ...)
+                        })
         imgList[["Scores"]] <-
             chtsImage(data.frame(title="Screen-wide image plot of the scored values",
                                  thumbnail="imageScreen.png", 
                                  fullImage="imageScreen.pdf",
                                  map=if(!is.null(res)) screenImageMap(object=res$obj,
                                  tags=res$tag, "imageScreen.png",
-                                 cellHTSlist=cellHTSList, imageScreenArgs=imageScreenArgs)
+                                 cellHTSlist=cellHTSList)
                                  else NA))
-                                                    
-        qqn <- makePlot(outdir, con=con, name="qqplot", w=7, h=7, psz=8,
-                        fun=function(x=xsc)
+
+        settings <- chtsGetSetting(c("screenSummary", "qqplot"))
+        qqn <- makePlot(outdir, name="qqplot", w=settings$size, h=settings$size,
+                        font=settings$font, thumbFactor=settings$thumbFactor,
+                        psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                        pdfArgs=list(main="Normal Q-Q Plot"),
+                        fun=function(x=xsc, main=NULL, ...)
                     {
                         par(mai=c(0.8,0.8,0.2,0.2))
-                        qqnorm(Data(x), main=NULL, cex.lab=1.3,
-                               ylim=range(Data(x), na.rm=TRUE, finite=TRUE))
-                        qqline(Data(x), col="darkgray", lty=3)
-                    },
-                        print=FALSE)
+                        qqnorm(Data(x), main=main, cex.lab=1.3,
+                               ylim=range(Data(x), na.rm=TRUE, finite=TRUE), ...)
+                        qqline(Data(x), col="darkred", lty=3, lwd=2)
+                    })
         imgList[["Q-Q Plot"]] <- chtsImage(data.frame(title="Normal Q-Q Plot",
                                                       thumbnail="qqplot.png",
                                                       fullImage="qqplot.pdf"))
-        dens <- makePlot(outdir, con=con, name="density", w=7, h=7, psz=8,
-                        fun=function(x=xsc)
-                    {
-                        par(mai=c(0.8,0.8,0.2,0.2))
-                        plot(density(Data(x), na.rm=TRUE), main="", cex.lab=1.3)
-                    },
-                        print=FALSE)
+        settings <- chtsGetSetting(c("screenSummary", "distribution"))
+        dens <- makePlot(outdir, name="density",
+                         w=settings$size, h=settings$size,
+                         font=settings$font, thumbFactor=settings$thumbFactor,
+                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                         pdfArgs=list(main="Density distribution"),
+                         fun=function(x=xsc, main="", ...)
+                     {
+                         par(mai=c(0.8,0.8,0.2,0.2))
+                         plot(density(Data(x), na.rm=TRUE), main=main, cex.lab=1.3)
+                     },
+                         print=FALSE)
         imgList[["Distribution"]] <- chtsImage(data.frame(title="Density Distribution",
-                                                      thumbnail="density.png",
-                                                      fullImage="density.pdf"))
+                                                          thumbnail="density.png",
+                                                          fullImage="density.pdf"))
         
         stack <- chtsImageStack(list(imgList), id="imageScreen",
                                 tooltips=addTooltip(names(imgList), ""))        
@@ -68,8 +81,7 @@ writeHtml.screenSummary <- function(cellHTSList, module, imageScreenArgs, overal
 ## This function is used to split the Screen-wide image plot of the
 ## scored values into rectangle areas for a HTML imageMap in order
 ## that clicking on a plate will link to its quality report.
-screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
-                           imageScreenArgs=imageScreenArgs)
+screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist)
 {			
     ## imageScreen configuration, same as in file imagescreen.R
     xsc <- cellHTSlist$scored	
@@ -77,7 +89,7 @@ screenImageMap <- function(object, tags, imgname, cellHTSlist=cellHTSlist,
     nc <- pdim(xsc)[2] ## number of columns for the plate
     ## 'ar' is the aspect ratio for the image plot
     ##(i.e. number columns divided by the number of rows)
-    ar <- imageScreenArgs$ar	
+    ar <- chtsGetSetting(c("screenSummary", "scores"))$aspect	
     nrPlates <- getNrPlateColRow(ar, xsc)$nrPlates ## number of plates
     nrRow <- getNrPlateColRow(ar, xsc)$nrRow ## number of plates per row in imageScreen.png
     nrCol <- getNrPlateColRow(ar, xsc)$nrCol ## number of plates per column in imageScreen.png

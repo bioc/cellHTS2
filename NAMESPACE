@@ -4,7 +4,7 @@ importFrom("vsn", "meanSdPlot")
 importFrom("prada", "devDims", "plotPlate", "devRes")
 importFrom("graphics", "plot", "lines")
 
-importFrom("GSEABase", "GeneSetCollection")
+importFrom("GSEABase", "GeneSetCollection", "incidence")
 
 importFrom("Category", "applyByCategory")
 
@@ -20,6 +20,7 @@ export("oneRowPerId",
        "getDynamicRange",
        "getMeasureRepAgreement",
        "getTopTable",
+       "getSettings",
        "getZfactor",
        "gseaModule",
        "imageScreen",
@@ -29,6 +30,7 @@ export("oneRowPerId",
        "readHTAnalystData",
        "scores2calls",
        "scoreReplicates",
+       "setSettings",
        "spatialNormalization",
        "summarizeChannels",
        "summarizeReplicates",

@@ -3,15 +3,29 @@
 \title{Screen plot of the plate configuration of a cellHTS object}
 \description{Screen plot displaying the plate configuration of a \code{cellHTS} object.}
 \usage{
-configurationAsScreenPlot(x, verbose=interactive(), posControls, negControls)
+configurationAsScreenPlot(x, verbose=interactive(), posControls,
+negControls, legend=FALSE, main="")
 }
 
 \arguments{
+  
   \item{x}{a configured \code{\linkS4class{cellHTS}} object
     (i.e. \code{state(x)['configured']} must be \code{TRUE}).}
-  \item{verbose}{a logical value, if \code{TRUE}, the function reports some of its intermediate progress. The default is \code{\link[base:interactive]{interactive()}}.}
-  \item{posControls}{a list or vector of regular expressions specifying the name of the positive controls. See details.}
-  \item{negControls}{a vector of regular expressions specifying the name of the negative controls. See details.}
+  
+  \item{verbose}{a logical value, if \code{TRUE}, the function reports
+    some of its intermediate progress. The default is
+    \code{\link[base:interactive]{interactive()}}.}
+  
+  \item{posControls}{a list or vector of regular expressions specifying
+    the name of the positive controls. See details.}
+  
+  \item{negControls}{a vector of regular expressions specifying the name
+    of the negative controls. See details.}
+
+  \item{legend}{logical defining whether to include a legend.}
+
+  \item{main}{character giving a figure caption.}
+  
 }
 
 \details{
