@@ -148,8 +148,6 @@ imageScreenArgsVerification <- function(imageScreenArgs, map, ar=1)
     {
         if(!is.null(imageScreenArgs)) 
             stop("'imageScreenArgs' must either be a list or NULL.")
-        warning("The imageScreenArgs argument is deprecated. Please use the settings ",
-                "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
         chtsSetSetting(list(screenSummary=list(scores=list(map=map))))
     }	
     return(invisible())
@@ -587,9 +585,9 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## the respective plates. The workhorse function to produce the necessary HTML code is
     ## 'writeHtml.screenSummary'.
     screenSummary.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "screenImage.html"),
-                                     htmlFun=writeHtml.screenSummary, title="Screen Summary",
-                                     funArgs=list(nrPlate=nrPlate,
-                                     overallState=overallState))
+                                       htmlFun=writeHtml.screenSummary, title="Screen Summary",
+                                       funArgs=list(nrPlate=nrPlate,
+                                                    overallState=overallState))
     tab <- rbind(tab, writeHtml(screenSummary.module))
     progress <- myUpdateProgress(progress, "step5")
 

@@ -5,7 +5,7 @@ chtsSettings <- new.env(hash=FALSE)
 chtsSettings[["report"]] <-
     list(plateConfiguration=
          list(size=14, font="Helvetica", fontSize=12, thumbFactor=2,
-              thumbFontSize=9, col=NA),
+              thumbFontSize=9, col=NA, include=TRUE),
          plateSummaries=list(
               boxplot=list(
                   size=7.5, font="Helvetica", fontSize=12,
@@ -17,7 +17,7 @@ chtsSettings[["report"]] <-
                    thumbFactor=1, thumbFontSize=9,
                    col=list(posNeg=rev(brewer.pal(11, "RdBu"))[c(1:5, rep(6,3), 7:11)],
                             pos=brewer.pal(9, "Greys")),
-                   aspect=1, annotation=NULL, map=FALSE),
+                   aspect=1, annotation=NULL, map=FALSE, range=NULL),
               qqplot=list(size=7, font="Helvetica", fontSize=10,
                    thumbFactor=1, thumbFontSize=9, col=NA),
               distribution=list(size=7, font="Helvetica", fontSize=10,

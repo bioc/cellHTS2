@@ -218,6 +218,9 @@ getSettings()
 	 
 	 \item{col}{The colors used for the plot. This is currently not
 	   used.}
+
+	 \item{include}{A logical indicating whether to create the
+	       plate configuration plot or not. The default value is \code{TRUE}.}
 	 
        }
      }
@@ -331,6 +334,9 @@ getSettings()
 	     \item{map}{A logical indicating whether to tooltips
 	       containing the plate annotation for each well or not. The
 	       default value is \code{FALSE}.}
+
+	     \item{range}{The range of values into which the colors will
+	       be mapped. A numeric of length 2.}
 	     
 	   }
 	 }

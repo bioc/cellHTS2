@@ -7,7 +7,7 @@ writeHtml.plateConf <- function(cellHTSList, module, nrPlate, posControls,
 {
     outdir <- dirname(module@url)
     xr <- cellHTSList$raw
-    if(state(xr)[["configured"]])
+    if(state(xr)[["configured"]] && chtsGetSetting(c("plateConfiguration", "include")))
     {
         ## Create the image plots of the plate configuration as jpg and pdf
         fnam <- "configurationAsScreenPlot"

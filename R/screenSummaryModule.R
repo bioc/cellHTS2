@@ -18,7 +18,7 @@ writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                         font=settings$font, thumbFactor=settings$thumbFactor,
                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
                         pngArgs=list(map=settings$map), ar=settings$aspect,
-                        zrange=settings$zrange, anno=settings$anno, col=settings$col,
+                        zrange=settings$range, anno=settings$anno, col=settings$col,
                         fun=function(x=xsc, map=FALSE, ar, zrange, anno, col, ...)
                         {
                             imageScreen(object=x, map=map, ar=ar, col=col, ...)

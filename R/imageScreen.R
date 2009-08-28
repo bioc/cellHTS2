@@ -72,7 +72,7 @@ imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
     {
         ## map the z-values to interval [0,1], with 0.5 corresponding to z=0
         scunit <- (sc/max(abs(zrange)) + 1) / 2
-        reverseMap = function(x) { (x*2-1)*max(abs(zrange)) }
+        reverseMap <- function(x) { (x*2-1)*max(abs(zrange)) }
         ## give a little more room to white
         colrs <- colorRampPalette(col[["posNeg"]])(256)
     }
