@@ -53,7 +53,7 @@ screenDesc(object)
 \code{\linkS4class{cellHTS}}, 
 \code{\link[cellHTS2]{readPlateList}}, 
 \code{\link[cellHTS2]{configure}}, 
-\code{\link[cellHTS2]{name}}
+\code{\link[cellHTS2:cellHTS-class]{name}}
 }
 
 \keyword{manip}

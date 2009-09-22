@@ -36,13 +36,15 @@ This function calls the function \code{\link[splots]{plotScreen}} to create a sc
 
   By default, if \code{posControls} is not given, "pos" will be taken as the annotation name for the wells containing positive controls. Similarly, if \code{negControls} is missing, by default "neg" will be considered as the name used to annotate the negative controls. 
   The content of \code{posControls} and \code{negControls} will be
-  passed to \code{\link[base:regexpr]{regexpr}} for pattern matching
-  within the well annotation given in column \code{controlStatus} of the \code{featureData} slot of the \code{cellHTS} object. 
+  passed to \code{\link[base:grep]{regexpr}} for pattern matching
+  within the well annotation given in column \code{controlStatus} of the
+  \code{featureData} slot of the \code{cellHTS} object.  
 }
 
 \value{
 
-Invisibly, a vector with the color map used to display the well annotation in the image plot.
+Invisibly, a vector with the color map used to display the well
+annotation in the image plot. 
 
 }
 

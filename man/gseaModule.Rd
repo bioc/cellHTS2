@@ -20,7 +20,7 @@ gseaModule(geneSets, statFuns, scores, annotation)
 \arguments{
   
   \item{geneSets}{An object of class
-    \code{\link[GSEABase:class.GeneSetCollection]{GeneSetCollection}}
+    \code{\link[GSEABase:GeneSetCollection-class]{GeneSetCollection}}
     containing the information about gene sets for which to perform the
     analysis.}
 

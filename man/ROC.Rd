@@ -37,7 +37,7 @@
   Furthermore, \code{object} is expected to contain positive and negative
   controls annotated in the column \code{controlStatus} of the \code{featureData} slot - which can be accessed via \code{wellAnno(object)}. The arguments \code{positives} and \code{negatives} should be given as regular expression patterns specifying the name of the positive(s) and negative(s) controls, respectivey. 
   By default, if \code{positives} is not given, \emph{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negatives} is missing, by default \emph{neg} will be considered as the name used to annotate the negative controls. 
-  The content of \code{posControls} and \code{negControls} are passed to \code{\link[base:regexpr]{regexpr}} for pattern matching within the well annotation (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). 
+  The content of \code{posControls} and \code{negControls} are passed to \code{\link[base:grep]{regexpr}} for pattern matching within the well annotation (see examples for \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}). 
   If the assay is a two-way experiment, \code{positives} should be a list with components \code{act} 
   and \code{inh}, specifying the name of the activators, and inhibitors, respectively. In this case, the ROC curve is constructed based on the absolute values of \code{Data(object)}.}
 

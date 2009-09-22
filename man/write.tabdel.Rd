@@ -1,8 +1,9 @@
 \name{write.tabdel}
 \alias{write.tabdel}
-\title{Wrapper to function 'write.table' used to write data to a tab-delimited file}
+\title{Wrapper to function 'write.table' used to write data to a
+  tab-delimited file} 
 \description{
-  Wrapper for the function \code{\link[base:write.table]{write.table}}
+  Wrapper for the function \code{\link[base:write]{write.table}}
   to write data to a tab-delimited file.
 }
 \usage{
@@ -10,12 +11,12 @@ write.tabdel(\dots)
 }
 \arguments{
  \item{...}{arguments that get passed on to the function
- \code{\link[base:write.table]{write.table}}.}
+ \code{\link[base:write]{write.table}}.}
 }
 
 \details{A trivial function, which we have included for convenience.}
 \value{The name of the file that was written.}
-\seealso{\code{\link[base:write.table]{write.table}}}
+\seealso{\code{\link[base:write]{write.table}}}
 \author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \examples{

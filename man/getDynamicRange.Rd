@@ -67,7 +67,7 @@ negControls)
   missing, by default \code{neg} will be considered as the name used to
   annotated the negative controls.  The content of \code{posControls}
   and \code{negControls} will be passed to
-  \code{\link[base:regexpr]{regexpr}} for pattern matching within the
+  \code{\link[base:grep]{regexpr}} for pattern matching within the
   well annotation given in \code{wellAnno(x)} (see examples). If no
   controls are available for a given channel, use \code{""} or \code{NA}
   for that channel. For example, \code{posControls = c("",

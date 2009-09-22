@@ -33,7 +33,7 @@ The maximum and the minimum values are calculated using all the values in
 
 \seealso{
   \code{\link[prada:plotPlate]{plotPlate}},
-  \code{\link[cellHTs2:Bscore]{Bscore}},
+  \code{\link[cellHTS2:Bscore]{Bscore}},
   \code{\link[cellHTS2:spatialNormalization]{spatialNormalization}},
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
   \code{\link[cellHTS2:summarizeChannels]{summarizeChannels}}

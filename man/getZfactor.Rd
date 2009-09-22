@@ -33,7 +33,7 @@ If \code{robust=TRUE} (default), the Z'-factor is calculated using robust estima
 \code{x} (\code{dim(Data(x))[3]}).
   By default, if \code{posControls} is not given, \code{pos} will be taken as the name for the wells containing positive controls. Similarly, if \code{negControls} is missing, by default \code{neg} will be considered as the name used to annotated the negative controls. 
   The content of \code{posControls} and \code{negControls} will be
-  passed to \code{\link[base:regexpr]{regexpr}} for pattern matching
+  passed to \code{\link[base:grep]{regexpr}} for pattern matching
   within the well annotation given in \code{wellAnno(x)} (see
   examples). If no controls are available for a given channel, use
   \code{""} or \code{NA} for that channel. For example,
@@ -50,7 +50,7 @@ The Z'-factor values are calculated between each type of positive control (\code
 }
 \seealso{
   \code{\link[cellHTS2:configure]{configure}}, 
-  \code{\link[cellhts2:writeReport]{writeReport}}
+  \code{\link[cellHTS:writeReport]{writeReport}}
 }
 
 \value{

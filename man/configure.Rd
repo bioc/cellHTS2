@@ -63,7 +63,9 @@ the following slots:
  \item{screenDesc}{object of class \code{character} containing what was read from input file \code{descripFile}.}
  \item{state}{the processing status of the \code{\linkS4class{cellHTS}} object is updated in to \code{state["configured"]=TRUE}.}
  \item{featureData}{the column \code{controlStatus} is updated taking into account the well annotation given by the plate configuration file.}
- \item{experimentData}{an object of class \code{\link[Biobase]{MIAME}} containing descriptions of the
+ \item{experimentData}{an object of class
+   \code{\link[Biobase:class.MIAME]{MIAME}} containing descriptions of
+   the 
    experiment, constructed from the screen description file.}
 %}
 }

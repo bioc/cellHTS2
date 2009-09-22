@@ -68,7 +68,7 @@ writeReport(
     the output of \code{writeReport}.}
   
   \item{imageScreenArgs}{a list with parameters for the function
-    \code{\link[cellhts2]{imageScreen}}. See details. NOTE: This argument is
+    \code{\link[cellHTS2]{imageScreen}}. See details. NOTE: This argument is
     deprecated and will go away in the next release. Please see
     \code{\link{settings}} to learn how to control the output of
     \code{writeReport}.}
@@ -132,7 +132,7 @@ single argument and has to return a numeric vector of length 2. See its
 documentation for details.
 
 The following elements are recognized for \code{imageScreenArgs} and
-passed on to \code{\link[cellhts2]{imageScreen}}: \code{ar}, aspect
+passed on to \code{\link[cellHTS2]{imageScreen}}: \code{ar}, aspect
 ratio, \code{zrange}, range, \code{anno}, gene annotation for the image
 map (if \code{map=TRUE}).
 
@@ -160,7 +160,7 @@ the name for the wells containing positive controls. Similarly, if
 \code{negControls} is missing, by default "neg" will be considered as
 the name used to annotate the negative controls.  The content of
 \code{posControls} and \code{negControls} will be passed to
-\code{\link[base:regexpr]{regexpr}} for pattern matching within the well
+\code{\link[base:grep]{regexpr}} for pattern matching within the well
 annotation given in column \code{controlStatus} of the
 \code{featureData} slot of the \code{cellHTS} object. If no controls are
 available for a given channel, use \code{""} or \code{NA} for that
