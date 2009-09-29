@@ -38,26 +38,46 @@ This function expects that the next line after the meta field "Display format" f
 }
 
 \value{
-  An object of class \code{\linkS4class{cellHTS}}, which extends the class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}. 
+  An object of class \code{\linkS4class{cellHTS}}, which extends the
+  class \code{\link[Biobase:class.NChannelSet]{NChannelSet}}.  
 After calling this function, the content of the following slots is as follows:
-	\item{assayData}{an object of class \code{\link[Biobase]{AssayData}} containing the imported measurement data. Each matrix represents a single channel, and each sample (replicate) corresponds to a column. Thus, the total number of rows in each matrix corresponds to the product between the number of wells per plate and the number of assay plates.}
+	\item{assayData}{an object of class
+  \code{\link[Biobase:class.AssayData]{AssayData}} containing the
+  imported measurement data. Each matrix represents a single channel,
+  and each sample (replicate) corresponds to a column. Thus, the total
+  number of rows in each matrix corresponds to the product between the
+  number of wells per plate and the number of assay plates.} 
 
-  \item{phenoData}{the argument \code{name} is stored in its column \code{assay}.}
-  \item{featureData}{the information about the plate and well identifiers for each plate measurement are stored in columns \code{plate} and \code{well} of this slot.}
+  \item{phenoData}{the argument \code{name} is stored in its column
+  \code{assay}.} 
+  \item{featureData}{the information about the plate and well
+  identifiers for each plate measurement are stored in columns
+  \code{plate} and \code{well} of this slot.} 
   \item{intensityFiles}{a list, where each component contains a
-    copy of the measurement data of a given plate, replicate and channel. Its length corresponds to the
+    copy of the measurement data of a given plate, replicate and
+  channel. Its length corresponds to the 
     number of rows of \code{plateList}.}
-  \item{plateList}{a data.frame containing the columns "Filename", "Plate", "Replicate", "Channel" and "status". Each row of this slot makes the correspondence between a given component (name given in column "Filename") in the list stored in slot \code{intensityFiles} (i.e. plate) and its respective plate, replicate and channel number. Thus, this data.frame contains as many rows as the product between the total number of plates, replicates and channels. The last column named \code{status} is of type character and contains the string "OK" indicated the success status of the data import.}
+  \item{plateList}{a data.frame containing the columns "Filename",
+  "Plate", "Replicate", "Channel" and "status". Each row of this slot
+  makes the correspondence between a given component (name given in
+  column "Filename") in the list stored in slot \code{intensityFiles}
+  (i.e. plate) and its respective plate, replicate and channel
+  number. Thus, this data.frame contains as many rows as the product
+  between the total number of plates, replicates and channels. The last
+  column named \code{status} is of type character and contains the
+  string "OK" indicated the success status of the data import.} 
 }
 
 \seealso{
-To read a collection of plate result files with measurements of a single plate and replicate, see \code{\link{readPlateList}}.
+To read a collection of plate result files with measurements of a single
+plate and replicate, see \code{\link{readPlateList}}. 
 }
 
 \author{W. Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \references{
-Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens, \emph{Genome Biology} \bold{7}, R66.
+Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi
+screens, \emph{Genome Biology} \bold{7}, R66. 
 }
 
 \examples{

@@ -96,7 +96,8 @@ readPlateList(filename, path=dirname(filename), name="anonymous", importFun, ver
   class 
   \code{\link[Biobase:class.NChannelSet]{NChannelSet}}. 
   After calling this function, the content of the following slots is as follows:
-  \item{assayData}{an object of class \code{\link[Biobase]{AssayData}}
+  \item{assayData}{an object of class
+  \code{\link[Biobase:class.AssayData]{AssayData}} 
     containing the imported measurement data. Each matrix represents a
     single channel, and each run corresponds to a
     column. Thus, the total number of rows in each matrix corresponds to
