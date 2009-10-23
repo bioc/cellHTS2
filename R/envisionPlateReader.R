@@ -1,6 +1,6 @@
 # Data import function compatible with the EnVision plate reader file format.
 # Ligia Bras (August 2007)
-getEnVisionCrosstalkCorrectedData <- function(f)
+getEnVisionCrosstalkCorrectedData <- function(f, p)
 {
     out <- do.call(envisionPlateReader, list(f, TRUE))
     return(out)
@@ -8,7 +8,7 @@ getEnVisionCrosstalkCorrectedData <- function(f)
 
 
 
-getEnVisionRawData <- function(f)
+getEnVisionRawData <- function(f, p)
 {
     out <- do.call(envisionPlateReader, list(f, FALSE))
     return(out)

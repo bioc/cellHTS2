@@ -276,6 +276,7 @@ div.tab table.tabs table.unselected td.middle
    /*  min-width:120px; */
     height:63px; 
     padding-top:17px;
+    background-repeat:repeat-x;
 }
 
 div.tab table.tabs table.unselected.medium td.middle
@@ -284,6 +285,7 @@ div.tab table.tabs table.unselected.medium td.middle
     font-size:13px;
     background-image:url(midbluemid.gif);
     height:53px;
+    background-repeat:repeat-x;
 }
 
 div.tab table.tabs table.unselected.small td.middle
@@ -367,6 +369,7 @@ div.tab table.tabs table.selected td.middle
    /*  min-width:120px; */
     height:63px;
     padding-top:15px;
+    background-repeat:repeat-x;
 }
 
 div.tab table.tabs table.selected td.middle span
@@ -382,6 +385,7 @@ div.tab table.tabs table.selected.medium td.middle
     height:53px;
     font-size:13px;
     text-align:center;
+    background-repeat:repeat-x;
 }
 
 div.tab table.tabs table.selected.small td.middle
@@ -773,7 +777,36 @@ div.alert
 
 div.scatterLegend
 {
-margin-top:5px;
-font-size:12px;
+    margin-top:5px;
+    font-size:12px;
 }
 
+span.pointer
+{
+    cursor:pointer;
+}
+
+td.term
+{
+    font-weight:bold;
+    font-size:16px;
+}
+
+span.error
+{
+    color:red;
+}
+
+td.Status.passed
+{
+    background-image:url(checkmark.png);
+    background-repeat:no-repeat;
+    background-position:center;
+}
+
+td.Status.failed
+{
+    background-image:url(failed.png);
+    background-repeat:no-repeat;
+    background-position:center;
+}

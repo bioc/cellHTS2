@@ -1,28 +1,75 @@
+## Read the actual plate list. If 'file' is a character vector we will use
+## read.table(file...), otherwise it has to be a function which returns the
+## appropriate data.frame or data.frame-like list:
+##   - mandatory columns 'Filename', 'Plate', and 'Replicate', the latter
+##     two of class 'numeric'
+##   - optional columns 'Channel' and 'Batch' which have to be of class
+##     'numeric'
+##   - additional optional columns of any type
+getPlist <- function(filename, path, ...)
+{
+    if(is.character(filename))
+    {
+        if(is.na(path)) path <- dirname(filename)
+        filename <- basename(filename)
+        fp <- file.path(path, filename)
+        if(!file.exists(fp))
+            stop(sprintf("The file '%s' could not be found in the given path '%s'.",
+                         filename, path))
+        pd <- read.table(file.path(path, filename), sep="\t", header=TRUE, as.is=TRUE)
+        pd$Filename <- file.path(path, gsub("^ *", "", gsub(" *$", "", pd$Filename)))
+        checkColumns(pd, filename, mandatory=c("Filename", "Plate", "Replicate"),
+                     numeric=c("Plate", "Replicate", "Channel", "Batch"))
+        ## check if the data files are in the given directory
+        if(!any(file.exists(pd$Filename)))
+            stop(sprintf(paste("None of the files specified in '%s'",
+                               "were found in the given path '%s'"), filename, path))
+    }
+    else if(is.function(filename))
+    {
+        pd <- filename(...)
+        checkColumns(pd, "Created by function", mandatory=c("Filename", "Plate", "Replicate"),
+                     numeric=c("Plate", "Replicate", "Channel", "Batch"))
+    }
+    else
+    {
+        stop("'filename' must be either a character scalar or a function.\n",
+             "Please see '?readPlateList' for details.") 
+    }
+    return(pd)
+}
+
+
+
 ## Read in the list of plates in the 'Platelist' file and create a cellHTS object
 readPlateList <- function(filename,
-                          path=dirname(filename),
+                          path=NA,
                           name="anonymous",
                           importFun,
-                          verbose=interactive())
+                          verbose=interactive(),
+                          ...)
 {
-    file <- basename(filename)
-    dfiles <- dir(path)
-  
-    if(!(is.character(path)&&length(path)==1))
+    ## We read in the plate list file first
+    if(!is.na(path) && !(is.character(path) && length(path)==1))
         stop("'path' must be character of length 1")
-  
-    pd <- read.table(file.path(path, file), sep="\t", header=TRUE, as.is=TRUE)
-  
-    checkColumns(pd, file, mandatory=c("Filename", "Plate", "Replicate"),
-                 numeric=c("Plate", "Replicate", "Channel", "Batch"))
-  
+    if(is.na(path) && !is.function(filename))
+        path <- dirname(filename)
+    pd <- getPlist(filename, path, ...)
+
     ## consistency check for "importFun"
-    if (!missing(importFun)) {
+    if (!missing(importFun))
+    {
         if (!is(importFun, "function"))
-            stop("'importFun' should be a function to use to read the raw data files")
-    } else {
+            stop("'importFun' should be a function uses to read the raw data files\n.",
+                 "Please see '?readPlateList' for details.")
+    }
+    else
+    {
         ## default function (compatible with the file format of the plate reader)
-        importFun <- function(f) {
+        importFun <- function(f, ...)
+        {
+            if(!file.exists(f))
+                stop("File not found: ", f)
             txt <- readLines(f, warn=FALSE)
             sp <- strsplit(txt, "\t")
             well <- sapply(sp, "[", 2)
@@ -31,24 +78,31 @@ readPlateList <- function(filename,
             return(out)
         }
     }
-  
-    ## check if the data files are in the given directory
-    a <- unlist(sapply(pd$Filename, function(z) grep(paste("^", z, "$", sep=""),
-                                                     dfiles, ignore.case=TRUE)))
-    if (length(a)==0)
-        stop(sprintf("None of the files were found in the given 'path': %s", path))
-  
-    f <- file.path(path, dfiles[a])
-
-    ## check if 'importFun' gives the output in the desired form
-    aux <- importFun(f[1])
-    if (which(unlist(lapply(aux, is, "data.frame"))) != 1 |
-        !all(c("val", "well") %in% names(aux[[1]])) | length(aux)!=2)
+    
+    ## check if 'importFun' gives the output in the desired form. Since we want
+    ## to allow for missing files and reading errors later, we have to iterate through
+    ## the whole list until we first find something that resembles what we need. If
+    ## the iteration stops and we still haven't found anything useful we cast an
+    ## error.
+    failed <- TRUE
+    for(f in pd$Filename)
+    {
+        aux <- try(importFun(f, path), silent=TRUE)
+        if(is.list(aux) && length(aux)==2 && is.data.frame(aux[[1]]) &&
+           all(c("val", "well") %in% names(aux[[1]])))
+        {
+            failed <- FALSE
+            break
+        }
+    }
+    if(failed)
         stop("The output of 'importFun' must be a list with 2 components;\n",
-             "the first component should be a 'data.frame' with slots 'well' and 'val'.")
+             "the first component should be a 'data.frame' with slots 'well' and 'val'.",
+             if(is(aux, "try-error")) paste("\nThe following additional errors where encountered:\n",
+                                            as.character(aux)))
 
     ## auto-determine the plate format
-    well <- as.character(importFun(f[1])[[1]]$well)
+    well <- as.character(aux[[1]]$well)
     codes <- parseLetNum(well)
     if(any(is.na(codes$lindex)) || any(is.na(codes$numbers)))
         stop(sprintf("Malformated column 'well' in input file %s", f[1]))
@@ -57,14 +111,11 @@ readPlateList <- function(filename,
     if(verbose)
         cat(sprintf("%s: found data in %d x %d (%d well) format.\n", name,
                     dimPlate[1], dimPlate[2], nrWell))
-    
     ## Should we check whether these are true?
     ##     "96"  = c(nrow=8, ncol=12),
     ##     "384" = c(nrow=16, ncol=24),
-
     nrRep <- max(pd$Replicate)
     nrPlate <- max(pd$Plate)
-
     combo <- paste(pd$Plate, pd$Replicate)
 
     ## Channel: if not given, this implies that there is just one
@@ -78,6 +129,7 @@ readPlateList <- function(filename,
         pd$Channel <- channel	
     }
 
+    ## Make sure all entries are unique
     whDup <- which(duplicated(combo))
     if(length(whDup)>0L) {
         idx <- whDup[1:min(5L, length(whDup))]
@@ -89,49 +141,36 @@ readPlateList <- function(filename,
         stop(msg)
     }
 
-    ## We delete all leading and trailing white space from the filenames
-    pd$Filename <- gsub("^ *", "", gsub(" *$", "", pd$Filename))
-    
-    
+    ## Prepare the raw, batch and status vectors
     xraw <- array(NA_real_, dim=c(nrWell, nrPlate, nrRep, nrChannel))
     intensityFiles <- vector(mode="list", length=nrow(pd))
-    names(intensityFiles) <- pd[, "Filename"]
-
+    finalFilename <-
+        if(is.character(pd[, "Filename"])) basename(pd[, "Filename"]) else
+           paste("Plate", combo)
+    names(intensityFiles) <- finalFilename
     status <- character(nrow(pd))
     batch <- as.data.frame(matrix(ncol=nrRep, nrow=nrPlate))
     colnames(batch) <- sprintf("replicate%d", seq_len(nrRep))
     rownames(batch) <- sprintf("plate%d", seq_len(nrPlate))
 
-    for(i in seq_len(nrow(pd))) {
+    ## Iterate over each file and read in the data
+    for(i in seq_len(length(pd$Filename)))
+    {
         if(verbose)
-            cat("\rReading ", i, ": ", pd$Filename[i], sep="")
-
-        ff <- grep(paste("^", pd[i, "Filename"], "$", sep=""),
-                   dfiles, ignore.case=TRUE)
-
-        if (length(ff)!=1) {
-            f <- file.path(path, pd[i, "Filename"])
-            status[i] <- sprintf("File not found: %s", f)
-        } else {
-            f <- file.path(path, dfiles[ff])
-            names(intensityFiles)[i] <- dfiles[ff]
-            status[i] <- tryCatch({
-                out <- importFun(f)
-                pos <- convertWellCoordinates(out[[1]]$well, dimPlate)$num
-                intensityFiles[[i]] <- out[[2]]
-                xraw[pos, pd$Plate[i], pd$Replicate[i], channel[i]] <- out[[1]]$val
-                "OK"
-            },
-                                  warning=function(e) paste(class(e)[1], e$message, sep=": "),
-                                  error=function(e) paste(class(e)[1], e$message, sep=": ")
-                                  ) ## tryCatch
-        } ## else
+            cat("\rReading ", i, ": ", finalFilename[i], sep="")
+        status[i] <- tryCatch(
+                          {
+                              out <- importFun(pd$Filename[[i]], path)
+                              pos <- convertWellCoordinates(out[[1]]$well, dimPlate)$num
+                              intensityFiles[[i]] <- out[[2]]
+                              xraw[pos, pd$Plate[i], pd$Replicate[i], channel[i]] <- out[[1]]$val
+                              "OK"
+                          },
+                              warning=function(e) paste(class(e)[1], e$message, sep=": "),
+                              error=function(e) paste(class(e)[1], e$message, sep=": "))
         bt <- pd$Batch[i]
         batch[pd$Plate[i], pd$Replicate[i]] <- if(!is.null(bt)) bt else 1
-
     } ## for
-    
-
     if(verbose)
         cat("\rRead", nrow(pd), "plates.                                                \n\n")
 
@@ -139,16 +178,15 @@ readPlateList <- function(filename,
     ## arrange the assayData slot:
     dat <- lapply(seq_len(nrChannel), function(ch) 
                   matrix(xraw[,,,ch], ncol=nrRep, nrow=nrWell*nrPlate))
-    channelNames = paste("Channel", seq_len(nrChannel))
+    channelNames <- paste("Channel", seq_len(nrChannel))
     names(dat) <- channelNames
-    
     adata <- do.call(assayDataNew, c(storage.mode="lockedEnvironment", dat))
     
     ## arrange the phenoData slot:
     pdata <- new("AnnotatedDataFrame",
-                 data <- data.frame(replicate=seq_len(nrRep),
-                                    assay=rep(name, nrRep),
-                                    stringsAsFactors=FALSE),
+                 data=data.frame(replicate=seq_len(nrRep),
+                                 assay=rep(name, nrRep),
+                                 stringsAsFactors=FALSE),
                  varMetadata=data.frame(labelDescription=c("Replicate number",
                                                            "Biological assay"),
                                         channel=factor(rep("_ALL_", 2L),
@@ -171,7 +209,7 @@ readPlateList <- function(filename,
                assayData=adata,
                phenoData=pdata,
                featureData=fdata,
-               plateList=cbind(pd[,1L,drop=FALSE], status=I(status), pd[,-1L,drop=FALSE]),
+               plateList=cbind(Filename=I(finalFilename), Status=I(status), pd[,-1L,drop=FALSE]),
                intensityFiles=intensityFiles,
                plateData=list(Batch=batch))
 
@@ -186,6 +224,7 @@ readPlateList <- function(filename,
                                                       length(whHadProbs)-5), "\n", sep="")
         warning(msg, call.=FALSE)
     }
+    
     ## We only need the error code in the plateList, the full error
     ## message can be supplied as an additional column, which we later
     ## use to create the tooltips.
@@ -193,10 +232,10 @@ readPlateList <- function(filename,
     if(any(whHadProbs))
     {
         res@plateList[whHadProbs, "errorMessage"] <- gsub("'", "", status[whHadProbs])
-        res@plateList$status <- gsub("File not found.*", "ERROR",
+        res@plateList$Status <- gsub("File not found.*", "ERROR",
                                      gsub("simpleError.*", "ERROR",
                                           gsub("simpleWarning.*", "WARNING",
-                                               res@plateList$status)))
+                                               res@plateList$Status)))
     }
     return(res)
 }
@@ -227,7 +266,7 @@ parseLetNum <- function(well)
 }
 
 
-## convert from one representation to another
+## convert coordinates from one representation to another
 convertWellCoordinates <- function(x, pdim, type="384")
 {
     if(!missing(pdim))

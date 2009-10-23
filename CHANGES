@@ -1,0 +1,65 @@
+CHANGES SINCE cellHTS2 version 2.9.21
+
+o Complete abstraction of the data input process in
+  'readPlateList'. Before these changes the whole design of the
+  software was file-based. These modifications allow for data input
+  directly from a data base or through a file handle. Major changes in
+  the 'readPlateList function' are:
+
+  1.) The 'filename' argument doesn't need to be a character scalar
+      any more. Instead it can be a function which creates the
+      necessary plate list data.frame (previously this was done by
+      calling read.table on 'filename'). Alternatively, it can produce
+      a named list of vectors, where each vector is of equal
+      length. This is essentially the generalization of a data.frame,
+      allowing for columns of arbitrary R objects rather then
+      elementary vectors. The mandatory data columns with specific
+      data types as described in the man page of readPlateList
+      remain. If additional arguments are needed in the user-defined
+      function, those can be passed on through the inital call to
+      'readPlateList'. I.e., it is called with all the '...'
+      arguments, which have been added to the definition of
+      'readPlateList'.
+
+  2.) The 'path' argument is treated a little differently since it
+      only makes sense in the context of flat files. If the argument
+      'importFun' is not given, the behavior is similar to the former
+      version: 'path' is appended to the values in the 'Filename'
+      column of the plate list data.frame, regardless of this being
+      read from a flat file or created by a user-defined function. The
+      default 'importFun' function interprets these values as file
+      names. If 'importFun' is specified by the user, the 'path'
+      argument will not automatically be appended to the 'Filename'
+      column values, because we can't be sure that these are still
+      file names. Instead, they could be data base handles or query
+      strings. In order to enable the 'path' argument in this setting,
+      it's value will be passed on as a second argument in the call to
+      'importFun'. The function has to explicitely deal with this
+      argument, e.g. readLines(file.path(path, filename)), or ignore
+      it if appropriate.
+
+      NOTE: 'importFun' needs to be able to deal with two arguments
+      now, and the handling of the path has to be implemented by the
+      user!  Old functions will now longer work!
+
+o Similar changes have been made to 'configure'. The 'logFile',
+  'confFile' and 'scripFile' arguments can now be functions as well,
+  returning the respective data objects (mostly data.frames). The
+  additional 'logFunArgs', 'descFunArgs' and 'confFunArgs' arguments
+  can be used to pass additional parameters to the respective
+  functions.
+
+o The glossary is now kept in an XML file in
+  inst/glossary/glossary.xml in order to facilitate maintenance. In
+  addition, the whole creation of tooltips has been abstracted out
+  into the function addTooltip. Additional tooltips have been added
+  and some of the existing ones have been revised.
+
+o A number of visual polishments of the HTML report.
+
+o Colors mappings for control wells are now fully configurable through
+  the settings. The color codings, along with legends, have been added
+  to many of the diagnostic plots, when applicable.
+
+o M-A plots and average intensity plots have been added to the plate
+  details pages.

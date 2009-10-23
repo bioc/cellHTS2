@@ -3,15 +3,19 @@ chtsSettings <- new.env(hash=FALSE)
 
 ## A list of default settings
 chtsSettings[["report"]] <-
-    list(plateConfiguration=
+    list(controls=
+         list(col=c(sample="black", neg="#377EB8", controls="#4DAF4A",
+                                     other="#984EA3", empty="#FF7F00", flagged="#A65628",
+                                     act="#E41A1C", inh="#FFFF33", pos="#E41A1C")),
+         plateConfiguration=
          list(size=14, font="Helvetica", fontSize=12, thumbFactor=2,
-              thumbFontSize=9, col=NA, include=TRUE),
+              thumbFontSize=9, include=TRUE),
          plateSummaries=list(
               boxplot=list(
                   size=7.5, font="Helvetica", fontSize=12,
                   thumbFactor=1.5, thumbFontSize=11, col=c("pink", "lightblue")),
               controls=list(size=7.5, font="Helvetica", fontSize=12,
-                  thumbFactor=1.5, thumbFontSize=11, col=NA)),
+                  thumbFactor=1.5, thumbFontSize=11)),
          screenSummary=list(
               scores=list(size=7, font="Helvetica", fontSize=10,
                    thumbFactor=1, thumbFontSize=9,
@@ -19,18 +23,24 @@ chtsSettings[["report"]] <-
                             pos=brewer.pal(9, "Greys")),
                    aspect=1, annotation=NULL, map=FALSE, range=NULL),
               qqplot=list(size=7, font="Helvetica", fontSize=10,
-                   thumbFactor=1, thumbFontSize=9, col=NA),
+                   thumbFactor=1, thumbFontSize=9),
               distribution=list(size=7, font="Helvetica", fontSize=10,
-                   thumbFactor=1, thumbFontSize=9, col=NA)),
+                   thumbFactor=1, thumbFontSize=9)),
          plateList=list(
               correlation=list(size=7.5, font="Helvetica", fontSize=14,
-                   thumbFactor=1.5, thumbFontSize=12, col=NA),
+                   thumbFactor=1.5, thumbFontSize=12),
+              maplot=list(size=7.5, font="Helvetica", fontSize=14,
+                   thumbFactor=1.5, thumbFontSize=12),
               histograms=list(size=8, font="Helvetica", fontSize=14,
-                   thumbFactor=2, thumbFontSize=10, col=NA),
+                   thumbFactor=1.8, thumbFontSize=10, type="histogram"),
               reproducibility=list(size=8, font="Helvetica", fontSize=12,
                    thumbFactor=1.3, thumbFontSize=10, col=brewer.pal(9, "YlOrRd"),
                    range=function(x) c(0, quantile(x, 0.95, na.rm=TRUE)),
                    include=FALSE, map=FALSE),
+              average=list(size=8, font="Helvetica", fontSize=12,
+                   thumbFactor=1.3, thumbFontSize=10, col=brewer.pal(9, "Greens"),
+                   range=function(x) c(0, quantile(x, 0.95, na.rm=TRUE)),
+                   include=FALSE, map=FALSE),       
               intensities=list(size=8, font="Helvetica", fontSize=12,
                    thumbFactor=1.6, thumbFontSize=10, col=rev(brewer.pal(9, "RdBu")),
                    #range=function(x) c(-1,1) * max(abs(x), na.rm=TRUE),

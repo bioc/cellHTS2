@@ -200,8 +200,8 @@ setReplaceMethod("Data",
                      assayDataElement(object, ch[i]) <- matrix(value[,,i], nrow=d[1], ncol=d[2], 
                                                                dimnames=dimnames(value)[1:2])
 
-                 if(any(dimnames(value)[[3]]!=channelNames(object)))
-                     channelNames(object) <- dimnames(value)[[3]]
+                 #if(any(dimnames(value)[[3]]!=channelNames(object)))
+                 #    channelNames(object) <- dimnames(value)[[3]]
                  ## in case 'value' had different sample names in it.
                  sampleNames(phenoData(object)) <- sampleNames(object)
                  featureNames(object) <- dimnames(value)[[1]]
@@ -384,12 +384,158 @@ setMethod("annotate",
       })
 
 
+
+## Read the content of the plate config file needed for 'configure',
+## or alternatively evaluate the user-defined function to prepare the
+## necessary data structure: a list with two elements, a integer
+## vector of length 2 giving the total number of wells and plates,
+## respetively, and the actual configuration table.
+getConfiguration <- function(filename, path, nrPlate, nrWpP, ...)
+{
+    if(is.character(filename))
+    {
+        if(is.na(path)) path <- dirname(filename)
+        filename <- basename(filename)
+        fp <- file.path(path, filename)
+        if(!file.exists(fp))
+            stop(sprintf("The file '%s' could not be found in the given path '%s'.",
+                         filename, path))
+        tt <- readLines(file.path(path, filename), n=2, warn=FALSE)
+        ## Parse the header line. We try to grep and gsub ourselves to reasonable values here
+        hinfo <- list(Wells=grep("^Wells:", gsub("^ *| *$", "", tt)),
+                      Plates=grep("^Plates:", gsub("^ *| *$", "", tt)))
+        tt <- sapply(sapply(tt, strsplit, split=":"), "[", 2L)
+        tt <- as.integer(gsub(" .*", "", gsub("^ *", "", tt)))
+        if(any(listLen(hinfo)==0))
+            stop(sprintf(paste("Could not find all expected header rows ('Wells' and 'Plates')",
+                               "in plate configuration file '%s'.\n"), filename))
+        conf <- read.table(file.path(path, filename), sep="\t", header=TRUE, as.is=TRUE,
+                           na.string="", fill=TRUE, skip=2)
+    }
+    else if(is.function(filename))
+    {
+        conf <- filename(...)
+        tt <- conf[[1]]
+        conf <- conf[[2]]
+        hinfo <- list(Plates=1, Wells=2)
+        filename <- "Created by function"
+    }
+    else
+    {
+        stop("'filename' must be either a character scalar or a function.\n",
+             "Please see '?readPlateList' for details.") 
+    }  
+    ## Check for consistency
+    if(tt[hinfo$Plates] != nrPlate)
+        stop(sprintf(paste("in '%s', the number of plates \n specified in the header",
+                           "line 'Plates:' is %d but I expected %d."), filename, nrPlate,
+                     tt[hinfo$Plates]))
+    if(tt[hinfo$Wells] != nrWpP)
+        stop(sprintf(paste("in '%s', the number of wells per plate \n specified in the",
+                           "header line 'Wells:' is %d but I expected %d!"), filename, nrWpP,
+                     tt[hinfo$Wells]))  
+
+    checkColumns(conf, filename, mandatory=c("Plate", "Well", "Content"),
+                 numeric=integer(0))
+    return(conf)
+}
+
+
+## Read the content of the screen log file needed for 'configure', or
+## alternatively evaluate the user-defined function to prepare the
+## necessary data structure: a data.frame with mandatory columns
+## "Plate", "Well" and "Flag", and optional columns "Sample" and
+## "Channel" (if there are multiple replicates or channels). Further
+## columns are allowed.
+getScreenlog <- function(filename, path, nrSample, nrChannel, nrPlate, ...)
+{
+    if(is.character(filename))
+    {
+        if(is.na(path)) path <- dirname(filename)
+        filename <- basename(filename)
+        fp <- file.path(path, filename)
+        if(!file.exists(fp))
+            stop(sprintf("The file '%s' could not be found in the given path '%s'.",
+                         filename, path))
+        slog <- read.table(file.path(path, filename),  sep="\t", header=TRUE,
+                           as.is=TRUE, na.string="", fill=TRUE)
+    }
+    else if(is.function(filename))
+    {
+        slog <- filename(...)
+        filename <- "Created by function"
+    }
+    else
+    {
+        stop("'filename' must be either a character scalar or a function.\n",
+             "Please see '?readPlateList' for details.") 
+    }  
+    ## Check for consistency
+    if(nrow(slog))
+    {
+        ## check consistency of columns 'Plate', 'Channel' and 'Sample'
+        for(i in c("Sample", "Channel"))
+        {
+            if(!(i %in% names(slog))) 
+                slog[[i]] <- rep(1L, nrow(slog)) 
+            else 
+                if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
+                    stop(sprintf(paste("Column '%s' of the screen log file '%s'",
+                                       "contains invalid entries."), i, filename))
+        }
+        checkColumns(slog, filename, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"),
+                     numeric=c("Plate", "Sample", "Channel"))
+        invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
+        if(sum(invalidPlateID))
+            stop(sprintf(paste("Column 'Plate' of the screen log file '%s' contains",
+                               "invalid entries."), filename))
+    }
+    else
+    {
+        slog <- NULL
+        warning("The screen log file is empty and will be ignored.") 
+    }
+    return(slog)
+} 
+
+
+
+## Read the content of the screen description file needed for 'configure', or
+## alternatively evaluate the user-defined function to prepare the
+## necessary data structure: the MIAME-compliant description vector
+getScreendesc <- function(filename, path, ...)
+{
+    if(is.character(filename))
+    {
+        if(is.na(path)) path <- dirname(filename)
+        filename <- basename(filename)
+        fp <- file.path(path, filename)
+        if(!file.exists(fp))
+            stop(sprintf("The file '%s' could not be found in the given path '%s'.",
+                         filename, path))
+        descript <- readLines(file.path(path, filename), warn=FALSE)
+    }
+    else if(is.function(filename))
+    {
+        descript <- filename(...)
+    }
+    else
+    {
+        stop("'filename' must be either a character scalar or a function.\n",
+             "Please see '?readPlateList' for details.") 
+    }  
+    return(descript)
+}
+
+
+
 ##----------------------------------------
 ## configure
 ##----------------------------------------
 setMethod("configure", signature("cellHTS"),
           function(object, descripFile, confFile,
-                   logFile, path)
+                   logFile, path=NA, descFunArgs=NULL,
+                   confFunArgs=NULL, logFunArgs=NULL)
       {
           
           ## If 'path' is given, we assume that all the files are in this directory.
@@ -404,123 +550,59 @@ setMethod("configure", signature("cellHTS"),
           chNames <- channelNames(object)
           nrChannel <- length(chNames)
           xraw <- Data(object)
-          ppath <- ifelse(missing(path), dirname(confFile), path)
-          confFile <- basename(confFile)
+          pWells <- well(object)[1:nrWpP] 
 
-          ## Parse the header line. We try to grep and gsub ourselves to reasonable values here
-          tt <- readLines(file.path(ppath, confFile), n=2, warn=FALSE)
-          hinfo <- list(Wells = grep("^Wells:", gsub("^ *| *$", "", tt)),
-                        Plates=   grep("^Plates:", gsub("^ *| *$", "", tt)))
-          if(any(listLen(hinfo)==0))
-              stop(sprintf(paste("Could not find all expected header rows ('Wells' and 'Plates')",
-                                 "in plate configuration file '%s'.\n"), confFile))
-          tt <- sapply(sapply(tt, strsplit, split=":"), "[", 2L)
-          tt <- as.integer(gsub(" .*", "", gsub("^ *", "", tt)))
-          if(tt[hinfo$"Plates"] != nrPlate)
-              stop(sprintf(paste("in '%s', the number of plates \n specified in the header",
-                                 "line 'Plates:' is %d but I expected %d."), confFile, nrPlate,
-                           tt[hinfo$"Plates"]))
-          if(tt[hinfo$"Wells"] != nrWpP)
-              stop(sprintf(paste("in '%s', the number of wells per plate \n specified in the",
-                                 "header line 'Wells:' is %d but I expected %d!"), confFile, nrWpP,
-                           tt[hinfo$"Wells"]))
+          ## Process the plate annotation file
+          conf <- do.call(getConfiguration, args=c(list(filename=confFile, path=path,
+                                                        nrPlate=nrPlate, nrWpP=nrWpP),
+                                                   confFunArgs))
           
-          ## Check if the screen log file was given
-          slog <- NULL
-          if(!missing(logFile))
-          {
-              ppath <- ifelse(missing(path), dirname(logFile), path)
-              logFile <- basename(logFile)
-              slog <- read.table(file.path(ppath, logFile),  sep="\t", header=TRUE,
-                                 as.is=TRUE, na.string="", fill=TRUE)
-              ## Check if the screen log file is empty
-              if (nrow(slog))
-              {
-                  ## check consistency of columns 'Plate', 'Channel' and 'Sample'
-                  for(i in c("Sample", "Channel"))
-                  {
-                      if(!(i %in% names(slog))) 
-                          slog[[i]] <- rep(1L, nrow(slog)) 
-                      else 
-                          if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
-                              stop(sprintf(paste("Column '%s' of the screen log file '%s'",
-                                                 "contains invalid entries."), i, logFile))
-                  }
-                  
-                  checkColumns(slog, logFile, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"),
-                               numeric=c("Plate", "Sample", "Channel"))
-                  
-                  invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
-                  if(sum(invalidPlateID))
-                      stop(sprintf(paste("Column 'Plate' of the screen log file '%s' contains",
-                                         "invalid entries."), logFile))
-              }
-              else
-              {
-                  slog <- NULL
-                  warning("The screen log file is empty and will be ignored.") 
-              }
-          } 
-
-
+          ## Process the screen log file
+          slog <- do.call(getScreenlog, args=c(list(filename=logFile, path=path,
+                                                    nrSample=nrSample, nrChannel=nrChannel,
+                                                    nrPlate=nrPlate), logFunArgs))
+          
           ## Process the description file
-          ppath <- ifelse(missing(path), dirname(descripFile), path)
-          descripFile <- basename(descripFile)
-          descript <- readLines(file.path(ppath, descripFile), warn=FALSE)
-
+          descript <- do.call(getScreendesc, c(list(filename=descripFile, path=path),
+                                               descFunArgs))
 
           ## Store the contents of the description file in the 'experimentData' slot which
           ## is accessed via description(object):
           miameList <- list(sepLab=grep("Lab description", descript),
-                           name = grep("^Experimenter name:", descript),
-                           lab  =   grep("^Laboratory:", descript),
-                           contact = grep("^Contact information:", descript),
-                           title=grep( "^Title:", descript),
-                           pubMedIds=grep( "^PMIDs:",descript),
-                           url=grep("^URL:",descript),
-                           abstract=grep("^Abstract:",descript)
-                           )
+                            name=grep("^Experimenter name:", descript),
+                            lab=grep("^Laboratory:", descript),
+                            contact=grep("^Contact information:", descript),
+                            title=grep( "^Title:", descript),
+                            pubMedIds=grep( "^PMIDs:",descript),
+                            url=grep("^URL:",descript),
+                            abstract=grep("^Abstract:",descript))
           
           miameInfo <- lapply(miameList, function(i) unlist(strsplit(descript[i], split=": "))[2L]) 
           miameInfo <- lapply(miameInfo, function(i) if(is.null(i)) "" else { if(is.na(i)) "" else i })
           miameInfo <- with(miameInfo, new("MIAME", 
-                                          name=name,
-                                          lab = lab,
-                                          contact=contact,
-                                          title=title,
-                                          pubMedIds=pubMedIds,
-                                          url=url,
-                                          abstract=abstract))
+                                           name=name,
+                                           lab=lab,
+                                           contact=contact,
+                                           title=title,
+                                           pubMedIds=pubMedIds,
+                                           url=url,
+                                           abstract=abstract))
 
           ## store the rest of the description information into slot "other":
           otherInfo <- descript[-unlist(miameList)]
           ## otherInfo <- otherInfo[nchar(otherInfo)>0] #remove empty lines
           ## notes(miameInfo) <- unlist(lapply(otherInfo, function(i) append(append("\t",i), "\n")))
-          notes(miameInfo) <- lapply(otherInfo, function(i) paste("\t", i, "\n", collapse="")) 
-
-
-          ## Process the plate annotation file:
-          conf <- read.table(file.path(ppath, confFile), sep="\t", header=TRUE, as.is=TRUE,
-                             na.string="", fill=TRUE, skip=2)
-
-          checkColumns(conf, confFile, mandatory=c("Plate", "Well", "Content"),
-                       numeric=integer(0))  #column 'Plate' is no longer numeric
-
-          pWells <- well(object)[1:nrWpP] 
+          notes(miameInfo) <- lapply(otherInfo, function(i) paste("\t", i, "\n", collapse=""))         
 
           ## Process the configuration file into wellAnno slot
           ## and set all 'empty' wells to NA in object
           pcontent <- tolower(conf$Content)  ## ignore case!
           wAnno <- factor(rep(NA, nrWpP*nrPlate), levels=unique(pcontent))
 
-
           ## In the current plate configuration file, the concept of 'batch' is separated
           ## from the plate configuration issue. However it might make sense to be able to
           ## specify batches at this level. Have to think about how that would work.
           conf[conf=="*"] <- " *"
-          ##count <- character()
-          ##batches <- array(dim=c(nrPlate, nrSample, nrChannel))
-
           for (i in 1:nrow(conf))
           {
               iconf <- conf[i,]
@@ -537,18 +619,19 @@ setMethod("configure", signature("cellHTS"),
               if(!length(wp))
                   stop(sprintf(paste("In the plate configuration file '%s', no plate matches",
                                      "were found for rule specified by line %d:\n\t %s \n\t %s"),
-                               confFile, i, paste(names(conf), collapse="\t"),
+                               if(is.function(confFile)) "Created from file" else confFile,
+                               i, paste(names(conf), collapse="\t"),
                                paste(iconf, collapse="\t")))
 
               if(!length(ww))
                   stop(sprintf(paste("In the plate configuration file '%s', no well matches",
                                      "were found for rule specified by line %d:\n\t %s \n\t %s"),
-                               confFile, i, paste(names(conf), collapse="\t"),
+                               if(is.function(confFile)) "Created from file" else confFile,
+                               i, paste(names(conf), collapse="\t"),
                                paste(iconf, collapse="\t")))
  
               wAnno[ww + rep(nrWpP*(wp-1), each=length(ww))] <- pcontent[i] 
           }
-
 
           ## Each well and plate should be covered at leat once.
           ## Allow duplication and consider the latter occurence.
@@ -566,13 +649,10 @@ setMethod("configure", signature("cellHTS"),
               stop(msg)
           }
 
-
-
           ## get empty positions from the final well anno and flag them in each replicate
           ## and channel
           empty <- which(wAnno=="empty")
           xraw[] <- apply(xraw, 2:3, replace, list=empty, NA) 
-
 
           ## store the conf data.frame into the 'plateConf' slot of 'object' and
           ## slog into the 'screenlog' slot
@@ -591,8 +671,7 @@ setMethod("configure", signature("cellHTS"),
               irep <- slog$Sample
               ich <- slog$Channel
               ipos <- convertWellCoordinates(slog$Well, pdim(object))$num
-              stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))
-              
+              stopifnot(!any(is.na(ipl)), !any(is.na(irep)), !any(is.na(ich)))         
               xraw[cbind(ipos + nrWpP*(ipl-1), irep, ich)] <- NA 
           } 
 

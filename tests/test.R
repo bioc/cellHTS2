@@ -1,31 +1,39 @@
 ## cat tests/test.R | R --vanilla
 ## cellHTS2 crash test on various conditions
 library(cellHTS2)
-path = system.file("testscreen", package="cellHTS2")
+path <- system.file("testscreen", package="cellHTS2")
 
-testPlatelist=function(platelist, normalize=TRUE) {
-  x = readPlateList(platelist, name="test", path=path)
-  x = configure(x, descripFile="description.txt", confFile="plateconf.txt", logFile="screenlog.txt", path=path)
-
-  if (normalize) {
-    ## normalize results
-    xn = normalizePlates(x, scale="multiplicative", log=FALSE, method="median", varianceAdjust="none")
+testPlatelist=function(platelist, normalize=TRUE)
+{
+    x <- readPlateList(platelist, name="test", path=path)
+    x <- configure(x, descripFile="description.txt", confFile="plateconf.txt",
+                   logFile="screenlog.txt", path=path)
     
-    ## score and summarize replicates
-    xsc = scoreReplicates(xn, sign="-", method="zscore")
-    xsc = summarizeReplicates(xsc, summary="mean")
-  }
-  
-  ## write reports
-  outdir = file.path(tempdir(),platelist,'raw')
-  mainScriptFile = 'tests/test.R'
-  writeReport(raw=x, force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir, mainScriptFile=mainScriptFile)
-  if (interactive()) browseURL(file.path(outdir,'index.html'))
-  if (normalize) {
-    outdir = file.path(tempdir(),platelist,'norm')
-    writeReport(raw=x, normalized=xn, scored=xsc, force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir, mainScriptFile=mainScriptFile)
+    if (normalize)
+    {
+        ## normalize results
+        xn <- normalizePlates(x, scale="multiplicative", log=FALSE, method="median",
+                              varianceAdjust="none")
+        
+        ## score and summarize replicates
+        xsc <- scoreReplicates(xn, sign="-", method="zscore")
+        xsc <- summarizeReplicates(xsc, summary="mean")
+    }
+    
+    ## write reports
+    outdir <- file.path(tempdir(),platelist,'raw')
+    mainScriptFile <-  system.file("scripts/dummy.R", package="cellHTS2")
+    writeReport(raw=x, force=TRUE, plotPlateArgs = TRUE,imageScreenArgs = list(zrange=c( -4, 8), ar=1),
+                map=TRUE, outdir=outdir, mainScriptFile=mainScriptFile)
     if (interactive()) browseURL(file.path(outdir,'index.html'))
-  }
+    if (normalize)
+    {
+        outdir <- file.path(tempdir(),platelist,'norm')
+        writeReport(raw=x, normalized=xn, scored=xsc, force=TRUE, plotPlateArgs = TRUE,
+                    imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE, outdir=outdir,
+                    mainScriptFile=mainScriptFile)
+        if (interactive()) browseURL(file.path(outdir,'index.html'))
+    }
 }
 
 ######

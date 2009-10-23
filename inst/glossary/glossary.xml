@@ -1,0 +1,397 @@
+<!-- A simple XML file for the glossary term definitions. Each term is -->
+<!-- supposed to be coantained in a 'term' tag. Within each of these tags -->
+<!-- the name of the term is supposed to be within a 'word' tag, a short -->
+<!-- description within a 'simpleDef' tag and an optional 'completeDef' tag -->
+<!-- can contain a more complete description. Note that the absence of this -->
+<!-- optional tag will cause the term to be displayed as a simple tooltip, -->
+<!-- whereas its presence will cause the creation of a clickable -->
+<!-- 'Definiton" popup. -->
+
+<glossary>
+
+  <term>
+    <word>
+      Average dynamic range
+    </word>
+    <simpleDef>
+      The average dynamic range is the mean of the replicate dynamic
+      ranges (see replicate dynamic range) for the plate over all the
+      replicates.
+    </simpleDef>
+    <completeDef>
+      The average dynamic range is the mean of the replicate dynamic
+      ranges (see below) for the plate over all the replicates.
+    </completeDef>
+  </term>
+
+  <term>
+    <word>
+      Replicate dynamic range
+    </word>
+    <simpleDef>
+      The replicate dynamic range is an indicator of the gap between
+      the positive and the negative controls.
+    </simpleDef>
+    <completeDef>
+      The replicate dynamic range provides an indicator of the gap
+      between the positive and the negative
+      controls.<br/><br/>Depending on the value of the "scale"
+      attribute from the "summarizePlate" function, the replicate
+      dynamic range is either: <br/>- the difference between the
+      arithmetic average on positive and negative controls <br/>- the
+      ratio between the geometric averages on positive and negative
+      controls.<br/><br/>By default the choice is based on the scale
+      of the data: if the scale is positive, then it is the ratio of
+      geometric average, otherwise, it is the difference of arithmetic
+      averages.
+    </completeDef>
+  </term>
+
+  <term>
+    <word>
+      Repeatability standard deviation
+    </word>
+    <simpleDef>
+      The repeatability standard deviation is the standard deviation
+      for the random variable <i>standard deviation for a gene across
+	all the replicates</i>. It is used to determine if the results
+      for each replicate are similar or not. 0 is the perfect score,
+      whereas a high value means the results are very different.
+    </simpleDef>
+    <completeDef>
+      The repeatability standard deviation is the standard deviation
+      for the random variable 'standard deviation for a gene across
+      all the replicates'. It is used to determine if the results for
+      each replicate are similar or not. <br/><br/>0 is the perfect
+      score, whereas a high value means the results are very
+      different.
+    </completeDef>
+  </term>
+
+  <term>
+    <word>
+      Spearman rank correlation
+    </word>
+    <simpleDef>
+      The Spearman rank correlation coefficient is a mesure of
+      correlation between two replicates. A result close to zero means
+      there is no correlation between the two replicates, whereas a
+      result close to 1 means there is a strong correlation between
+      them.
+    </simpleDef>
+    <completeDef>
+      The Spearman rank correlation coefficient is a mesure of
+      correlation between two replicates. <br/><br/>A result close to
+      zero means there is no correlation between the two replicates,
+      whereas a result close to 1 means there is a strong correlation
+      between them.
+    </completeDef>
+  </term>
+
+  <term>
+    <word>
+      Spearman rank correlation (min - max)
+    </word>
+    <simpleDef>
+      This values correspond to the min and the max of the Spearman
+      rank correlation among replicates. The Spearman rank correlation
+      coefficient is a mesure of correlation between replicates. A
+      result close to zero means there is no correlation between the
+      two replicates, whereas a result close to 1 means there is a
+      strong correlation between them.
+    </simpleDef>
+    <completeDef>
+      This values correspond to the min and the max of the Spearman
+      rank correlation among replicates.
+    </completeDef>
+  </term>
+
+  <term>
+    <word>
+      Plate List
+    </word>
+    <simpleDef>
+      A table of quality scores for each plate, replicate and
+      channel. This also serves as the navigation for drill-down to
+      more detailed information for a given set of plates.
+    </simpleDef>
+  </term>
+  
+  <term>
+    <word>
+      Plate Configuration
+    </word>
+    <simpleDef>
+      A graphical representation of the plate configurations. For each
+      plate, the physical location of the positive and negative
+      controls as well as the position of samples and possibly further
+      types of probes are indicated by color coding.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Plate Summaries
+    </word>
+    <simpleDef>
+      A set of diagnostic plots which provide an overview over the
+      general screen quality. In particular, a boxplot of raw and, if
+      applicable, normalized data values for the individual plates,
+      and dot plots and density plots of the distribution of positive
+      and negative controls, but only if the configure function has
+      been called before.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      GSEA
+    </word>
+    <simpleDef>
+      A basic gene set enrichment analysis. Output is a table and
+      plots of user-defined functions that compute per gene set
+      statistics based on the assays scores. Further drill-down is
+      available to the actual assays scores of each gene set.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Screen Summary
+    </word>
+    <simpleDef>
+      A comprehensive plot of the the experiment results. The scored
+      values for each plate are indicated by color coding on a
+      rectangular grid.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Screen Results
+    </word>
+    <simpleDef>
+      A table of the experiment result, including annotation
+      information and a number of QC values. For data sets of
+      reasonable size a condensed sortable table is rendered. Due to
+      performance issues there will only be a link to a downloadable
+      ASCII file for bigger data sets. The ASCII table contains
+      additional information compared to the rendered version.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Screen Description
+    </word>
+    <simpleDef>
+      Background information about the experiment and about the
+      normalization, summarization, and scoring methods that have been
+      applied.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Analysis Script
+    </word>
+    <simpleDef>
+      The R script containing the code instruction to produce this
+      report.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      experimentQC
+    </word>
+    <simpleDef>
+      Detailled quality report for a single plate across all
+      replicates and channels.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      pdf
+    </word>
+    <simpleDef>
+      Pdf version of the image.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      switchHelp
+    </word>
+    <simpleDef>
+      Switch off the tooltips.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      downloadTable
+    </word>
+    <simpleDef>
+      Download the complete screen result table as a tab-delimited
+      ASCII file. You can import this file into any spreadsheet program
+      of your choice.
+    </simpleDef>
+  </term>
+  
+  <term>
+    <word>
+      Correlation
+    </word>
+    <simpleDef>
+      The reproducibility of the measurement values between
+      replicates. For the case of two replicates, this is a simple
+      scatter plot. For more than two replicates we plot the
+      correlation matrix. Please note that the assumption of
+      correlated data does not hold for all experiment designs; e.g.,
+      most of the measurement values could be random noise, in which
+      case they would be completely independent.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Histograms
+    </word>
+    <simpleDef>
+      Histograms of the raw or normalized measurement values for the
+      respective replicates. This can be useful to compare data
+      distributions between replicates.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Histogram
+    </word>
+    <simpleDef>
+      Histogram of the raw or normalized measurement values.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Reproducibility
+    </word>
+    <simpleDef>
+      A plate plot of standard deviations between replicates. Abnormal
+      spatial pattern or very high values can indicate problems with
+      one of the replicates.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      M-A Plot
+    </word>
+    <simpleDef>
+      Plots of log-intensity averages vs. log-intensity ratios across
+      replicates. They highlight the relationship between signal
+      variability and signal intensity. If there are more than two
+      replicates, a single M-A plot is generated for each one against
+      the average replicate values.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Average
+    </word>
+    <simpleDef>
+      The average (mean) measurement values of a single plate, across
+      all replicates.
+    </simpleDef>
+  </term>
+
+
+  <term>
+    <word>
+      Intensities
+    </word>
+    <simpleDef>
+      A plate plot of raw or normalized intensities. Plotting the data
+      as arranged on the assay plate helps to identify spatial
+      abnormalities.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Channel Correlation
+    </word>
+    <simpleDef>
+      The correlation of the measurement values between two channels
+      in a scatter plot. Depending on the experimental design, the two
+      channels can be completely independent, and strong correlation
+      could indicate problems.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      downloadStatsTable
+    </word>
+    <simpleDef>
+      Download the result table of the gene set enrichment analysis as
+      a tab-delimited ASCII file. You can import this file into any
+      spreadsheet program of your choice.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Scores
+    </word>
+    <simpleDef>
+      Image plot of assay scores, startified by plates. This will be
+      clickable if the `map` argument was set to TRUE.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Q-Q Plot
+    </word>
+    <simpleDef>
+      Normal Q-Q plot of assay scores. Deviations from the line
+      indicate non-normally distributed values.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Distribution
+    </word>
+    <simpleDef>
+      Density plot of the assay score distribution.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Status
+    </word>
+    <simpleDef>
+      Status of the data import step. In the case of errors, more
+      details are provided as a tooltip.
+    </simpleDef>
+  </term>
+
+  <term>
+    <word>
+      Filename
+    </word>
+    <simpleDef>
+      Clickable drill-down to the raw data.
+    </simpleDef>
+  </term>
+
+</glossary>
+
+

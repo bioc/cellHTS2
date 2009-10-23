@@ -28,7 +28,7 @@ createProgressList <- function(nrReplicate, nrChannel, nrPlate, plotPlateArgs, x
                               step1=15,
                               step2=nrPlate*nrReplicate*nrChannel*(1 + if(is.list(plotPlateArgs)) 3 +
                               plotPlateArgs$map else 0),
-                              step3=0.1*sum(plateList(xr)$status=="OK") + 2*nrChannel*nrReplicate,
+                              step3=0.1*sum(plateList(xr)$Status=="OK") + 2*nrChannel*nrReplicate,
                               step4=8*nrChannel*nrReplicate, 
                               step5=20*nrChannel*nrReplicate,
                               step6=nrPlate*(0.5),

@@ -105,7 +105,7 @@ pData(fdata) <- data.frame(plate=rep(1:nrPlates, each=nrWell), well=I(rep(well,n
                            Plate     = Plate,
                            Replicate = Replicate,
                            Channel   = rep(1L, length(uli)),
-                           status    = I(rep("OK", length(uli)))),
+                           Status    = I(rep("OK", length(uli)))),
    intensityFiles=uli
    #state=c("configured"=FALSE, "normalized"=FALSE, "scored"=FALSE, "annotated" = FALSE)
    )

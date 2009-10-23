@@ -74,11 +74,33 @@ getSettings()
 	       text in the thumbnail png version of the plot. The default
 	       value is 12.}
 	     
-	     \item{col}{The colors used for the plot. This is currently not
-	       used.}
+	   }
+	 }
+
+	 \item{maplot}{The settings for the correlation plots:
+	   
+	   \describe{
+	     
+	     \item{size}{The width in inches of the pdf device holding the
+               plot. The default value is 7.5.}
+	     
+	     \item{fontSize}{The point size of the font for all the text in the
+	       pdf version of the plot. The default value is 14.}
+	     
+	     \item{font}{The font used for all the text in the pdf version
+               of the plot. The default is \code{"Helvetica"}.}
+	     
+	     \item{thumbFactor}{The factor by which the thumbnail png
+               version of the plot is smaller compared to the
+               high-resolution pdf version. The default value is 1.5.}
+	     
+             \item{thumbFontSize}{The point size of the font for all the
+	       text in the thumbnail png version of the plot. The default
+	       value is 12.}
 	     
 	   }
 	 }
+	 
 	 
 	 \item{histograms}{The settings for the histogram plots:
 	   
@@ -101,8 +123,11 @@ getSettings()
 	       text in the thumbnail png version of the plot. The default
 	       value is 10.}
 	     
-	     \item{col}{The colors used for the plot. This is currently not
-	       used.}
+	     \item{type}{The type of plot produced here. One in
+	       \emph{histogram} or \emph{density}. Both plot types have
+	       pros and cons: histograms can be misleading because of
+	       bin size artefacts, whereas density plots hide the sample
+	       size information.}
 	     
 	   }
 	 }
@@ -146,6 +171,47 @@ getSettings()
 	       containing the plate annotation for each well or not. The
 	       default value is \code{FALSE}.}
 	     
+	   }
+	 }
+
+	 \item{average}{The settings for the reproducibility
+	   plate plots:
+	   
+	   \describe{
+	     
+	     \item{size}{The width in inches of the pdf device holding the
+               plot. The default value is 8.}
+	     
+	     \item{fontSize}{The point size of the font for all the text in the
+	       pdf version of the plot. The default value is 12.}
+	     
+	     \item{font}{The font used for all the text in the pdf version
+               of the plot. The default is \code{"Helvetica"}.}
+	     
+	     \item{thumbFactor}{The factor by which the thumbnail png
+               version of the plot is smaller compared to the
+               high-resolution pdf version. The default value is 1.3.}
+	     
+             \item{thumbFontSize}{The point size of the font for all the
+	       text in the thumbnail png version of the plot. The default
+	       value is 10.}
+	     
+	     \item{col}{The color range that gets passed on to
+	       \code{\link[prada]{plotPlate}} as argument
+	       \code{col}. The default value is \code{brewer.pal(9,
+		 "YlOrRd")}.}
+
+	     \item{range}{The data range that gets passed on to
+	       \code{plotPlate} as argument \code{xrange}. The default
+	       value is \code{ function(x) c(0, quantile(x, 0.95,
+		 na.rm=TRUE))}.}
+
+	     \item{include}{A logical indicating whether to create the
+	       plate plot or not. The default value is \code{FALSE}.}
+
+	     \item{map}{A logical indicating whether to tooltips
+	       containing the plate annotation for each well or not. The
+	       default value is \code{FALSE}.}
 	   }
 	 }
 
@@ -216,11 +282,8 @@ getSettings()
 	   text in the thumbnail png version of the plot. The default
 	   value is 9.}
 	 
-	 \item{col}{The colors used for the plot. This is currently not
-	   used.}
-
-	 \item{include}{A logical indicating whether to create the
-	       plate configuration plot or not. The default value is \code{TRUE}.}
+	 \item{include}{A logical indicating whether to create the plate
+	   configuration plot or not. The default value is \code{TRUE}.}
 	 
        }
      }
@@ -280,9 +343,6 @@ getSettings()
            \item{thumbFontSize}{The point size of the font for all the
 	     text in the thumbnail png version of the plot. The default
 	     value is 11.}
-	   
-	   \item{col}{The colors used for the plot. This is currently not
-	     used.}
 	   
 	 }
        }	 
@@ -362,9 +422,6 @@ getSettings()
 	       text in the thumbnail png version of the plot. The default
 	       value is 9.}
 	     
-	     \item{col}{The colors used for the plot. This is currently not
-	       used.}
-	     
 	   }
 	 }
 	 
@@ -390,11 +447,27 @@ getSettings()
 	       text in the thumbnail png version of the plot. The default
 	       value is 9.}
 	     
-	     \item{col}{The colors used for the plot. This is currently not
-	       used.}
-	     
 	   }
 	 }
+       }
+     }
+     
+     \item{controls}{The settings for the annotation of control wells
+       and other type of wells. Currently these are only two item:
+
+       \describe{
+	 
+	 \item{col}{A named vector of colors to be used across all plots
+	   for the annotation of the well types. Allowed values are:
+	   \code{sample}, \code{neg}, \code{controls}, \code{other},
+	   \code{empty}, \code{flagged}, \code{act}, \code{inh} and
+	   \code{pos}. Additional user-defined well types that don't
+	   fall in any of these groups will be assigned a color from the
+	   palette defined in \code{otherCol}.}
+
+	 \item{col}{A color palette from which colors are drawn for well
+	   types not defined in \code{col}.}
+	   
        }
      }
    }

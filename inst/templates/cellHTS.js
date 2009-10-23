@@ -78,8 +78,8 @@ function toggleTabByReplicate(id, thisTable, replicate)
 // Link to pdf version of images
 function linkToPdf(url)
 {
-    resetIframe("main");
     document.location.href = url;
+    resetIframe("main");
 }
 
 
@@ -87,8 +87,8 @@ function linkToPdf(url)
 // Set current url of the document
 function linkToFile(url)
 {
-    parent.resetIframe("main");
     document.location.href = url; 
+    parent.resetIframe("main");  
 }
 
 

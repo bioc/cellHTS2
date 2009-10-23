@@ -101,7 +101,8 @@ plotPlateArgsVerification <- function(plotPlateArgs, map)
     {
         if(plotPlateArgs)
             chtsSetSetting(list(plateList=list(reproducibility=list(include=TRUE, map=map),
-                                intensities=list(include=TRUE, map=map))))
+                                intensities=list(include=TRUE, map=map),
+                                average=list(include=TRUE, map=map))))
     }
     else
     {
@@ -113,7 +114,8 @@ plotPlateArgsVerification <- function(plotPlateArgs, map)
         plotPlateArgs$map <- map
         chtsSetSetting(list(plateList=list(reproducibility=c(list(include=TRUE),
                                            plotPlateArgs), 
-                            intensities=c(list(include=TRUE, plotPlateArgs)))))
+                            intensities=c(list(include=TRUE, plotPlateArgs)),
+                            average=c(list(include=TRUE, plotPlateArgs)))))    
     }
     return(invisible())
 }
@@ -417,25 +419,25 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
         ## or vice-versa)
         wellTypeNames <- c("sample", "neg", "controls", "other", "empty", "flagged",
                            if(twoWay) c("act", "inh") else "pos")
-        colPal <- brewer.pal(9, "Set1")
-        wellTypeColor <- c("black", colPal[c(2:4, 5, 7)], if(twoWay) colPal[c(1,6)] else
-                           colPal[1])
-        names(wellTypeColor) <- wellTypeNames
+        #colPal <- brewer.pal(9, "Set1")
+        #wellTypeColor <- c("black", colPal[c(2:4, 5, 7)], if(twoWay) colPal[c(1,6)] else
+        #                   colPal[1])
+        #names(wellTypeColor) <- wellTypeNames
                    	
         ##  Step 3 : QC per plate & channel
 	## writes a report for each Plate, and prepare argument for the writing of the table
         ## with overall CQ results
-        allmt <- match(wAnno, names(wellTypeColor))		
+        allmt <- match(wAnno, wellTypeNames)		
         for(p in 1:nrPlate)
         {
-            wh <- with(plateList(xr), which(Plate==p & status=="OK"))
+            wh <- with(plateList(xr), which(Plate==p & Status=="OK"))
             if(length(wh)>0) {
                 dir.create(file.path(outdir, p), showWarnings=FALSE)
                 ## QMbyPlate also writes the QC report for the current plate with making res
                 channelNames <- if(!is.null(xn)) channelNames(xn) else channelNames(xr)
                 res <- QMbyPlate(platedat=datPerPlate[, p,,, drop=FALSE], 
                                  pdim=pdim(xr), 
-                                 name=sprintf("Plate %d (%s)", p, whatDat),
+                                 name=sprintf("Plate %d <i><small>(%s)</small></i>", p, whatDat),
                                  channelNames=channelNames,
                                  basePath=outdir, 
                                  subPath=p, 
@@ -444,10 +446,10 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                  brks=brks,
                                  finalWellAnno=xrawWellAnno[,p,,, drop=FALSE], 
                                  activators=act, inhibitors=inh, positives=pos, negatives=neg, 
-                                 isTwoWay=twoWay, namePos=namePos, wellTypeColor=wellTypeColor,
+                                 isTwoWay=twoWay, namePos=namePos, wellTypeNames=wellTypeNames,
                                  plateDynRange=lapply(dr, function(i) i[p,,,drop=FALSE]), 
                                  plateWithData=hasData[p,,, drop=FALSE],repMeasures=repMeasures)
-                url[wh, "status"] <- res$url				
+                url[wh, "Status"] <- res$url				
                 if(!qmHaveBeenAdded)
                 {
                     TableNames <-
@@ -541,18 +543,18 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     file.copy(from=cpfiles, to=htmldir, overwrite=TRUE)
     ## saving the glossary as a web page. createGlossary() returns a glossary with all
     ## the definitions 	
-    saveHtmlGlossary(createGlossary(), file.path(htmldir, 'glossary.html'))	
+    saveHtmlGlossary(parseGlossaryXML(), file.path(htmldir, 'glossary.html'))	
 
     ## The 'Plate List' module: this is a matrix of quality metrics for the different
     ## plates and linked per plate quality reports. The workhorse function to produce
     ## the necessary HTML code is 'writeHtml.plateList'.
-    wh <- which(plateList(xr)$status=="OK")
+    wh <- which(plateList(xr)$Status=="OK")
     nm <- file.path("in", names(intensityFiles(xr)))
     expOrder <- order(exptab[["Plate"]], exptab[["Channel"]], exptab[["Replicate"]])
     url[wh, "Filename"] <- nm[wh]
     plateList.module <- chtsModule(cellHTSlist, url=file.path(htmldir, "plateList.html"),
                                    htmlFun=writeHtml.plateList, title="Plate List",
-                                   funArgs=list(center=TRUE, glossary=createGlossary(),
+                                   funArgs=list(center=TRUE,
                                    links=url[expOrder,,drop=FALSE],
                                    exptab=exptab[expOrder,,drop=FALSE],
                                    outdir=outdir, htmldir=htmldir,
@@ -560,7 +562,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                    configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
     progress <- myUpdateProgress(progress, "step3",
-                                 0.2*length(which(plateList(xr)$status=="OK")))
+                                 0.2*length(which(plateList(xr)$Status=="OK")))
 		
     ## The 'Plate Configuration' module: this is an array of image plots indicating the
     ## plate layout (controls, samples, flagged wells). The workhorse function to produce

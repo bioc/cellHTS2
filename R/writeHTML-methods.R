@@ -1,22 +1,20 @@
 ## Set up cellHTS HTML pages including all necessary javascript and css links
-writeHtml.header <- function(con, path=".")
+writeHtml.header <- function(con, path=".", title="cellHTS2 Experiment Report")
 {
-    doc <- c("<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\
-\"http://www.w3.org/TR/html4/loose.dtd\">",
-             "\"<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">")
+    doc <- "<!DOCTYPE HTML PUBLIC \"-//W3C//DTD HTML 4.01 Transitional//EN\""
     out <-sprintf("%s
 <html>
   <head>
     <title>
-      cellHTS2 Experiment Report
+      %s
     </title>
     <link rel=\"stylesheet\" href=\"%s/cellHTS.css\" type=\"text/css\">
     <script type=\"text/javascript\" src=\"%s/cellHTS.js\"></script>
     <script src=\"%s/sorttable.js\"></script>
    </head>
    <body onload=\"initialize();\">
-     <script type=\"text/javascript\" src=\"%s/wz_tooltip.js\"></script>",doc[1], path,
-                  path, path, path)
+     <script type=\"text/javascript\" src=\"%s/wz_tooltip.js\"></script>", doc[1],
+                  title, path, path, path, path)
     if(!missing(con))
         writeLines(out, con)
     return(invisible(out))
@@ -36,16 +34,6 @@ writeHtml.trailer <- function(con)
 }
 
  
-
-## Add markup and javascript for a tooltip bubble
-addTooltip <- function(word, title="Definition", fromGlossary=TRUE, link=FALSE, trailer="\"")
-{
-    link <- if(link) " onClick=if(tt_Enabled) linkToFile('glossary.html');" else ""
-    desc <- if(fromGlossary) getDefinition(word, createGlossary()) else word
-    sprintf(" onmouseover=\"Tip('%s', WIDTH, 250, TITLE, '%s', OFFSETX, 1);\" onmouseout=\"UnTip();%s%s",
-            desc, title, trailer, link)
-}
-
 
 
 ## write HTML output for a single tab. The following mandatory arguments have to be set:
@@ -165,8 +153,9 @@ writeHtml.mainpage <- function(title, tabs, con)
       </tr>
       <tr class=\"border middle\">
         <td class=\"border left\"></td>
-        <td class=\"main\">", addTooltip("switchHelp", ""),
-                       title, format(Sys.time(), "%a %b %d %H:%M %Y")), con)
+        <td class=\"main\">", addTooltip("switchHelp"),
+                       title, paste(format(Sys.time(), "%a %b %d %H:%M %Y"), "   (<small>version ",
+                                    package.version("cellHTS2"), "</small>)", sep="")), con)
     tabs <- tabs[!apply(tabs, 1, function(y) all(is.na(y))),]
     writeHtml.tabCollection(tabs, size="medium", con=con)
     writeLines(sprintf("
@@ -231,7 +220,7 @@ setMethod("writeHtml",
           title <- if(!length(x@title)) NA else x@title
           res <- data.frame(title=title, url=url,
                             script=sprintf("toggleTabById('%s', this, '%s');\"%s",
-                            "mainTab", url, addTooltip(title, "")))
+                            "mainTab", url, addTooltip(title, trailer="")))
           if(!is.null(tmp) && is.list(tmp) && names(tmp) %in% c("id", "total", "class"))
               res <- cbind(res, tmp)
           return(invisible(res))
@@ -308,7 +297,7 @@ setMethod("writeHtml",
                   </tr>",
                                         imgs[i, "Thumbnail"],
                                         imgs[i, "Map"], imgs[i, "AdditionalCode"], imgs[i, "FullImage"],
-                                        addTooltip("pdf", ""), imgs[i, "Pdf"]))
+                                        addTooltip("pdf"), imgs[i, "Pdf"]))
               out <- c(out, "</table>")
               if(length(st)>1 && i < nrow(tabs) && !vertical)
                   out <- c(out, "</td>\n<td>")

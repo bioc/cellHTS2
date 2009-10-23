@@ -204,7 +204,8 @@ boxplotwithNA <- function(x, batch, ...)
 colors4Controls <- function(vals)
 {
     len.x <- length(vals)
-    cols <- c(neg="#2040FF", act="#E41A1C", inh="#FFFF00")  
+    cols <- chtsGetSetting("controls")$col[c("neg", "act", "inh")] 
+    #    c(neg="#2040FF", act="#E41A1C", inh="#FFFF00")  
     if (len.x>3)
     {
         Lab.pal <- colorRampPalette(c("darkred", "red", "orange"), space="Lab")(len.x-3)

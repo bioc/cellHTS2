@@ -12,7 +12,7 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
          writeHtml.header(con)
          writeLines(sprintf(paste("<div class=\"download\"%s><a href=\"%s\" target=\"_new\"><img",
                                   "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
-                            addTooltip("downloadTable", ""),
+                            addTooltip("downloadTable"),
                             file.path("..", "in", basename(file))), con)
          if(length(unlist(out)) > 20000)
          {

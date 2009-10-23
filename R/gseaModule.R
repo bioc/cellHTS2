@@ -63,7 +63,7 @@ writeHtml.gseaModule <- function(cellHTSList, module, gmod, outdir, con, ...)
         writeHtml(stack, con)
         writeLines(sprintf(paste("<br><br><div class=\"download\"%s><a href=\"%s\" target=\"_new\"><img",
                                  "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
-                           addTooltip("downloadStatsTable", ""), "statsTable.txt"), con)
+                           addTooltip("downloadStatsTable"), "statsTable.txt"), con)
         stats <- signif(stats,3)
         colnames(stats) <- names(gmod@statFuns)
         stats <- data.frame(tmp0="&nbsp&nbsp&nbsp", GeneSet=rn, gmod@annotation[rn,,drop=FALSE], stats,
@@ -75,7 +75,7 @@ writeHtml.gseaModule <- function(cellHTSList, module, gmod, outdir, con, ...)
         links <- matrix(NA, nrow=nrow(stats), ncol=ncol(stats))
         links[-1,1] <- sprintf("linkToFile('../gsea/%s.html')\" %s", rn,
                                addTooltip(sprintf("Assay scores for gene set %s.", rn),
-                          "", FALSE))
+                                          fromGlossary=FALSE))
         classes[1,1] <- "sorttable_nosort"
         classes[-1,1] <- "details"
         if(length(stats) > 20000)

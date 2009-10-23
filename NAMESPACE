@@ -5,6 +5,7 @@ importFrom("prada", "devDims", "plotPlate", "devRes")
 importFrom("graphics", "plot", "lines")
 
 importFrom("GSEABase", "GeneSetCollection", "incidence")
+importMethodsFrom("GSEABase", "geneIds")
 
 importFrom("Category", "applyByCategory")
 

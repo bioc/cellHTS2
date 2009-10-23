@@ -32,7 +32,7 @@ setGeneric("screenDesc", def=function(object) standardGeneric("screenDesc"))
 
 setGeneric("intensityFiles", def=function(object) standardGeneric("intensityFiles"))
 
-setGeneric("configure", def=function(object, descripFile, confFile, logFile, path)
+setGeneric("configure", def=function(object, descripFile, confFile, logFile, path, ...)
            standardGeneric("configure"))
 
 setGeneric("writeTab", def=function(object, file=paste(name(object), "txt", sep="."))

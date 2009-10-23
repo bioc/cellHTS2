@@ -31,8 +31,14 @@ writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                                  tags=res$tag, "imageScreen.png",
                                  cellHTSlist=cellHTSList)
                                  else NA))
-
+        
         settings <- chtsGetSetting(c("screenSummary", "qqplot"))
+        wcols <- chtsGetSetting("controls")$col
+        types <- setdiff(levels(wellAnno(xsc)), "sample")
+        freqs <- table(wellAnno(xsc))
+        addCode <- sprintf("<div class=\"scatterLegend\">%s</div>",
+                           paste(sprintf("<font color=\"%s\">%s: %d</font>", wcols[names(freqs)],
+                                         names(freqs), freqs), collapse="&nbsp&nbsp&nbsp"))
         qqn <- makePlot(outdir, name="qqplot", w=settings$size, h=settings$size,
                         font=settings$font, thumbFactor=settings$thumbFactor,
                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
@@ -40,13 +46,19 @@ writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                         fun=function(x=xsc, main=NULL, ...)
                     {
                         par(mai=c(0.8,0.8,0.2,0.2))
-                        qqnorm(Data(x), main=main, cex.lab=1.3,
-                               ylim=range(Data(x), na.rm=TRUE, finite=TRUE), ...)
+                        vals <- Data(x)
+                        ann <- wellAnno(x)
+                        srt <- order(ann)
+                        qqnorm(Data(x)[srt], main=main, cex.lab=1.3,
+                               ylim=range(Data(x), na.rm=TRUE, finite=TRUE),
+                               col=wcols[as.character(ann[srt])], ...)
                         qqline(Data(x), col="darkred", lty=3, lwd=2)
                     })
         imgList[["Q-Q Plot"]] <- chtsImage(data.frame(title="Normal Q-Q Plot",
                                                       thumbnail="qqplot.png",
-                                                      fullImage="qqplot.pdf"))
+                                                      fullImage="qqplot.pdf",
+                                                      additionalCode=addCode))
+       
         settings <- chtsGetSetting(c("screenSummary", "distribution"))
         dens <- makePlot(outdir, name="density",
                          w=settings$size, h=settings$size,
@@ -57,14 +69,22 @@ writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                      {
                          par(mai=c(0.8,0.8,0.2,0.2))
                          plot(density(Data(x), na.rm=TRUE), main=main, cex.lab=1.3)
+                         for(t in types)
+                         {
+                             xval <- Data(x)[wellAnno(x) == t]
+                             points(xval, rep(par("usr")[3]/2, length(xval)), col=wcols[t],
+                                    pch=20)
+                         }
+                                    
                      },
                          print=FALSE)
         imgList[["Distribution"]] <- chtsImage(data.frame(title="Density Distribution",
                                                           thumbnail="density.png",
-                                                          fullImage="density.pdf"))
+                                                          fullImage="density.pdf",
+                                                          additionalCode=addCode))
         
         stack <- chtsImageStack(list(imgList), id="imageScreen",
-                                tooltips=addTooltip(names(imgList), ""))        
+                                tooltips=addTooltip(names(imgList)))        
         writeHtml.header(con)
         writeHtml(stack, con)
         writeHtml.trailer(con)
