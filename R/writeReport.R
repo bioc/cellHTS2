@@ -248,7 +248,7 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     nrReplicate <- as.numeric(d[2])
     ## will be defined based on xnorm, if it exists
     nrChannel <- if(!is.null(xnorm)) as.integer(dim(xnorm)[3]) else d[3] 
-    objState <- sapply(cellHTSlist, function(i){ if(!is.null(i))state(i)})	
+    objState <- sapply(cellHTSlist, function(i) if(!is.null(i)) state(i))	
     overallState <- apply(objState, 1, any)
     whAnnotated <- colnames(objState)[objState["annotated",]]
 
@@ -268,8 +268,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     twoWay <- FALSE
     wAnno <- as.character(wellAnno(xr))
 	
-    ## the overview table of the plate result files in the experiment,
-    ##  plus the (possible) urls for each table cell
+    ## The overview table of the plate result files in the experiment,
+    ## plus the (possible) urls for each table cell
     ## We want the columns in a particular order
     exptab <- plateList(xr)
     mt <- match(c("Plate", "Replicate", "Channel", "Filename"), colnames(exptab))

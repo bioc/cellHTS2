@@ -78,14 +78,21 @@ writeQCTable <- function(x, url, configured, xr, con)
     red <- table(x$Plate)
     stat <- split(url[,"Status"], rep(seq_along(red), as.integer(red)))
     stat <- sapply(stat, function(z) if(all(is.na(z))) NA else unique(z[!is.na(z)]))
+    browser()
     infuse <- sapply(seq_along(red), function(i)
-                     sprintf(paste("</a></td><td rowspan=\"%s\" class=\"details\" ",
-                                   "onClick=\"linkToFile('%s')\"%s>&nbsp&nbsp&nbsp</td><a>"),
-                                   red[i], stat[i],
-                                   addTooltip(sprintf(paste("Detailed QC information for ",
-                                                            "plate %s across all",
-                                                            "replicates and channels."), i),
-                                              fromGlossary=FALSE)))
+                 {
+                     if(is.na(stat[i]))
+                         sprintf(paste("</a></td><td rowspan=\"%s\" class=\"detailsEmpty\"",
+                                   ">&nbsp&nbsp&nbsp</td><a>"), red[i])
+                     else
+                         sprintf(paste("</a></td><td rowspan=\"%s\" class=\"details\" ",
+                                       "onClick=\"linkToFile('%s')\"%s>&nbsp&nbsp&nbsp</td><a>"),
+                                 red[i], stat[i],
+                                 addTooltip(sprintf(paste("Detailed QC information for ",
+                                                          "plate %s across all",
+                                                          "replicates and channels."), i),
+                                            fromGlossary=FALSE))
+                 })
     ## We want different CSS classes for the different rows to be flexible
     url <- cbind(NA, url)
     x <- cbind(I(""), x)
