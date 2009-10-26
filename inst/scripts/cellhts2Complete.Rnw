@@ -1041,12 +1041,16 @@ The data set can be loaded again for subsequent analysis, or passed on
 to others. To produce a comprehensive report, we can call the function
 \Rfunction{writeReport} again, this time specifying the three
 \Rclass{cellHTS} objects as separate function arguments: ``raw'',
-``normalized'' and ``scored''.
+``normalized'' and ``scored''. We also alter some of the default
+output settings using the \Rfunction{setSettings} functions (more details 
+are given in section \ref{settings})
+
 <<writeReport2, results=hide, eval=FALSE>>=
+setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE), 
+                                intensities=list(include=TRUE, map=TRUE)),
+                 screenSummary=list(scores=list(range=c(-4, 8), map=TRUE))))
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
-                   force=TRUE, plotPlateArgs = TRUE, 
-                   imageScreenArgs = list(zrange=c( -4, 8), 
-                                          ar=1), map=TRUE) 
+                   force=TRUE)
 @ 
 %
 and use a web browser to view the resulting report.
@@ -1181,6 +1185,20 @@ the content of \Robject{featureData} slot of the annotated object.
 The above file with the list of scored probes can also be obtained
 without the need to run \Rfunction{writeReport} by using the function
 \Rfunction{getTopTable} provided in the package.
+
+%------------------------------------------------------------
+\subsection{Controlling settings}\label{settings}
+%------------------------------------------------------------
+The \Rfunction{writeReport} function is highly customizable in terms
+of the resulting HTML output. For most of the graphics that get
+generated the color scheme, the size, the font size and many other
+features can be controlled individually. This control is available
+either through session-wide settings using the \Rfunction{setSettings}
+function, or for each call of the the \Rfunction{writeReport} function
+through the optional \Robject{settings} argument. Most of the plots
+can even be completely supressed by switching the respective
+\Robject{include} setting to \Robject{FALSE}. Please see
+\Rfunction{?settings} for more details.
 
 
 %------------------------------------------------------------
@@ -1494,13 +1512,11 @@ gmod <- gseaModule(gsc, list("Mean"=function(x,...) mean(x),
 We can now re-write the \Rclass{cellHTS} report using the familiar
 Rfunction{writeReport} function with the addition \Robject{gseaModule}
 argument.
-<<rewriteReport>>=
+<<rewriteReport, eval=FALSE>>=
 ## Now load the cellHTS objects and rewrite the report
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
-                   force=TRUE, plotPlateArgs = TRUE,
-                   outdir=tempdir(), gseaModule=gmod,
-                   imageScreenArgs = list(zrange=c( -4, 8), 
-                                          ar=1), map=TRUE) 
+                   force=TRUE,
+                   outdir=tempdir(), gseaModule=gmod)
 browseURL(out)
 @ 
 

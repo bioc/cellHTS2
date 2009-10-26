@@ -78,7 +78,6 @@ writeQCTable <- function(x, url, configured, xr, con)
     red <- table(x$Plate)
     stat <- split(url[,"Status"], rep(seq_along(red), as.integer(red)))
     stat <- sapply(stat, function(z) if(all(is.na(z))) NA else unique(z[!is.na(z)]))
-    browser()
     infuse <- sapply(seq_along(red), function(i)
                  {
                      if(is.na(stat[i]))

@@ -238,15 +238,17 @@ Finally, we construct the quality report pages for the raw data in a
 directory called \Robject{2Wraw}, in the working directory:
 %
 <<writeReport1Show, eval=FALSE>>=
+setSettings(list(platelist=list(intensities=list(range=c(300, 4000), 
+                                                 include=TRUE))))
 out <- writeReport(raw=x, outdir="2Wraw",
-                   posControls=posCtr, negControls=negCtr, 
-                   plotPlateArgs=list(xrange=c(300, 4000)))
+                   posControls=posCtr, negControls=negCtr)
 @ 
 %
 <<writeReport1Do, echo=FALSE, results=hide>>=
+setSettings(list(platelist=list(intensities=list(range=c(300, 4000), 
+                                                 include=TRUE))))
 out <- writeReport(raw=x, force=TRUE, outdir="2Wraw", 
-                   posControls=posCtr, negControls=negCtr, 
-                   plotPlateArgs=list(xrange=c(300, 4000)))
+                   posControls=posCtr, negControls=negCtr) 
 @ 
 %
 After this function has finished, we can view the index page of the
@@ -319,14 +321,16 @@ browser to view the resulting report:
 %
 
 <<report2Show, eval=FALSE, results=hide>>=
+setSettings(list(platelist=list(intensities=list(range=c(-1, 1), include=TRUE)),
+                 screenSummary=scores=list(list(range=c(-2,3)))))
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
-                   outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
-                   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)))
+                   outdir="2Wnormalized", posControls=posCtr, negControls=negCtr)
 @
 <<report2Do, results=hide, echo=FALSE, results=hide>>=
+setSettings(list(platelist=list(intensities=list(range=c(-1, 1), include=TRUE)),
+                 screenSummary=list(scores=list(range=c(-2,3)))))
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
                    outdir="2Wnormalized", posControls=posCtr, negControls=negCtr, 
-                   plotPlateArgs=list(xrange=c(-1,1)), imageScreenArgs=list(zrange=c(-2,3)), 
                    force=TRUE)
 @
 <<browse2, eval=FALSE>>=

@@ -223,10 +223,11 @@ save(xsc, file=paste(experimentName, ".rda", sep=""))
 @
 
 
-<<writeReport2,eval=FALSE>>=
-## out <- writeReport(raw=x, normalized=xn, scored=xsc, 
-##                    force=TRUE, plotPlateArgs = TRUE, 
-##                    imageScreenArgs = list(zrange=c( -4, 8), ar=1), map=TRUE) 
+<<writeReport2>>=
+setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE), 
+                                intensities=list(include=TRUE, map=TRUE)),
+                 screenSummary=list(scores=list(range=c(-4, 8), map=TRUE))))
+out <- writeReport(raw=x, normalized=xn, scored=xsc, force=TRUE)
 @
 
 

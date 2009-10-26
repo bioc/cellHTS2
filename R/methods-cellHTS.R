@@ -447,53 +447,60 @@ getConfiguration <- function(filename, path, nrPlate, nrWpP, ...)
 ## "Plate", "Well" and "Flag", and optional columns "Sample" and
 ## "Channel" (if there are multiple replicates or channels). Further
 ## columns are allowed.
-getScreenlog <- function(filename, path, nrSample, nrChannel, nrPlate, ...)
+getScreenlog <- function(filename=NULL, path, nrSample, nrChannel, nrPlate, ...)
 {
-    if(is.character(filename))
+    slog <- NULL
+    if(!is.null(filename))
     {
-        if(is.na(path)) path <- dirname(filename)
-        filename <- basename(filename)
-        fp <- file.path(path, filename)
-        if(!file.exists(fp))
-            stop(sprintf("The file '%s' could not be found in the given path '%s'.",
-                         filename, path))
-        slog <- read.table(file.path(path, filename),  sep="\t", header=TRUE,
-                           as.is=TRUE, na.string="", fill=TRUE)
-    }
-    else if(is.function(filename))
-    {
-        slog <- filename(...)
-        filename <- "Created by function"
-    }
-    else
-    {
-        stop("'filename' must be either a character scalar or a function.\n",
-             "Please see '?readPlateList' for details.") 
-    }  
-    ## Check for consistency
-    if(nrow(slog))
-    {
-        ## check consistency of columns 'Plate', 'Channel' and 'Sample'
-        for(i in c("Sample", "Channel"))
+        if(is.character(filename))
         {
-            if(!(i %in% names(slog))) 
-                slog[[i]] <- rep(1L, nrow(slog)) 
-            else 
-                if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
-                    stop(sprintf(paste("Column '%s' of the screen log file '%s'",
-                                       "contains invalid entries."), i, filename))
+            if(is.na(path)) path <- dirname(filename)
+            filename <- basename(filename)
+            fp <- file.path(path, filename)
+            if(!file.exists(fp))
+                stop(sprintf("The file '%s' could not be found in the given path '%s'.",
+                             filename, path))
+            slog <- read.table(file.path(path, filename),  sep="\t", header=TRUE,
+                               as.is=TRUE, na.string="", fill=TRUE)
         }
-        checkColumns(slog, filename, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"),
-                     numeric=c("Plate", "Sample", "Channel"))
-        invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
-        if(sum(invalidPlateID))
-            stop(sprintf(paste("Column 'Plate' of the screen log file '%s' contains",
-                               "invalid entries."), filename))
+        else if(is.function(filename))
+        {
+            slog <- filename(...)
+            filename <- "Created by function"
+        }
+        else
+        {
+            stop("'filename' must be either a character scalar or a function.\n",
+                 "Please see '?readPlateList' for details.") 
+        }
     }
-    else
+    ## Check for consistency
+    if(!is.null(slog))
     {
-        slog <- NULL
-        warning("The screen log file is empty and will be ignored.") 
+        if(nrow(slog))
+        {
+            ## check consistency of columns 'Plate', 'Channel' and 'Sample'
+            for(i in c("Sample", "Channel"))
+            {
+                if(!(i %in% names(slog))) 
+                    slog[[i]] <- rep(1L, nrow(slog)) 
+                else 
+                    if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
+                        stop(sprintf(paste("Column '%s' of the screen log file '%s'",
+                                           "contains invalid entries."), i, filename))
+            }
+            checkColumns(slog, filename, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"),
+                         numeric=c("Plate", "Sample", "Channel"))
+            invalidPlateID <- !(slog$Plate %in% 1:nrPlate)
+            if(sum(invalidPlateID))
+                stop(sprintf(paste("Column 'Plate' of the screen log file '%s' contains",
+                                   "invalid entries."), filename))
+        }
+        else
+        {
+            slog <- NULL
+            warning("The screen log file is empty and will be ignored.") 
+        }
     }
     return(slog)
 } 
@@ -558,6 +565,8 @@ setMethod("configure", signature("cellHTS"),
                                                    confFunArgs))
           
           ## Process the screen log file
+          if(missing(logFile))
+              logFile <- NULL
           slog <- do.call(getScreenlog, args=c(list(filename=logFile, path=path,
                                                     nrSample=nrSample, nrChannel=nrChannel,
                                                     nrPlate=nrPlate), logFunArgs))

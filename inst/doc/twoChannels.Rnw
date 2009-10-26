@@ -469,17 +469,19 @@ negControls <- "(?i)^geneA$|^geneB$"
 posControls <- "(?i)^geneC$|^geneD$"
 @ 
 <<report2Show, eval=FALSE>>=
+setSettings(list(platelist=list(intensities=list(include=TRUE)),
+                 screenSummary=list(scores=list(range=c(-4,4)))))
 out <- writeReport(raw=x, normalized=xn1, scored=xsc, 
                    outdir="logRatio", 
-                   imageScreenArgs=list(zrange=c(-4,4)),
-                   plotPlateArgs=TRUE, map=TRUE, 
+                   map=TRUE, 
                    posControls=posControls, negControls=negControls)
 @
 <<report2Do, results=hide, echo=FALSE>>=
+setSettings(list(platelist=list(intensities=list(include=TRUE)),
+                 screenSummary=list(scores=list(range=c(-4,4)))))
 out <- writeReport(raw=x, normalized=xn1, scored=xsc, 
                    force=TRUE, outdir="logRatio", 
-                   imageScreenArgs=list(zrange=c(-4,4)),
-                   plotPlateArgs=TRUE, map=TRUE,
+                   map=TRUE,
                    posControls=posControls, negControls=negControls)
 @
 %
