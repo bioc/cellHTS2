@@ -223,7 +223,7 @@ save(xsc, file=paste(experimentName, ".rda", sep=""))
 @
 
 
-<<writeReport2>>=
+<<writeReport2, eval=FALSE>>=
 setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE), 
                                 intensities=list(include=TRUE, map=TRUE)),
                  screenSummary=list(scores=list(range=c(-4, 8), map=TRUE))))
