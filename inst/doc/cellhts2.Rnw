@@ -598,7 +598,7 @@ useful to verify the correctness of the plate configuration when a
 complex set of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
-\includegraphics[width=324px,height=324px]{cellhts2-configurationplot.png}
+\includegraphics{cellhts2-configurationplot.png}
 \caption{\label{fig:configurationplot}Screen plot of the plate 
 configuration.}
 \end{center}
@@ -926,7 +926,7 @@ plot(Data(xsc), Data(y), col="blue", pch=".",
      main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @ 
 %
-\myincfig{cellhts2-callvalues.png}{180px}{A sigmoidal transformation
+\myincfig{cellhts2-callvalues.png}{0.7\textwidth}{A sigmoidal transformation
   that can be used for obtaining call values.}
 %
 However, for the purpose of the present analysis, we will consider the
@@ -1529,7 +1529,7 @@ is fitted instead.
 %------------------------------------------------------------
 \section{Appendix: Data transformation}
 %------------------------------------------------------------
-\myincfig{cellhts2-transfplots.png}{324px}{Comparison between
+\myincfig{cellhts2-transfplots.png}{0.7\textwidth}{Comparison between
   untransformed (left) and logarithmically (base 2) transformed
   (right), normalized data.  Upper: histogram of intensity values of
   replicate 1.  Middle: scatterplots of standard deviation versus mean

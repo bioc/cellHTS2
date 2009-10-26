@@ -322,7 +322,7 @@ browser to view the resulting report:
 
 <<report2Show, eval=FALSE, results=hide>>=
 setSettings(list(platelist=list(intensities=list(range=c(-1, 1), include=TRUE)),
-                 screenSummary=scores=list(list(range=c(-2,3)))))
+                 screenSummary=list(scores=list(range=c(-2,3)))))
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
                    outdir="2Wnormalized", posControls=posCtr, negControls=negCtr)
 @
