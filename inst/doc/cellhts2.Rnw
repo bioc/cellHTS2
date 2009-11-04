@@ -761,12 +761,12 @@ argument \Robject{varianceAdjust}, as follows:
   (MAD) in "sample" wells.  This is done separately for each replicate
   and channel;
 
-\item \Robject{varianceAdjust="byBatch"}: using the content of slot
-  \Robject{batch}, plates are split according to assay batches and the
-  individual normalized intensities in each group of plates (batch)
-  are divided by the per-"batch of plates" MAD values (calculated
-  based on "sample" wells).  This is done separately for each
-  replicate and channel;
+\item \Robject{varianceAdjust="byBatch"}: using the batch information,
+  plates are split according to assay batches and the individual
+  normalized intensities in each group of plates (batch) are divided
+  by the per-"batch of plates" MAD values (calculated based on
+  "sample" wells).  This is done separately for each replicate and
+  channel;
 
 \item \Robject{varianceAdjust="byExperiment"}: each normalized
   measurement is divided by the overall MAD of normalized values in
