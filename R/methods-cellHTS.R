@@ -618,8 +618,8 @@ setMethod("configure", signature("cellHTS"),
               ## get plate IDs
               if(iconf$Plate != " *")
                   iconf$Plate <- gsub("^ *| *$", "", iconf$Plate)
-              wp <- if(is.numeric(iconf$Plate)) iconf$Plate  else
-              c(1:nrPlate)[regexpr(iconf$Plate, 1:nrPlate)>0]
+              c2i <- suppressWarnings(as.integer(iconf$Plate))
+              wp <- if(!is.na(c2i)) c2i  else c(1:nrPlate)[regexpr(iconf$Plate, 1:nrPlate)>0]
               ## get well IDs (remove heading and trailing whitespace)
               if(iconf$Well != " *")
                   iconf$Well <- gsub("^ *| *$", "", iconf$Well)
