@@ -1026,10 +1026,11 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
                      pdr1[!sel] <- pdr2[!sel] <- NA
                      m <- log2(pdr1) - log2(pdr2)
                      a <- 0.5 * (log2(pdr1) + log2(pdr2))
+                     aa <- abs(a[is.finite(a)])
                      plot(m, a, pch=20, cex=0.6, main=main,
                           xlab="M (log-intensity ratio)",
                           ylab="A (log-intensity average)",
-                          ylim=c(-1,1) * max(abs(a), na.rm=TRUE),
+                          ylim=c(-1,1) * max(aa, na.rm=TRUE),
                           col=wellTypeColor[mtt[[ch]]])
                      abline(h=0, col="lightblue")
                  })
