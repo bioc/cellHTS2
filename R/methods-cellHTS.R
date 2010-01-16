@@ -484,10 +484,14 @@ getScreenlog <- function(filename=NULL, path, nrSample, nrChannel, nrPlate, ...)
             {
                 if(!(i %in% names(slog))) 
                     slog[[i]] <- rep(1L, nrow(slog)) 
-                else 
-                    if(!all(slog[[i]] %in% 1:get(paste("nr", i, sep=""))))
-                        stop(sprintf(paste("Column '%s' of the screen log file '%s'",
-                                           "contains invalid entries."), i, filename))
+                else {
+                  expectedSymbols = seq_len(get(paste("nr", i, sep="")))
+                  if(!all(slog[[i]] %in% expectedSymbols)) 
+                    stop(sprintf(paste("Column '%s' of the screen log file '%s'",
+                    "contains invalid entries. Expected were %s; found was %s."),
+                    i, filename, paste(expectedSymbols, collapse=", "),
+                                 paste(unique(setdiff(slog[[i]], expectedSymbols)), collapse=", ")))
+                }
             }
             checkColumns(slog, filename, mandatory=c("Plate", "Well", "Flag", "Sample", "Channel"),
                          numeric=c("Plate", "Sample", "Channel"))
