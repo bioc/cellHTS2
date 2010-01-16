@@ -14,7 +14,7 @@
 \usage{
 
 readPlateList(filename, path=NA, name="anonymous", importFun,
-verbose=interactive(), ...)
+dec=".", verbose=interactive(), ...)
 
 }
 
@@ -41,7 +41,11 @@ verbose=interactive(), ...)
     example files provided with this package.  If your plate reader
     software produces files with a different format or if you want to
     import data from a non file-based source, the import function needs
-    to be adapted. See details.}
+    to be adapted. See details and examples.}
+
+  \item{dec}{Optional argument that is passed to importFun, and can be
+    used to accommodate for data files that use characters different
+    from \code{.} to represent the decimal point (e.g., the comma \code{,}).}
   
   \item{verbose}{a logical value, if TRUE, the function reports some of
     its intermediate progress.}

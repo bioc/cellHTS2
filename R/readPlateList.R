@@ -46,6 +46,7 @@ readPlateList <- function(filename,
                           path=NA,
                           name="anonymous",
                           importFun,
+                          dec=".",
                           verbose=interactive(),
                           ...)
 {
@@ -66,7 +67,7 @@ readPlateList <- function(filename,
     else
     {
         ## default function (compatible with the file format of the plate reader)
-        importFun <- function(f, ...)
+        importFun <- function(f, dec)
         {
             if(!file.exists(f))
                 stop("File not found: ", f)
@@ -74,6 +75,7 @@ readPlateList <- function(filename,
             sp <- strsplit(txt, "\t")
             well <- sapply(sp, "[", 2)
             val <- sapply(sp, "[", 3)
+            if (dec!=".") val <- sub(dec, ".", val)
             out <- list(data.frame(well=I(well), val=as.numeric(val)), txt=I(txt))
             return(out)
         }
@@ -87,7 +89,7 @@ readPlateList <- function(filename,
     failed <- TRUE
     for(f in pd$Filename)
     {
-        aux <- try(importFun(f, path), silent=TRUE)
+        aux <- try(importFun(f, dec), silent=TRUE)
         if(is.list(aux) && length(aux)==2 && is.data.frame(aux[[1]]) &&
            all(c("val", "well") %in% names(aux[[1]])))
         {
@@ -160,7 +162,7 @@ readPlateList <- function(filename,
             cat("\rReading ", i, ": ", finalFilename[i], sep="")
         status[i] <- tryCatch(
                           {
-                              out <- importFun(pd$Filename[[i]], path)
+                              out <- importFun(pd$Filename[[i]], dec)
                               pos <- convertWellCoordinates(out[[1]]$well, dimPlate)$num
                               intensityFiles[[i]] <- out[[2]]
                               xraw[pos, pd$Plate[i], pd$Replicate[i], channel[i]] <- out[[1]]$val
