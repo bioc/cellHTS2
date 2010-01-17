@@ -101,7 +101,7 @@ Further available normalization methods are:
   \item \code{method="locfit"} (robust local fit regression): for each
   plate and replicate, spatial effects are removed by fitting a
   bivariate local polynomial regression
-  (see \code{\link[cellHTS2:spatialNormalization]{spatial normalization function}}).
+  (see \code{\link[cellHTS2:spatialNormalization]{spatialNormalization}}).
 }
 
 In the final preprocessing step, variance of plate-corrected intensities

@@ -224,19 +224,6 @@ Bscore <- function(object, save.model=FALSE) {
 
 
 ## ------- spatialNormalization ---------
-##
-## Fit a polynomial surface within each plate to the plate corrected intensities using local fit.
-## uses a second degree polynomial (local quadratic fit)
-##
-## Inputs:
-## x -  cellHTS object
-## smoothPar - the parameter which controls the degree of smoothing (corresponds to 'span' argument of
-##   loess, or to the parameter 'nn' of 'lp' of locfit). The default is smoothPar = 0.6
-## save.model - should the fitted values be saved? Default=FALSE. If TRUE, the fitted values are stored
-## in the slot 'rowcol.effects'. 
-##
-## -------------------------------------------------------------
-
 spatialNormalization <- function(object, save.model=FALSE, ...){
    
   if(!inherits(object, "cellHTS"))
