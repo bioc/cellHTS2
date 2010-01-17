@@ -55,7 +55,6 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
     plot(Data(x), Data(xc), col="blue", xlab="z-scores", ylab="calls", main=expression(1/(1+e^{-lambda *(z-z[0])})))
     if(require(splots)) {
      sp = split(Data(xc), plate(xc))
-     grid.newpage()
      plotScreen(sp, zrange=c(0,1), fill=c("white", "red"), na.fill="yellow",
                main="Calls", ncol=3L)
     }

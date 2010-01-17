@@ -583,24 +583,18 @@ table(wellAnno(x))
 We can also use the function \Rfunction{configurationAsScreenPlot} to
 see the plate configuration of all of the plates as a screen plot:
 %
-<<configurationplot, echo=FALSE, results=hide>>=
-png("cellhts2-configurationplot.png", width=324, height=324)
-configurationAsScreenPlot(x)
-dev.off()
+<<configurationplot, fig=TRUE, width=6, height=6, results=hide>>=
+configurationAsScreenPlot(x, legend=TRUE)
 @
-<<configurationplotShow, eval=FALSE>>=
-configurationAsScreenPlot(x)
-@ 
-
-
+%
 The result is shown in Figure~\ref{fig:configurationplot}. This can be
 useful to verify the correctness of the plate configuration when a
 complex set of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
-\includegraphics{cellhts2-configurationplot.png}
-\caption{\label{fig:configurationplot}Screen plot of the plate 
-configuration.}
+\includegraphics{cellhts2-configurationplot}
+\caption{\label{fig:configurationplot}%
+  Screen plot of the plate configuration.}
 \end{center}
 \end{figure}
 
@@ -996,9 +990,8 @@ are given in section \ref{settings})
 setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE), 
                                 intensities=list(include=TRUE, map=TRUE)),
                  screenSummary=list(scores=list(range=c(-4, 8), map=TRUE))))
-out <- 
-    writeReport(raw=x, normalized=xn, scored=xsc, 
-                force = TRUE, outdir = "report-normalized") 
+out = writeReport(raw=x, normalized=xn, scored=xsc, 
+                  force = TRUE, outdir = "report-normalized") 
 @ 
 %
 and use a web browser to view the resulting report.
@@ -1551,7 +1544,7 @@ visualizations work better if (to sufficient approximation)
   
 \end{itemize}
 
-Figure~\ref{cellhts2-transfplots} compares these properties for
+Figure~\ref{cellhts2-transfplots.png} compares these properties for
 untransformed and log-transformed normalized data, showing that the
 difference is small.  Intuitively, this can be explained by the fact
 that for small $x$,

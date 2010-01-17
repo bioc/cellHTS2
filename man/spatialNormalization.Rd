@@ -1,6 +1,5 @@
 \name{spatialNormalization}
 \alias{spatialNormalization}
-%\alias{spatialNormalization,cellHTS-method}
 \concept{Spatial normalization}
 
 \concept{normalization}
@@ -8,20 +7,17 @@
 \title{Spatial normalization}
 
 \description{
-  
-  Correction of spatial plate effects of data stored in slot
-  \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a
-  polynomial surface within each plate using local regression
-  (\code{\link[stats:loess]{loess}} or \code{\link[locfit:locfit]{robust
-  local fit}}). Uses a second degree polynomial (local quadratic
-  fit). Only wells containing "sample" are considered to fit the models.
-
+  Adjust spatial plate effects. This function works on the data stored
+  in the slot \code{assayData} of a \code{\linkS4class{cellHTS}} object by fitting a
+  bivariate function within each plate using local regression
+  (\code{\link[locfit:locfit]{robust local fit}}) with second degree
+  polynomials. Only wells containing \code{"sample"} are considered
+  for the parameter fitting, but adjusted data for all wells are returned.
 }
 
 \usage{
 
-spatialNormalization(object, model="locfit", smoothPar=0.6,
-save.model=FALSE)
+spatialNormalization(object, save.model=FALSE, ...)
 
 }
 \arguments{
@@ -29,55 +25,37 @@ save.model=FALSE)
   \item{object}{a \code{\linkS4class{cellHTS}} object that has already
     been configured.}
   
-  \item{model}{character indicated whether the polynomial surface should
-    be fitted using robust "locfit" or "loess". The default is "locfit".}
-  
-  \item{smoothPar}{numeric. The default is \code{smoothPar=0.6}. The
-    parameter which controls the degree of smoothing (corresponds to
-    'span' argument of \code{\link[stats:loess]{loess}}, or to the
-    parameter 'nn' of \code{\link[locfit:lp]{lp}} of locfit).}
+  \item{...}{Parameters that get passed on to the
+    \code{\link[locfit:lp]{lp}} function of \code{locfit}.
+    Most relevant are \code{nn} and \code{h}.}
 
-  \item{save.model}{a logical value specifying whether the per-plate
-    spatial effects should be stored in slot \code{rowcol.effects} of
-    \code{object}. See details.}
+  \item{save.model}{a logical value specifying whether the values of the
+    fitted adjustment functions should be returned in the slot
+    \code{rowcol.effects} of the returned object. }
   
 }
 
 \details{
-  
-For convenience, this function should be called indireclty from
+This function is typically not called directly, but rather indirectly from
 \code{\link[cellHTS2:normalizePlates]{normalizePlates}} function.
-
-
 The normalization is performed separately for each replicate and
-channel, in a per-plate fashion using the chosen local regression
-model. The polynomical surfaces are fitted using the wells containing
-"sample".
-
-If \code{save.model=TRUE}, the models row and column offsets are stored
-in the slot \code{rowcol.effects} of \code{object}.
-
-}
+channel.}
 
 \value{
-  
-An object of class \code{\linkS4class{cellHTS}} with normalized data
-stored in slot \code{assayData}.  Furthermore, if
-\code{save.model=TRUE}, the row and column estimated offsets are stored
-in the slot \code{rowcol.effects}.  This slot is a 3D array with the
-same dimension as \code{Data(object)}.
+  An object of class \code{\linkS4class{cellHTS}} with normalized data
+  stored in slot \code{assayData}.  Furthermore, if
+  \code{save.model=TRUE}, it will contain a slot \code{rowcol.effects},
+  a 3D array with the same dimension as \code{Data(object)}.
 
-Moreover, the processing status of the \code{\linkS4class{cellHTS}}
-object is updated in the slot \code{state} to
-\code{object@state[["normalized"]]=TRUE}.
-
+  Moreover, the processing status of the \code{\linkS4class{cellHTS}}
+  object is updated in the slot \code{state} to
+  \code{object@state[["normalized"]]=TRUE}.
 }
 
 \author{Ligia Bras \email{ligia@ebi.ac.uk}}
 
 \seealso{
   \code{\link[stats:medpolish]{medpolish}},
-  \code{\link[stats:loess]{loess}},
   \code{\link[locfit:locfit]{locfit}},
   \code{\link[cellHTS2:plotSpatialEffects]{plotSpatialEffects}},
   \code{\link[cellHTS2:normalizePlates]{normalizePlates}},
@@ -88,9 +66,11 @@ object is updated in the slot \code{state} to
 \examples{
     data(KcViabSmall)
     x <- KcViabSmall
-    xs <- spatialNormalization(x, model="loess", save.model = TRUE)
+    xs <- spatialNormalization(x, save.model = TRUE, h=3)
+
     ## Calling spatialNormalization function from "normalizePlates":
-    xopt <- normalizePlates(x, method="loess", varianceAdjust="none", save.model = TRUE)
+    xopt <- normalizePlates(x, varianceAdjust="none", save.model = TRUE)
     all(xs@rowcol.effects == xopt@rowcol.effects, na.rm=TRUE)
+
 }
 \keyword{manip}

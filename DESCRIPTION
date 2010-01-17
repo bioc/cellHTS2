@@ -1,10 +1,10 @@
 Package: cellHTS2
-Version: 2.11.5
+Version: 2.11.6
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras <ligia@ebi.ac.uk>, Wolfgang Huber <huber@ebi.ac.uk>, Michael Boutros <m.boutros@dkfz.de>, Gregoire Pau <gpau@ebi.ac.uk>, Florian Hahne <florian.hahne@novartis.com>
 Maintainer: Florian Hahne <florian.hahne@novartis.com>
-Depends: R (>= 2.6.0), RColorBrewer, Biobase (>= 2.5.5), methods, genefilter (>= 1.11.2), splots (>= 1.11.1), vsn (>= 3.0.15), hwriter (>= 0.90)
-Suggests: locfit (>= 1.5-3)
+Depends: RColorBrewer, Biobase, methods, genefilter, splots, vsn, hwriter, locfit, grid
+Suggests: 
 Imports: prada, GSEABase, Category
 Description: Analysis of cell-based RNA interference screens. See ?cellHTS2 for a brief introduction.
 Reference: Michael Boutros and Ligia P. Bras and Wolfgang Huber.

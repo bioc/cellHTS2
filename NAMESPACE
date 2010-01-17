@@ -3,6 +3,7 @@ importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Version
 importFrom("vsn", "meanSdPlot")
 importFrom("prada", "devDims", "plotPlate", "devRes")
 importFrom("graphics", "plot", "lines")
+import("grid")
 
 importFrom("GSEABase", "GeneSetCollection", "incidence")
 importMethodsFrom("GSEABase", "geneIds")
