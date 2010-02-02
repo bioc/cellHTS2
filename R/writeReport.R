@@ -564,9 +564,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
                                    expOrder=expOrder,
                                    configured=overallState["configured"]))
     tab <- writeHtml(plateList.module)
-    progress <- myUpdateProgress(progress, "step3",
-                                 0.2*length(which(plateList(xr)$Status=="OK")))
-		
+    progress <- myUpdateProgress(progress, "step3")
+     		
     ## The 'Plate Configuration' module: this is an array of image plots indicating the
     ## plate layout (controls, samples, flagged wells). The workhorse function to produce
     ## the necessary HTML code is 'writeHtml.plateConf'.

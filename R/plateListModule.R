@@ -1012,34 +1012,40 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
             average <- rowMeans(platedat[,,,ch], na.rm=TRUE)
             img <- sprintf("map_Channel%d.png", ch)
             title <- "MA-plot across replicates"
-            makePlot(file.path(basePath, subPath),
-                     name=sprintf("map_Channel%d", ch), w=settings$size, h=settings$size,
-                     font=settings$font, thumbFactor=settings$thumbFactor,
-                     psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
-                     pdfArgs=list(main="MA-plot across replicates"),
-                     fun=function(main="", ...)
-                 {
-                     par(mai=c(0.8,0.8,0.2,0.2), mgp=c(2.5, 1, 0))
-                     pdr1 <- platedat[,,1,ch]
-                     pdr2 <- platedat[,,2,ch]
-                     sel <- pdr1>0 & pdr2>0
-                     pdr1[!sel] <- pdr2[!sel] <- NA
-                     m <- log2(pdr1) - log2(pdr2)
-                     a <- 0.5 * (log2(pdr1) + log2(pdr2))
-                     aa <- abs(a[is.finite(a)])
-                     plot(m, a, pch=20, cex=0.6, main=main,
-                          xlab="M (log-intensity ratio)",
-                          ylab="A (log-intensity average)",
-                          ylim=c(-1,1) * max(aa, na.rm=TRUE),
-                          col=wellTypeColor[mtt[[ch]]])
-                     abline(h=0, col="lightblue")
-                 })
-            imgList$"M-A Plot" <- chtsImage(data.frame(title=title, shortTitle=title,
-                                                       thumbnail=img,
-                                                       fullImage=gsub("png$", "pdf", img),
-                                                       additionalCode=sprintf("<div class=\"scatterLegend\">%s</div>",
-                                                                              wellCount[2,ch])))
-        } 
+            if(all(is.na(platedat[,,1,ch])) || all(is.na(platedat[,,2,ch])))
+            {
+                imgList$"M-A Plot" <-
+                    chtsImage(data.frame(caption="No values for one ore more replicates: M-A plot omitted"))
+            }else{
+                makePlot(file.path(basePath, subPath),
+                         name=sprintf("map_Channel%d", ch), w=settings$size, h=settings$size,
+                         font=settings$font, thumbFactor=settings$thumbFactor,
+                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
+                         pdfArgs=list(main="MA-plot across replicates"),
+                         fun=function(main="", ...)
+                     {
+                         par(mai=c(0.8,0.8,0.2,0.2), mgp=c(2.5, 1, 0))
+                         pdr1 <- platedat[,,1,ch]
+                         pdr2 <- platedat[,,2,ch]
+                         sel <- pdr1>0 & pdr2>0
+                         pdr1[!sel] <- pdr2[!sel] <- NA
+                         m <- log2(pdr1) - log2(pdr2)
+                         a <- 0.5 * (log2(pdr1) + log2(pdr2))
+                         aa <- abs(a[is.finite(a)])
+                         plot(m, a, pch=20, cex=0.6, main=main,
+                              xlab="M (log-intensity ratio)",
+                              ylab="A (log-intensity average)",
+                              ylim=c(-1,1) * max(aa, na.rm=TRUE),
+                              col=wellTypeColor[mtt[[ch]]])
+                         abline(h=0, col="lightblue")
+                     })
+                imgList$"M-A Plot" <- chtsImage(data.frame(title=title, shortTitle=title,
+                                                           thumbnail=img,
+                                                           fullImage=gsub("png$", "pdf", img),
+                                                           additionalCode=sprintf("<div class=\"scatterLegend\">%s</div>",
+                                                                                  wellCount[2,ch])))
+            }
+        }
         else if(nrRep>2)
         {
             average <- rowMeans(platedat[,,,ch], na.rm=TRUE)
