@@ -56,6 +56,7 @@ setGeneric("ROC", def=function(object, positives, negatives) standardGeneric("RO
 
 setGeneric("writeHtml",  function(x, ...) standardGeneric("writeHtml"))
 
+setGeneric("channelNames<-", def=function(object, value) standardGeneric("channelNames<-"))
 
 #if(!isGeneric("lines"))
 #    setGeneric("lines", useAsDefault=lines)

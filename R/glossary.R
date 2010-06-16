@@ -42,7 +42,7 @@ saveHtmlGlossary <- function(glossary=parseGlossaryXML(), targetGlossary)
 ## glossary can be passed on to the function to avoid parsing the XML
 ## file over and over again. 'fullTag' controls whether to create a
 ## complete <span> tag or just the event handlers.
-## 'fuzzy' enables fuzzing matching of the term to the glossary. 
+## 'fuzzy' enables fuzzy matching of the term to the glossary. 
 addTooltip <- function(word, title, fromGlossary=TRUE, link, trailer="\"",
                        glossary=parseGlossaryXML(), fullTag=FALSE,
                        fuzzy=FALSE)
@@ -54,7 +54,7 @@ addTooltip <- function(word, title, fromGlossary=TRUE, link, trailer="\"",
         if(present || !fromGlossary)
         {
             desc <- if(fromGlossary) getDefinition(i, glossary, fuzzy) else
-            structure(i, isDefinition=FALSE)
+            structure(i, isDefinition=FALSE, fullTerm=i)
             isDef <- attr(desc, "isDefinition")
             linkTxt <- if((missing(link) && isDef) || (!missing(link) && link))
                 "\" onClick=\"if(tt_Enabled) linkToFile('glossary.html');" else ""
@@ -63,7 +63,7 @@ addTooltip <- function(word, title, fromGlossary=TRUE, link, trailer="\"",
                                  "OFFSETX, 1);\" onmouseout=\"UnTip();%s%s"),
                            desc, titleTxt, linkTxt, trailer)
             if(fullTag)
-                tmp <- sprintf("<span%s%s>%s</span>", if(isDef) " class=\"pointer\"" else"",
+                tmp <- sprintf("<span%s%s>%s</span>", ifelse(isDef, " class=\"pointer\"", ""),
                                tmp, attr(desc, "fullTerm"))
             res <- c(res, tmp)
         }
