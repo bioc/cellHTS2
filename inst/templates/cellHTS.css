@@ -238,6 +238,7 @@ div.tab table.tabs table.unselected
 div.tab table.tabs table:hover
 {
     color:#4f4f4f;
+    cursor:pointer;
 }
 
 div.tab table.tabs table.unselected td.left
@@ -556,6 +557,7 @@ table.image span.pdf
 table.image span.pdf:hover
 {
     color:#4c698a;
+    cursor:pointer;
 }
 
 img.image
@@ -630,6 +632,7 @@ table.sortable td a
 table.sortable td a:hover
 {
     color:#4f4f4f;
+    cursor:pointer;
 }
 
 table.sortable td.details
@@ -671,6 +674,7 @@ div.download img
 div.download a:hover
 {
     color:black;
+    cursor:pointer;
 }
 
 
@@ -711,6 +715,7 @@ table.rest td a
 table.rest td.link a:hover
 {
     color:#4f4f4f;
+    cursor:pointer;
 }
 
 table.rest td a
