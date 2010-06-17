@@ -880,3 +880,23 @@ setMethod("meanSdPlot", signature="cellHTS", definition =
                      main=sprintf("across samples, channel %d\n(only sample wells)", ch),
                      ranks=ranks, xlab=xlab, ylab=ylab, pch=pch, plot=plot, ...))) 
 })
+
+
+## Replace the channel names in a cellHTS2 object
+setReplaceMethod("channelNames",
+		signature=signature(object="cellHTS", value="character"),
+		function(object, value) 
+		{
+			if(length(channelNames(object)) != length(value))
+				stop("Length of replacement values does not match number of channels.")
+			if(storageMode(object) == "list") 
+				names(assayData(object)) <- value
+			else {
+				keys <- assayDataElementNames(object) 
+				for(i in seq_along(keys)) {
+					assayDataElement(object, value[i]) <- assayDataElement(object, keys[i])
+					assayDataElement(object, keys[i]) <- NULL
+				}
+			}
+			return(object)
+		})

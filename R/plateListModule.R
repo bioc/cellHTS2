@@ -10,6 +10,10 @@ writeHtml.plateList <- function(cellHTSList, module, exptab, links, center,
     links[!is.na(links[, "Filename"]),"Filename"] <- nn
     sel <- !is.na(links[, "Status"])
     links[sel,"Status"] <- file.path("../", links[sel,"Status"])
+	## If we have non-default channel names we want to use those rather than numbers
+	cn <- sort(channelNames(cellHTSList$raw))
+	if(!all(cn == paste("Channel", seq_along(cn))) && length(cn) == length(unique(exptab[,"Channel"])))
+		exptab[,"Channel"] <- channelNames(cellHTSList$raw)[exptab[,"Channel"]]
     writeQCTable(exptab, url=links, con=con, configured=configured,
                  xr=cellHTSList$raw)
     writeHtml.trailer(con)
