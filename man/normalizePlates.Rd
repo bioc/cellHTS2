@@ -1,7 +1,5 @@
 \name{normalizePlates}
 \alias{normalizePlates}
-\alias{plate effects}
-%\alias{normalizePlates,cellHTS-method}
 \concept{normalization}
 
 \title{Per-plate data transformation, normalization and variance adjustment}
@@ -140,10 +138,10 @@ useful in multi-channel data since the controls might be
 reporter-specific, or after normalizing multi-channel data.
 
 See the Examples section for an example on how this function can be used
-to apply a robust version of the Z score method, whereby the
-measurements of each plate and replicate are substracted by the
-per-plate median (at sample wells) and then divided by the per-plate MAD
-(at sample wells).
+to apply a robust version of the Z score method, whereby, for each plate and replicate,  the
+per-plate median (computed only from sample wells) is subtracted from the
+measurements, and the result is divided by the per-plate MAD
+(only from sample wells).
 }
 
 \value{
