@@ -190,7 +190,7 @@ and with additional entries specific for a \code{\linkS4class{cellHTS}} object.
    mean plot of data stored in a \code{cellHTS} object.
 }
 
-\author{Ligia P. Bras \email{ligia@ebi.ac.uk}}
+\author{Ligia P. Bras}
 
 \references{
   Boutros, M., Bras, L.P. and Huber, W. (2006)

@@ -1,9 +1,5 @@
 \name{Bscore}
 \alias{Bscore}
-%\alias{Bscore,cellHTS-method}
-\concept{B score method}
-
-\concept{normalization}
 
 \title{B score normalization}
 \description{
@@ -81,7 +77,7 @@ After calling this function, the processing status of the \code{\linkS4class{cel
 in the slot \code{state} to \code{object@state["normalized"]=TRUE}.
 }
 
-\author{Ligia Bras \email{ligia@ebi.ac.uk}}
+\author{Ligia Bras}
 
 \seealso{
   \code{\link[stats:medpolish]{medpolish}},

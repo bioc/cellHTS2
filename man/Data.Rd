@@ -29,7 +29,7 @@ Boutros, M., Bras, L.P. and Huber, W. (2006) Analysis of cell-based RNAi screens
 }
 
 
-\author{Ligia Bras \email{ligia@ebi.ac.uk}}
+\author{Ligia Bras}
 
 \seealso{
 \code{\linkS4class{cellHTS}}

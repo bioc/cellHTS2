@@ -59,7 +59,7 @@
   \code{\link[cellHTS2:configure]{configure}}
 }
 
-\author{Wolfgang Huber \email{huber@ebi.ac.uk}, Ligia Bras \email{ligia@ebi.ac.uk}}
+\author{Wolfgang Huber, Ligia Bras}
 
 \references{
   
