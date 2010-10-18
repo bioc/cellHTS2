@@ -1,5 +1,5 @@
 Package: cellHTS2
-Version: 2.13.3
+Version: 2.14.0
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras, Wolfgang Huber <whuber@embl.de>, Michael Boutros <m.boutros@dkfz.de>, Gregoire Pau <gpau@embl.de>, Florian Hahne <florian.hahne@novartis.com>
 Maintainer: Florian Hahne <florian.hahne@novartis.com>
