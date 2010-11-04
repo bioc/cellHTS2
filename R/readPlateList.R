@@ -172,10 +172,43 @@ readPlateList <- function(filename,
                               error=function(e) paste(class(e)[1], e$message, sep=": "))
         bt <- pd$Batch[i]
         batch[pd$Plate[i], pd$Replicate[i]] <- if(!is.null(bt)) bt else 1
-    } ## for
+      } ## for
     if(verbose)
         cat("\rRead", nrow(pd), "plates.                                                \n\n")
 
+    buildCellHTS2(xraw, name)
+}
+
+## build a cellHTS2 object given:
+## - a 4-dimension array (well, plate, replicate, channel) 'xraw'
+## - an assay 'name'
+## - plate dimension 'dimPlate'
+buildCellHTS2 = function(xraw, name, dimPlate, pd, batch, status, intensityFiles, finalFilename, verbose=FALSE)
+{
+    ## sanity checks
+    if (! is.array(xraw) || !is.numeric(xraw) || length(dim(xraw))!=4) stop("'xraw' must be a 4-dimension numeric array (well, plate, replicate, channel)")
+    nrWell = dim(xraw)[1]
+    nrPlate = dim(xraw)[2]
+    nrRep = dim(xraw)[3]
+    nrChannel = dim(xraw)[4]
+
+    if (missing(pd)) {
+      pd = data.frame(Filename=rep('', nrPlate*nrRep),
+        Plate=rep(1:nrPlate, each=nrRep*nrChannel),
+        Replicate=rep(rep(1:nrRep, each=nrChannel), nrPlate),
+        Channel=rep(1:nrChannel, nrPlate*nrRep),
+        errorMessage=as.logical(NA),
+        stringsAsFactors=FALSE)
+    }
+    if (missing(batch)) {
+      batch = as.data.frame(matrix(1, ncol=nrRep, nrow=nrPlate))
+      colnames(batch) = sprintf("replicate%d", seq_len(nrRep))
+      rownames(batch) = sprintf("plate%d", seq_len(nrPlate))
+    }
+    if (missing(status)) status = rep('OK', nrow(pd))
+    if (missing(intensityFiles)) intensityFiles = as.list(rep('', nrow(pd)))
+    if (missing(finalFilename)) finalFilename = rep('', nrPlate*nrRep)
+    
     ## ----  Store the data as a "cellHTS" object ----
     ## arrange the assayData slot:
     dat <- lapply(seq_len(nrChannel), function(ch) 
