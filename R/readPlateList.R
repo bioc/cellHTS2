@@ -176,7 +176,7 @@ readPlateList <- function(filename,
     if(verbose)
         cat("\rRead", nrow(pd), "plates.                                                \n\n")
 
-    buildCellHTS2(xraw, name)
+    buildCellHTS2(xraw=xraw, name=name, dimPlate=dimPlate, pd=pd, batch=batch, status=status, intensityFiles=intensityFiles, finalFilename=finalFilename, verbose=verbose)
 }
 
 ## build a cellHTS2 object given:
