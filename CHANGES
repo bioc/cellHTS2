@@ -1,3 +1,11 @@
+version 2.15.3
+- added the screenResults settings: keepFieldPattern, htmlMaxItems and htmlLinks
+- added the screenSummary settings: nbImageBins and nbLegendBins
+- added the function buildCellHTS2(), to build a cellHTS2 object from a data frame
+- reversed orientation of MA plots
+
+----
+
 CHANGES SINCE cellHTS2 version 2.9.21
 
 o Complete abstraction of the data input process in

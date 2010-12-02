@@ -20,8 +20,9 @@ chtsSettings[["report"]] <-
               scores=list(size=7, font="Helvetica", fontSize=10,
                    thumbFactor=1, thumbFontSize=9,
                    col=list(posNeg=rev(brewer.pal(11, "RdBu"))[c(1:5, rep(6,3), 7:11)],
-                            pos=brewer.pal(9, "Greys")),
-                   aspect=1, annotation=NULL, map=FALSE, range=NULL),
+                     pos=brewer.pal(9, "Greys")),
+                   aspect=1, annotation=NULL, map=FALSE, range=NULL,
+                   nbImageBins=256, nbLegendBins=7),
               qqplot=list(size=7, font="Helvetica", fontSize=10,
                    thumbFactor=1, thumbFontSize=9),
               distribution=list(size=7, font="Helvetica", fontSize=10,
@@ -45,7 +46,11 @@ chtsSettings[["report"]] <-
                    thumbFactor=1.6, thumbFontSize=10, col=rev(brewer.pal(9, "RdBu")),
                    #range=function(x) c(-1,1) * max(abs(x), na.rm=TRUE),
                    range=function(x) quantile(x, c(0.025, 0.975), na.rm = TRUE),
-                   include=FALSE, map=FALSE)))
+                   include=FALSE, map=FALSE)),
+         screenResults=list(
+               keepFieldPattern="^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol",
+               htmlMaxItems=20000, htmlLinks=NULL
+           ))
                                  
 
 ## Get the default session settings. Argument 'name' is suposed to be a character

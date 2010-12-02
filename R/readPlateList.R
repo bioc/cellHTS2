@@ -242,8 +242,37 @@ readPlateList <- function(filename,
     return(res)
 }
 
-
-
+## build a cellHTS2 object from a data.frame xd containing the plate, replicate, well and measurement columns
+buildCellHTS2 = function(xd, measurementNames) {
+  ## check arguments
+  if (missing(xd)) stop("'xd' is missing")
+  if (!is.data.frame(xd)) stop("'xd' must be a data.frame")
+  iplate = grep('plate', colnames(xd), ignore.case=TRUE)
+  ireplicate = grep('replicate', colnames(xd), ignore.case=TRUE)
+  iwell = grep('well', colnames(xd), ignore.case=TRUE)
+  if (length(c(iplate, ireplicate, iwell))!=3) stop("'xd' must contain the columns 'plate', 'replicate' and 'well'")
+  if (ncol(xd)<4) stop("'xd' must contain one or several columns with measurements")
+  if (is.factor(xd$well)) xd$well = as.character(xd$well)
+  
+  buildPlist = function(xd) {
+    nbPlates = max(xd[,iplate])
+    nbReplicates = max(xd[,ireplicate])
+    nbChannels = ncol(xd) - 3
+    pl = expand.grid(Plate=1:nbPlates, Replicate=1:nbReplicates, Channel=1:nbChannels, stringsAsFactors=FALSE)
+    cbind(Filename=apply(pl, 1, paste, collapse='-'), pl, stringsAsFactors=FALSE)
+  }
+  
+  importFun = function(f, dec) {
+    prc = as.numeric(strsplit(f, '-')[[1]])
+    z = paste(prc[1:2], collapse='-') == paste(xd[,iplate], xd[,ireplicate], sep='-')
+    list(data.frame(well=xd[z, iwell], val=xd[z, -c(iplate, ireplicate, iwell)][,prc[3]], stringsAsFactors=FALSE), txt='computed with buildCellHTS2()')
+  }
+  
+  x = readPlateList(buildPlist, importFun=importFun, xd=xd)
+  if (missing(measurementNames)) measurementNames = colnames(xd)[-c(iplate, ireplicate, iwell)]
+  if (!is.null(measurementNames)) channelNames(x) = measurementNames
+  x
+}
 
 ## parse the LetterNumber representation of well coordinates into something
 ## more amenable for computational processing. The output is a list of three

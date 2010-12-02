@@ -14,6 +14,7 @@ exportClasses("cellHTS", "ROC")
 
 export("oneRowPerId", 
        "Bscore",
+       "buildCellHTS2",
        "channelNames<-",
        "configurationAsScreenPlot",
        "convertOldCellHTS",

@@ -5,8 +5,8 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
 {
      if(overallState["scored"]){
          out <- getTopTable(cellHTSList, file=file, verbose=verbose)
-         keep <- grep("^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol",
-                      colnames(out))
+         keepFP <- chtsGetSetting(c("screenResults", "keepFieldPattern"))
+         keep <- grep(keepFP, colnames(out))
          sel <- !(is.na(out$score))
          out <- out[sel,keep]
          writeHtml.header(con)
@@ -14,19 +14,26 @@ writeHtml.screenResults <- function(cellHTSList, file="topTable.txt", verbose=in
                                   "src=\"textfileIcon.jpg\"><br>txt version</a></div>"),
                             addTooltip("downloadTable"),
                             file.path("..", "in", basename(file))), con)
-         if(length(unlist(out)) > 20000)
+         htmlMaxItems <-  chtsGetSetting(c("screenResults", "htmlMaxItems"))
+         if(length(unlist(out)) > htmlMaxItems)
          {
              writeLines("<div class=\"alert\">Result table too big to render.<br>
                          Please download txt version using the link to the left.</div>", con)
          }
          else
          {
-             #out <- rbind(colnames(out), out)
              classes <- plateListClass(out, rep(1, nrow(out)))
-             #classes[1,] <- NA
+             htmlLinks <- chtsGetSetting(c("screenResults", "htmlLinks"))
+             if (!is.null(htmlLinks)) {
+               z1 = paste(out$plate, out$well, sep='-')
+               z2 = paste(htmlLinks$plate, htmlLinks$well, sep='-')
+               htmlLinks = htmlLinks[match(z1, z2), -match(c('plate', 'well'), colnames(htmlLinks)), drop=FALSE]
+               htmlLinks = as.list(htmlLinks)
+               htmlLinks = lapply(htmlLinks, as.character)
+             }
              hwrite(out, table.class="sortable", border=FALSE, center=TRUE, page=con, class=classes,
-                    row.names=FALSE)
-         }             
+                    row.names=FALSE, col.link=htmlLinks)
+         }
          writeHtml.trailer(con)
          return(NULL)
      }

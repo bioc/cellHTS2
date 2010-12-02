@@ -1036,12 +1036,12 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
                          m <- log2(pdr1) - log2(pdr2)
                          a <- 0.5 * (log2(pdr1) + log2(pdr2))
                          aa <- abs(a[is.finite(a)])
-                         plot(m, a, pch=20, cex=0.6, main=main,
-                              xlab="M (log-intensity ratio)",
-                              ylab="A (log-intensity average)",
-                              ylim=c(-1,1) * max(aa, na.rm=TRUE),
+                         plot(a, m, pch=20, cex=0.6, main=main,
+                              xlab="A (log-intensity average)",
+                              ylab="M (log-intensity ratio)",
+                              xlim=c(-1,1) * max(aa, na.rm=TRUE),
                               col=wellTypeColor[mtt[[ch]]])
-                         abline(h=0, col="lightblue")
+                         abline(v=0, col="lightblue")
                      })
                 imgList$"M-A Plot" <- chtsImage(data.frame(title=title, shortTitle=title,
                                                            thumbnail=img,
@@ -1074,12 +1074,13 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
                              pdr1[!sel] <- pdr2[!sel] <- NA
                              m <- log2(pdr1) - log2(pdr2)
                              a <- 0.5 * (log2(pdr1) + log2(pdr2))
-                             plot(m, a, pch=20, cex=0.6, main=main,
-                                  xlab="M (log-intensity ratio)",
-                                  ylab="A (log-intensity average)",
-                                  ylim=c(-1,1) * max(abs(a), na.rm=TRUE),
+                             aa <- abs(a[is.finite(a)])
+                             plot(a, m, pch=20, cex=0.6, main=main,
+                                  xlab="A (log-intensity average)",
+                                  ylab="M (log-intensity ratio)",
+                                  xlim=c(-1,1) * max(aa, na.rm=TRUE),
                                   col=wellTypeColor[mtt[[ch]]])
-                             abline(h=0, col="lightblue")
+                             abline(v=0, col="lightblue")
                          })
                     img <- c(img, sprintf("map_Channel%d_%d.png",ch,r))
                     caption <- c(caption, NA)

@@ -96,7 +96,7 @@ plotPlateArgsVerification <- function(plotPlateArgs, map)
         plotPlateArgs <- FALSE
     else
         warning("The plotPlateArgs argument is deprecated. Please use the settings ",
-                "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
+                "infrastructure as explained in '?setSettings'.", call.=FALSE)
     if(is.logical(plotPlateArgs))
     {
         if(plotPlateArgs)
@@ -144,7 +144,7 @@ imageScreenArgsVerification <- function(imageScreenArgs, map, ar=1)
         }
         chtsSetSetting(list(screenSummary=list(scores=imageScreenArgs)))
         warning("The imageScreenArgs argument is deprecated. Please use the settings ",
-                 "infrastructure as explained in '?chtsSettings'.", call.=FALSE)
+                 "infrastructure as explained in '?setSettings'.", call.=FALSE)
     }
     else
     {

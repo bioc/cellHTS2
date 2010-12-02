@@ -6,7 +6,7 @@
 imageScreen(object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
             col=list(posNeg=rev(brewer.pal(11,
                  "RdBu"))[c(1:5, rep(6, 3), 7:11)], pos=brewer.pal(9,
-                 "Greys")))
+                 "Greys")), nbImageBins=256, nbLegendBins=7)
 }
 
 \arguments{
@@ -35,6 +35,11 @@ imageScreen(object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
     \code{posNeg} is used if \code{zrange[1]<0} and \code{zrange[2]>0},
     the second if all values are either positive or negative.}
 
+  \item{nbImageBins}{The number of color bins used in the
+    map. Default is 256.}
+  
+  \item{nbLegendBins}{The number of color bins shown in the
+    legend. Default is 7.}
 }
 
 \details{

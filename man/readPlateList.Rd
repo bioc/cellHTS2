@@ -182,10 +182,9 @@ dec=".", verbose=interactive(), ...)
 }
 
 \seealso{
-  
-  To read input files obtained in a HTanalyser plate reader see
-  \code{\link{readHTAnalystData}}.
-
+  To read input files obtained in a HTanalyser plate reader, see
+  \code{\link{readHTAnalystData}}. To build a cellHTS2 object from a
+  data frame, see \code{\link{buildCellHTS2}}.
 }
 
 \author{

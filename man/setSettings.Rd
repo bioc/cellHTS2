@@ -397,7 +397,12 @@ getSettings()
 
 	     \item{range}{The range of values into which the colors will
 	       be mapped. A numeric of length 2.}
+
+	     \item{nbImageBins}{The number of color bins used in the
+	       map. Default is 256.}
 	     
+	     \item{nbLegendBins}{The number of color bins shown in the
+	       legend. Default is 7.}
 	   }
 	 }
 	 
@@ -449,6 +454,18 @@ getSettings()
 	     
 	   }
 	 }
+       }
+     }
+
+     \item{screenResults}{The settings for the screen results panel:
+       \describe{
+	 \item{keepFieldPattern}{A regular expression indicating which
+	   column names to keep. Default is "^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol".}
+	 \item{htmlMaxItems}{The maximal number of cells in the output
+	   table to produce an HTML table. Default is 20000.}
+	 \item{htmlLinks}{A data frame containing a \code{plate} column, a \code{well}
+	   column, followed by the columns containing the HTML hyper
+	   links to add to the output table. Default is \code{NULL}, no links.}
        }
      }
      

@@ -14,13 +14,13 @@ getNrPlateColRow <- function(ar, object)
     nrCol <- ceiling(sqrt(ar*nrPlates))
     nrRow <- ceiling(nrPlates/nrCol)	
     return(list(nrPlates=nrPlates,nrRow=nrRow,nrCol=nrCol))
-}
+  }
 
 ##
 imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
                          col=list(posNeg=rev(brewer.pal(11, "RdBu"))[c(1:5, rep(6,3), 7:11)],
-                                  pos=brewer.pal(9, "Greys")))
-{		
+                           pos=brewer.pal(9, "Greys")), nbImageBins=256, nbLegendBins=7)
+{
     if(!state(object)["scored"])
         stop("Please score 'object' (using the function 'summarizeReplicates').")
     ## Determine the number of columns and rows for the image plot,
@@ -74,7 +74,7 @@ imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
         scunit <- (sc/max(abs(zrange)) + 1) / 2
         reverseMap <- function(x) { (x*2-1)*max(abs(zrange)) }
         ## give a little more room to white
-        colrs <- colorRampPalette(col[["posNeg"]])(256)
+        colrs <- colorRampPalette(col[["posNeg"]])(nbImageBins)
     }
     else
     {
@@ -82,7 +82,7 @@ imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
         ## and 1 to maximum of the range
         scunit <- (sc-zrange[1])/diff(zrange)
         reverseMap <- function(x) { x*diff(zrange)+zrange[1] }
-        colrs <- colorRampPalette(col[["pos"]])(256)
+        colrs <- colorRampPalette(col[["pos"]])(nbImageBins)
     }	
     ## fill the matrices and leave spacers to separate the plates
     for(r in 1:nrRow)
@@ -118,7 +118,7 @@ imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
     extraRows <- max(10, ceiling(0.15*Nrow))
     newmat.true <- newmat <- newmatan <- matrix(NA, nrow =Nrow+extraRows, ncol = Ncol)	
     ## add the color scale bar (size depends on the plate size and number)
-    xbar <- seq(0, 1, length=7)
+    xbar <- seq(0, 1, length=nbLegendBins)
     xval <- round(reverseMap(xbar), 1)
     nColBar <- 1 + (Ncol>25) + (Ncol>100)
     nRowBar <- 1 + (Nrow>50) + (Nrow>100) + (Nrow>150)

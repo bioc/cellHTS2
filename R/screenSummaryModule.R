@@ -19,9 +19,12 @@ writeHtml.screenSummary <- function(cellHTSList, module, overallState,
                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
                         pngArgs=list(map=settings$map), ar=settings$aspect,
                         zrange=settings$range, anno=settings$anno, col=settings$col,
-                        fun=function(x=xsc, map=FALSE, ar, zrange, anno, col, ...)
+                        nbImageBins=settings$nbImageBins, nbLegendBins=settings$nbLegendBins, 
+                        fun=function(x=xsc, map=FALSE, ar, zrange, anno, col,
+                          nbImageBins, nbLegendBins, ...)
                         {
-                            imageScreen(object=x, map=map, ar=ar, col=col, ...)
+                          imageScreen(object=x, map=map, ar=ar, col=col,
+                                      nbImageBins=nbImageBins, nbLegendBins=nbLegendBins, ...)
                         })
         imgList[["Scores"]] <-
             chtsImage(data.frame(title="Screen-wide image plot of the scored values",
