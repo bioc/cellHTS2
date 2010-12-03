@@ -265,7 +265,7 @@ buildCellHTS2 = function(xd, measurementNames) {
   importFun = function(f, dec) {
     prc = as.numeric(strsplit(f, '-')[[1]])
     z = paste(prc[1:2], collapse='-') == paste(xd[,iplate], xd[,ireplicate], sep='-')
-    list(data.frame(well=xd[z, iwell], val=xd[z, -c(iplate, ireplicate, iwell)][,prc[3]], stringsAsFactors=FALSE), txt='computed with buildCellHTS2()')
+    list(data.frame(well=xd[z, iwell], val=xd[z, -c(iplate, ireplicate, iwell), drop=FALSE][,prc[3]], stringsAsFactors=FALSE), txt='computed with buildCellHTS2()')
   }
   
   x = readPlateList(buildPlist, importFun=importFun, xd=xd)

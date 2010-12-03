@@ -1041,7 +1041,7 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
                               ylab="M (log-intensity ratio)",
                               xlim=c(-1,1) * max(aa, na.rm=TRUE),
                               col=wellTypeColor[mtt[[ch]]])
-                         abline(v=0, col="lightblue")
+                         abline(h=0, col="lightblue")
                      })
                 imgList$"M-A Plot" <- chtsImage(data.frame(title=title, shortTitle=title,
                                                            thumbnail=img,
@@ -1080,7 +1080,7 @@ maFun <- function(nrChannel, nrRepCh, basePath, subPath, platedat, whHasData,
                                   ylab="M (log-intensity ratio)",
                                   xlim=c(-1,1) * max(aa, na.rm=TRUE),
                                   col=wellTypeColor[mtt[[ch]]])
-                             abline(v=0, col="lightblue")
+                             abline(h=0, col="lightblue")
                          })
                     img <- c(img, sprintf("map_Channel%d_%d.png",ch,r))
                     caption <- c(caption, NA)
