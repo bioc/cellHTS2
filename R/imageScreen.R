@@ -118,6 +118,7 @@ imageScreen <- function (object, ar=3/5, zrange=NULL, map=FALSE, anno=NULL,
     extraRows <- max(10, ceiling(0.15*Nrow))
     newmat.true <- newmat <- newmatan <- matrix(NA, nrow =Nrow+extraRows, ncol = Ncol)	
     ## add the color scale bar (size depends on the plate size and number)
+    if (nbLegendBins>Ncol) nbLegendBins = Ncol
     xbar <- seq(0, 1, length=nbLegendBins)
     xval <- round(reverseMap(xbar), 1)
     nColBar <- 1 + (Ncol>25) + (Ncol>100)
