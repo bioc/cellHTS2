@@ -543,6 +543,11 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     ## copying all necessary files into the html folder (css, javascripts, gifs) 
     cpfiles <- dir(system.file("templates", package="cellHTS2"), full=TRUE)
     htmldir <- file.path(outdir, "html")
+    cpfiles <- path.expand(cpfiles)
+    htmldir <-  path.expand(htmldir)
+    ## On some systems the path expansion in file.copy seems to be broken, hence we test here
+    if(length(grep("~", cpfiles)) || length(grep("~", htmldir)))
+        warning("Path expansion seems to be broken. Please provide fully qualified direcroty paths (i.e., avoiding '~')")
     file.copy(from=cpfiles, to=htmldir, overwrite=TRUE)
     ## saving the glossary as a web page. createGlossary() returns a glossary with all
     ## the definitions 	
