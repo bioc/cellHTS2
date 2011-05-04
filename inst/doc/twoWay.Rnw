@@ -361,6 +361,10 @@ This document was produced using:
 toLatex(sessionInfo())
 @ 
 
+<<echo=FALSE, results=hide>>=
+dev.off()
+@
+
 %------------------------------------------------------------
 %Bibliography
 %------------------------------------------------------------
