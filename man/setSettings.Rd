@@ -487,6 +487,15 @@ getSettings()
 	   
        }
      }
+
+     \item{controls}{Global report settings:
+       \describe{
+	 \item{ppi}{A numeric indicating the resolution of the
+	   screen. This parameter is used to generate PNG images.
+	   Large numbers produce large PNG images. Default is 72.
+	 }
+       }
+     }
    }
  }
  

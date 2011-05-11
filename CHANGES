@@ -1,3 +1,6 @@
+version 2.17.1
+- added the global setting: ppi
+
 version 2.15.3
 - added the screenResults settings: keepFieldPattern, htmlMaxItems and htmlLinks
 - added the screenSummary settings: nbImageBins and nbLegendBins

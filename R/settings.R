@@ -46,11 +46,13 @@ chtsSettings[["report"]] <-
                    thumbFactor=1.6, thumbFontSize=10, col=rev(brewer.pal(9, "RdBu")),
                    #range=function(x) c(-1,1) * max(abs(x), na.rm=TRUE),
                    range=function(x) quantile(x, c(0.025, 0.975), na.rm = TRUE),
-                   include=FALSE, map=FALSE)),
+                include=FALSE, map=FALSE)),
          screenResults=list(
-               keepFieldPattern="^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol",
-               htmlMaxItems=20000, htmlLinks=NULL
-           ))
+              keepFieldPattern="^plate$|^well$|^score$|^wellAnno$|^finalWellAnno$|raw_|normalized_|GeneID|GeneSymbol",
+              htmlMaxItems=20000, htmlLinks=NULL),
+         global=list(
+              ppi=72)
+         )
                                  
 
 ## Get the default session settings. Argument 'name' is suposed to be a character

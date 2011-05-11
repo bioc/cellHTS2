@@ -32,7 +32,7 @@ makePlot <- function(path, name, w, h, fun, psz=12,
     do.call(fun, args=append(pdfArgs, list(...)))
     dev.off()
     ## Now the png thumbnail
-    nrppi <- 72
+    nrppi <- chtsGetSetting(c("global", "ppi"))
     wd <- (w*nrppi)/thumbFactor[1]
     hg <- (h*nrppi)/thumbFactor[2]
     png(file.path(path, outf[2]), width=wd, height=hg, pointsize=thumbPsz)
