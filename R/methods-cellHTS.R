@@ -616,6 +616,7 @@ setMethod("configure", signature("cellHTS"),
           ## from the plate configuration issue. However it might make sense to be able to
           ## specify batches at this level. Have to think about how that would work.
           conf[conf=="*"] <- " *"
+          pdimo = pdim(object)
           for (i in 1:nrow(conf))
           {
               iconf <- conf[i,]
@@ -627,8 +628,7 @@ setMethod("configure", signature("cellHTS"),
               ## get well IDs (remove heading and trailing whitespace)
               if(iconf$Well != " *")
                   iconf$Well <- gsub("^ *| *$", "", iconf$Well)
-              ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0],
-                                           pdim(object))$num
+              ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0], pdimo)$num
               if(!length(wp))
                   stop(sprintf(paste("In the plate configuration file '%s', no plate matches",
                                      "were found for rule specified by line %d:\n\t %s \n\t %s"),
