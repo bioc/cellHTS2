@@ -162,7 +162,7 @@ dec=".", verbose=interactive(), ...)
     in each matrix corresponds to the product between the number of
     wells per plate and the number of assay plates.}
   
-  \item{phenoData}{information about the runs, infered from the
+  \item{phenoData}{information about the runs, inferred from the
     \code{plateList} file: which replicate, which variant of the assay,
     treatment, incubation times etc.}
   
