@@ -335,8 +335,7 @@ setMethod("annotate",
           ## geneIDs <- geneIDs[order(geneIDs$Plate, geneIDs$Well),]
           ## Why not simply convert wellIDs to that format? Sorting is also not needed
           ## anymore because we map by name
-          geneIDs$Well <- sprintf("%s%02d", substr(geneIDs$Well, 1, 1),
-                                  as.numeric(substr(geneIDs$Well, 2, 3)))
+          geneIDs$Well <- standardizeWellID(geneIDs$Well)
 
           ## Some checkings for dimension of "Plate" and "Well"
           ## expect prod(x@pdim) * x@nrPlate rows. We warn if there are eroneous entries
@@ -360,9 +359,11 @@ setMethod("annotate",
           ## We want to allow for missing entries in the annotation file, so we first
           ## create a complete table and map values by name (combination of plate and
           ## well)
-          wells <- rep(sprintf("%s%02d", rep(LETTERS[seq_len(pdims[1])], each=pdims[2]),
-                           rep(seq_len(pdims[2]), pdims[1])), nrPlate)
-          rnames <- paste(plates, wells, sep="_")
+          wells <- expand.grid(1:pdims['ncol'], 1:pdims['nrow'])
+          wells <- getAlphaNumeric(horizontal=wells[,2], vertical=wells[,1])$id
+          wells <- rep(wells, nrPlate)
+
+  	  rnames <- paste(plates, wells, sep="_")
           annTab <- as.data.frame(matrix(NA, ncol=ncol(geneIDs), nrow=nrWpP*nrPlate,
                                          dimnames=list(rnames, colnames(geneIDs))))
           annTab[paste(geneIDs$Plate, geneIDs$Well, sep="_"),] <- geneIDs
@@ -539,6 +540,27 @@ getScreendesc <- function(filename, path, ...)
 }
 
 
+## Functions for dealing with alphanumeric identifiers for larger well plates
+## There may be one or two letters in the string
+getAlphaNumeric = function(horizontal, vertical) {
+    alpha1=(horizontal-1) %/% length(LETTERS)
+    alpha1 = ifelse(alpha1>0, LETTERS[alpha1], '')
+    alpha2=LETTERS[(horizontal-1) %% length(LETTERS) +1]
+    id.num=sprintf('%02d', vertical)
+    id.alpha=paste(alpha1, alpha2, sep='')
+    id=paste(id.alpha, id.num, sep='')
+    return(list(id=id, id.alpha=id.alpha, id.num=id.num))
+}
+ 
+standardizeWellID = function(z) {
+    x=strsplit(as.character(z), split='')
+    noLet=sapply(x, function(x) length(which(!is.na(match(x, LETTERS)))) )
+    noNum=sapply(x, length)-noLet
+    names(x)=1:length(x)
+    Letters=sapply(names(x), function(y) {paste(x[[y]][1:noLet[as.numeric(y)]], sep='', collapse='')})
+    Numbers=sapply(names(x), function(y) {paste(x[[y]][(noLet[as.numeric(y)]+1):length(x[[y]])], sep='', collapse='')})
+    sprintf('%s%02d', Letters, as.numeric(Numbers))
+}
 
 ##----------------------------------------
 ## configure

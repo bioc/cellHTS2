@@ -283,17 +283,23 @@ buildCellHTS2 = function(xd, measurementNames) {
 parseLetNum <- function(well)
 {
     well <- gsub(" ", "", well)
-    s <- strsplit(well[1], "")[[1]]
-    nl <- length(unlist(sapply(s, function(x) grep("[A-Za-z]", x))))
-    if(nl>2)
-        stop("Too many letters in the well identifier.")
-    let <- substr(well, 1, nl)
-    num <- as.integer(substr(well, nl+1, 100))
-    letInd <- if(nl==1) match(let, LETTERS) else
-    (match(substr(let,1,1), LETTERS)-1) * 26 + match(substr(let,2,2), LETTERS)
-    if(any(is.na(num)) || any(is.na(letInd)))
-        stop("Malformated well identifier.")
-    return(list(letters=let, numbers=num, lindex=letInd))
+    s <- strsplit(well, "")
+    nl <- lapply(s, function(x) grep("[A-Za-z]", x))
+    if(any(lapply(nl, function(x) {sum(x>2)})>0))
+        stop("More than 2 letters in a well identifier.")
+    let = vector('list', length=length(well))
+    num = vector('list', length=length(well))
+    letInd = array(dim=length(well))
+    for (i in 1:length(well)) {
+    let[[i]] = substr(well[[i]], 1, max(nl[[i]]))
+    num[[i]] = as.integer(substr(well[[i]], max(nl[[i]])+1, 100))
+    letInd[i] <- if (max(nl[[i]]) == 1) {match(let[[i]],LETTERS)} else {
+       (match(substr(let[[i]],1,1), LETTERS)) * 26 + match(substr(let[[i]],2,2), LETTERS)
+       }
+    }
+    if(any(is.na(num)) || any(is.na(letInd))) 
+       stop("Malformated well identifier.")
+    return(list(letters=unlist(let), numbers=unlist(num), lindex=letInd))
 }
 
 
@@ -319,6 +325,7 @@ convertWellCoordinates <- function(x, pdim, type="384")
                       "24"  = c(nrow= 4L, ncol= 6L),
                       "96"  = c(nrow= 8L, ncol=12L),
                       "384" = c(nrow=16L, ncol=24L),
+               	      "1536" = c(nrow = 32L, ncol = 48L),
                       stop("Invalid 'type': %s", type))
     }
     
@@ -351,10 +358,10 @@ convertWellCoordinates <- function(x, pdim, type="384")
 
         irow <- 1L + (num-1L) %/% pdim["ncol"]
         icol <- 1L + (num-1L) %%  pdim["ncol"]
-        letters <- if(max(irow) <= 26) LETTERS[irow] else cbind(LETTERS[((irow-1) %/% 26)+1],
-                         LETTERS[((irow-1) %% 26)+1])
+        id=getAlphaNumeric(irow, icol)
+        letters=id$id.alpha
+        letnum=id$id
         let.num <- cbind(letters, sprintf("%02d", icol))
-        letnum <- apply(let.num, 1L, paste, collapse="")
     }
     else if(!length(x))
     {
@@ -366,7 +373,7 @@ convertWellCoordinates <- function(x, pdim, type="384")
              "(e.g. 'B03' or c('B', '03'))\n or a vector of integers with position ",
              "IDs within a plate (e.g. 27).")
     }
-    return(list(letnum = letnum, let.num = let.num, num = num))
+    return(list(letnum = letnum, let.num = let.num, num = as.integer(num)))
 }
 
 

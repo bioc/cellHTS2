@@ -15,8 +15,9 @@ buildCellHTS2(xd, measurementNames)
     \code{replicate} and \code{well}, and the measurement columns.
     The \code{plate} and \code{replicate} columns must contain integer
     values, starting from 1. The \code{well} column must contain well
-    names formed by a capital letter followed by two digits,
-    e.g. \code{A12} or \code{H02}.}
+    names formed by one to two capitals letter followed by two digits,
+    e.g. \code{A12} or \code{AB01}. Letter ordering is as follows:
+    A, B, C,..., Z, AA, AB, AC,..., AZ, BA, BB, ..., ZZ.}
   
   \item{measurementNames}{an optional character vector containing
     the measurement names. If missing, the names of the measurement
