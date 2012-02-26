@@ -21,7 +21,7 @@ if (!gotable) out = paste("\\begin{tabular}{", paste(rep("r", ncol(x)), collapse
 
 ## output a file
 tableOutput = function(fn, nm, header=TRUE, dropColumns, selRows=1:5, preName="cellhts2") {
-  r = read.table(fn, sep="\t", header=header,  na.string="", as.is=TRUE)
+  r = read.table(fn, sep="\t", header=header,  na.strings="", as.is=TRUE)
   x = r[c(selRows, 1), ]
   if(!missing(dropColumns))
    x = x[, -dropColumns]
@@ -41,7 +41,7 @@ tableOutput = function(fn, nm, header=TRUE, dropColumns, selRows=1:5, preName="c
 
 ## output a file when the file has header rows (e.g. the current format of the plate configuration file)
 tableOutputWithHeaderRows = function(fn, nm, dropColumns, selRows=NULL, preName="cellhts2") {
-  r = read.table(fn, fill=TRUE, header=FALSE, as.is=TRUE, na.string="")#sep="\t", header=header,  na.string="", as.is=TRUE)
+  r = read.table(fn, fill=TRUE, header=FALSE, as.is=TRUE, na.strings="")#sep="\t", header=header,  na.string="", as.is=TRUE)
   x <- if(!is.null(selRows)) r[c(selRows, 1), ] else r
   if(!missing(dropColumns))
    x = x[, -dropColumns]

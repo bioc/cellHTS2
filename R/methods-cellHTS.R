@@ -411,7 +411,7 @@ getConfiguration <- function(filename, path, nrPlate, nrWpP, ...)
             stop(sprintf(paste("Could not find all expected header rows ('Wells' and 'Plates')",
                                "in plate configuration file '%s'.\n"), filename))
         conf <- read.table(file.path(path, filename), sep="\t", header=TRUE, as.is=TRUE,
-                           na.string="", fill=TRUE, skip=2)
+                           na.strings="", fill=TRUE, skip=2)
     }
     else if(is.function(filename))
     {
@@ -462,7 +462,7 @@ getScreenlog <- function(filename=NULL, path, nrSample, nrChannel, nrPlate, ...)
                 stop(sprintf("The file '%s' could not be found in the given path '%s'.",
                              filename, path))
             slog <- read.table(file.path(path, filename),  sep="\t", header=TRUE,
-                               as.is=TRUE, na.string="", fill=TRUE)
+                               as.is=TRUE, na.strings="", fill=TRUE)
         }
         else if(is.function(filename))
         {

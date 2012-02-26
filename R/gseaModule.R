@@ -28,7 +28,7 @@ writeHtml.gseaModule <- function(cellHTSList, module, gmod, outdir, con, ...)
         else rep("", nrow(ann))
         od <- file.path(outdir, "gsea")
         if(!file.exists(od))
-            dir.create(od, rec=TRUE)
+            dir.create(od, recursive=TRUE)
         sapply(seq_along(vals), function(x) perCatPage(vals[[x]], names(vals)[x], od, tt,
                                                        setNames[x]))
         

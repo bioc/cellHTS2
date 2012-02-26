@@ -19,7 +19,7 @@ convertOldCellHTS <- function(oldObject)
     chNames <- paste("ch", 1:nrChannel, sep="")
     for(ch in 1:nrChannel) 
         assign(chNames[ch], matrix(xraw[,,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlate),
-               env=adata)
+               envir=adata)
     storageMode(adata) <- "lockedEnvironment"
 
     ## arrange the phenoData slot:

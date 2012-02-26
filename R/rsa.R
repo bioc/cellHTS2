@@ -104,7 +104,7 @@ rsa <- function(x, geneColumn="GeneID", lowerBound=0, upperBound=1, reverse=FALS
         nasel <- FALSE
     }
     t <- subset(inTab, !is.na(inTab$Gene_ID) & inTab$Gene_ID != "" & !is.na(inTab$Score))
-    r <- OPI(Groups=t$Gene_ID, Score=t$Score, lowerBound=lowerBound, upperBound=upperBound, reverse=reverse, Data=t)
+    r <- OPI(Groups=t$Gene_ID, Scores=t$Score, lowerBound=lowerBound, upperBound=upperBound, reverse=reverse, Data=t)
     ## Some cleaning up and output of a saner data.frame than what we get from RSA directly...
     results <- as.data.frame(matrix(ncol=11, nrow=nrow(inTab), dimnames=list(inTab$Well_ID,
                                                                             c(geneColumn, "Plate", "Well", "Score",

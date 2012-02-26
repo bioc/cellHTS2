@@ -67,7 +67,7 @@ adata <- assayDataNew(storage.mode="environment")
 chNames <- paste("ch", 1:nrChannel, sep="")
 
 for(ch in 1:nrChannel) 
-    assign(chNames[ch], matrix(xraw[,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlates), env=adata)
+    assign(chNames[ch], matrix(xraw[,,ch, drop=TRUE], ncol=nrRep, nrow=nrWell*nrPlates), envir=adata)
 
 #stopifnot(ls(adata)==chNames)
 storageMode(adata) <- "lockedEnvironment"

@@ -175,7 +175,7 @@
       Biobase package version, and other information about the user
       system at the time the instance was created. See
       \code{\link[Biobase]{classVersion}} and
-      \code{\link[Biobase]{updateObject}} for examples of use.  }
+      \code{\link[BiocGenerics]{updateObject}} for examples of use.  }
 
   } 
 }

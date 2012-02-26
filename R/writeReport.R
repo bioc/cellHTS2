@@ -541,7 +541,8 @@ writeReport <- function(raw, normalized=NULL, scored=NULL, cellHTSlist=NULL, out
     }
 
     ## copying all necessary files into the html folder (css, javascripts, gifs) 
-    cpfiles <- dir(system.file("templates", package="cellHTS2"), full=TRUE)
+    cpfiles <- dir(system.file("templates", package="cellHTS2"),
+                   full.names=TRUE)
     htmldir <- file.path(outdir, "html")
     cpfiles <- path.expand(cpfiles)
     htmldir <-  path.expand(htmldir)
