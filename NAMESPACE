@@ -1,5 +1,5 @@
 importFrom("methods", "show")
-importFrom("BiocGenerics", "plot")
+importFrom("stats4", "plot")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
 importFrom("prada", "devDims", "plotPlate", "devRes")
