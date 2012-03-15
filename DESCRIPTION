@@ -1,12 +1,12 @@
 Package: cellHTS2
-Version: 2.19.3
+Version: 2.19.4
 Title: Analysis of cell-based screens - revised version of cellHTS 
 Author: Ligia Bras, Wolfgang Huber <whuber@embl.de>, Michael Boutros <m.boutros@dkfz.de>, Gregoire Pau <gpau@embl.de>, Florian Hahne <florian.hahne@novartis.com>
 Maintainer: Joseph Barry <joseph.barry@embl.de>
 Depends: R (>= 2.10), RColorBrewer, Biobase, methods, genefilter, splots, vsn, hwriter, locfit, grid
 Suggests: 
 Imports: prada, GSEABase, Category, stats4
-Description: Analysis of cell-based RNA interference screens. See ?cellHTS2 for a brief introduction.
+Description: This package provides tools for the analysis of high-throughput assays that were performed in 384-well microtitre plate (or analogous) formats. The functionality includes data import and management, normalisation, quality assessment, replicate summarisation and statistical scoring. A webpage that provides a detailed graphical overview over the data and analysis results is produced. In our work, we have applied the package to RNAi screens on fly and human cells, and for screens of yeast libraries. See ?cellHTS2 for a brief introduction.
 Reference: Michael Boutros and Ligia P. Bras and Wolfgang Huber.
 	Analysis of cell-based RNAi screens. Genome Biology 7:7 R66 (2006).
 License: Artistic-2.0
