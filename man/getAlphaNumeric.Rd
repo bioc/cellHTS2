@@ -3,18 +3,18 @@
 
 \title{Convert from plate coordinates to alphanumeric notation.}
 \description{
-Given an array of (x,y) spot coordinates, this function returns the corresponding alphanumeric notation.
+Given an array of (x,y) well coordinates, this function returns the corresponding alphanumeric notation.
 }
 
 \usage{
 getAlphaNumeric(horizontal, vertical)
 }
 \arguments{
- \item{horizontal}{Integer coordinate of horizontal spot location.}
- \item{vertical}{Integer coordinate of vertical spot location.}
+ \item{horizontal}{Integer coordinate of horizontal well location.}
+ \item{vertical}{Integer coordinate of vertical well location.}
 }
 \value{
- \code{getAlphaNumeric} returns a list containing \code{id}, the full alphanumeric id of the spot(s), \code{id.alpha}, the alpha part of the id, and \code{id.num}, the numeric part of the id.
+ \code{getAlphaNumeric} returns a list containing \code{id}, the full alphanumeric id of the well(s), \code{id.alpha}, the alpha part of the id, and \code{id.num}, the numeric part of the id.
 }
 
 \author{Joseph Barry \email{joseph.barry@embl.de}}
@@ -24,9 +24,9 @@ getAlphaNumeric(horizontal, vertical)
 }
 
 \examples{
- ## To obtain the alpha, numeric and alphanumeric information for a single spot
+ ## To obtain the alpha, numeric and alphanumeric information for a single well
  getAlphaNumeric(horizontal=1,vertical=1)
 
- ## To obtain only the alphanumeric ids of a tetrad in the corner of a 1536 plate
+ ## To obtain only the alphanumeric ids of a tetrad in the corner of a 1536 well plate
  getAlphaNumeric(horizontal=c(31,31,32,32),vertical=c(47,48,47,48))$id
 }
