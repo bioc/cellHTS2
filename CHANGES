@@ -1,3 +1,8 @@
+version 2.19.4
+- removed redundant makeFile in inst/doc
+- now build the longer version of vignette cellHTS2Complete
+- added the function getAlphaNumeric(), which extends notation to support 1536 well plates
+
 version 2.17.3
 - configure() is now much faster when parsing the plate configuration file
 
