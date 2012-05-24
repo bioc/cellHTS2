@@ -572,7 +572,8 @@ setMethod("configure", signature("cellHTS"),
       {
           
           ## If 'path' is given, we assume that all the files are in this directory.
-          if (!missing(path)) 
+          if (!missing(path))
+	    if (!is.na(path)) 
               if(!(is.character(path)&&length(path)==1))
                   stop("'path' must be character of length 1")
 
