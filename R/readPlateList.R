@@ -270,7 +270,7 @@ buildCellHTS2 = function(xd, measurementNames) {
   
   x = readPlateList(buildPlist, importFun=importFun, xd=xd)
   if (missing(measurementNames)) measurementNames = colnames(xd)[-c(iplate, ireplicate, iwell)]
-  if (!is.null(measurementNames)) channelNames(x) = measurementNames
+  if (!is.null(measurementNames)) channelNames(x) = measurementNames[order(measurementNames)]
   x
 }
 
