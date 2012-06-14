@@ -268,9 +268,11 @@ buildCellHTS2 = function(xd, measurementNames) {
     list(data.frame(well=xd[z, iwell], val=xd[z, -c(iplate, ireplicate, iwell), drop=FALSE][,prc[3]], stringsAsFactors=FALSE), txt='computed with buildCellHTS2()')
   }
   
-  x = readPlateList(buildPlist, importFun=importFun, xd=xd)
   if (missing(measurementNames)) measurementNames = colnames(xd)[-c(iplate, ireplicate, iwell)]
-  if (!is.null(measurementNames)) channelNames(x) = measurementNames[order(measurementNames)]
+  measurementNames=measurementNames[order(measurementNames)]
+  xd=subset(xd, select=c('replicate', 'plate', 'well', measurementNames))
+  x = readPlateList(buildPlist, importFun=importFun, xd=xd)
+  if (!is.null(measurementNames)) channelNames(x) = measurementNames
   x
 }
 
