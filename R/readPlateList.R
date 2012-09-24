@@ -269,8 +269,11 @@ buildCellHTS2 = function(xd, measurementNames) {
   }
   
   if (missing(measurementNames)) measurementNames = colnames(xd)[-c(iplate, ireplicate, iwell)]
-  measurementNames=measurementNames[order(measurementNames)]
-  xd=subset(xd, select=c('replicate', 'plate', 'well', measurementNames))
+  measurementNames = measurementNames[order(measurementNames)]
+  xd = xd[,c(colnames(xd)[c(ireplicate, iplate, iwell)], measurementNames)]
+  ireplicate = 1
+  iplate = 2
+  iwell = 3
   x = readPlateList(buildPlist, importFun=importFun, xd=xd)
   if (!is.null(measurementNames)) channelNames(x) = measurementNames
   x
