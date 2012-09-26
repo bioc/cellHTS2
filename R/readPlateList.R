@@ -252,8 +252,10 @@ buildCellHTS2 = function(xd, measurementNames) {
   iwell = grep('well', colnames(xd), ignore.case=TRUE)
   if (length(c(iplate, ireplicate, iwell))!=3) stop("'xd' must contain the columns 'plate', 'replicate' and 'well'")
   if (ncol(xd)<4) stop("'xd' must contain one or several columns with measurements")
-  if (is.factor(xd$well)) xd$well = as.character(xd$well)
-  
+
+  # enforce standardization of well id to have two digits in the numbers part of the alphanumeric notation
+  xd[,iwell] = standardizeWellID(xd[,iwell])
+
   buildPlist = function(xd) {
     nbPlates = max(xd[,iplate])
     nbReplicates = max(xd[,ireplicate])
@@ -274,6 +276,7 @@ buildCellHTS2 = function(xd, measurementNames) {
   ireplicate = 1
   iplate = 2
   iwell = 3
+
   x = readPlateList(buildPlist, importFun=importFun, xd=xd)
   if (!is.null(measurementNames)) channelNames(x) = measurementNames
   x
@@ -345,8 +348,8 @@ convertWellCoordinates <- function(x, pdim, type="384")
         tmp <- parseLetNum(x)
         let <- tmp$letters
         num <- tmp$numbers
-        let.num <- cbind(let, num)
-        letnum <- x
+        let.num <- cbind(let, sprintf("%02d",num))
+        letnum <- apply(let.num, 1, paste, collapse="")
         irow <- tmp$lindex
         icol <- as.integer(num)
         if( any(is.na(irow)) || any(irow>pdim["nrow"]) || any(irow<1L) ||

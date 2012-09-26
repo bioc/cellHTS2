@@ -552,15 +552,14 @@ getAlphaNumeric = function(horizontal, vertical) {
     return(list(id=id, id.alpha=id.alpha, id.num=id.num))
 }
  
-standardizeWellID = function(z) {
-    x=strsplit(as.character(z), split='')
-    noLet=sapply(x, function(x) length(which(!is.na(match(x, LETTERS)))) )
-    noNum=sapply(x, length)-noLet
-    names(x)=1:length(x)
-    Letters=sapply(names(x), function(y) {paste(x[[y]][1:noLet[as.numeric(y)]], sep='', collapse='')})
-    Numbers=sapply(names(x), function(y) {paste(x[[y]][(noLet[as.numeric(y)]+1):length(x[[y]])], sep='', collapse='')})
-    sprintf('%s%02d', Letters, as.numeric(Numbers))
+standardizeWellID = function(x) {
+    x<-as.character(x)
+    x<-parseLetNum(x)
+    let.num <- cbind(x$letters, sprintf("%02d",x$numbers))
+    letnum <- apply(let.num, 1, paste, collapse="")
+    return(letnum)
 }
+
 
 ##----------------------------------------
 ## configure
