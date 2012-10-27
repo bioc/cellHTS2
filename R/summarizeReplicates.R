@@ -1,41 +1,12 @@
-## NB - since 05.11.2007, replicate scoring and summarization were split into 2 functions: "scoreReplicates"
-## and "summarizeReplicates", in order to make the preprocessing work-flow clearer (these two steps were formely
-## done sequentially by calling "summarizeReplicates").
-## Now, summarizeReplicates **only** does what its name indicates: takes the chosen summary from the replicate
-## data at each well.
-## This function should be called **after** scoring the replicates through calling function "scoreReplicates".
-
-
-## ======================================================================
-## Replicates scoring
-## ======================================================================
-
-## Function that scores the replicate measurements given the specified method.
-## Currently implemented scoring methods are:
-##    none - don't do anything. Just multiply by "sign".
-##   "zscore" - each replicate measurement is subtracted by the per-experiment median (at sample wells)
-##              and then the result is divided by the per-experiment MAD (at sample wells).
-##   "NPI" - normalized percent inhibition (applied in a per-replicate basis, i.e. using the overall mean
-##           of positive and negative controls across all plates from a given replicate). For each replicate,
-##           this method consists in subtracting each measurement from the average of the intensities on the
-##           positive controls (considering all plate together), and this result is divided by the difference
-##           between the averages of the measurements on the positive and the negative controls (overall plates).
-##           In this case, we may need to provide further arguments (i.e., "posControls" and "negControls").
-##
-## added by Ligia Bras, 11.05.2007
-
-
-# "..." - further arguments required by other scoring methods
-# method = c("none", "zscore", "NPI")
 scoreReplicates <- function(object, sign="+", method="zscore", ...)
-{ 
+{
     methodArgs <- list(...)
     ## 1) Score each replicate using the selected method:
     xnorm <- if(method=="none") Data(object) else do.call(paste("scoreReplicates", method, sep="By"),
                 args=c(list(object), methodArgs))
-    ## Store the scores in 'assayData' slot. 
+    ## Store the scores in 'assayData' slot.
 
-    ## 2) Use "sign" to make the meaning of the replicates summarization 
+    ## 2) Use "sign" to make the meaning of the replicates summarization
     ## independent of the type of the assay
     sg <- switch(sign,
                  "+" = 1,
@@ -48,8 +19,6 @@ scoreReplicates <- function(object, sign="+", method="zscore", ...)
     return(object)
 }
 
-
-
 scoreReplicatesByzscore <- function(object)
 {
     xnorm <- Data(object)
@@ -57,8 +26,6 @@ scoreReplicatesByzscore <- function(object)
     xnorm[] <- apply(xnorm, 2:3, function(v) (v-median(v[samps], na.rm=TRUE))/mad(v[samps], na.rm=TRUE))
     return(xnorm)
 }
-
-
 
 scoreReplicatesByNPI <- function(object, posControls, negControls)
 {
@@ -74,7 +41,7 @@ scoreReplicatesByNPI <- function(object, posControls, negControls)
         checkControls(posControls, nrChannels, "posControls")
     }
     else
-    { 
+    {
         posControls <- as.vector(rep("^pos$", nrChannels))
     }
 
@@ -95,7 +62,7 @@ scoreReplicatesByNPI <- function(object, posControls, negControls)
             stop(sprintf("No positive or/and negative controls were found in channel %d! Please use a ",
                          "different normalization function.", ch))
 
-	for(r in 1:nrSamples) 
+	for(r in 1:nrSamples)
             if(!all(is.na(xnorm[, r, ch])) )
             {
                 if(all(is.na(xnorm[pos,r,ch])) | all(is.na(xnorm[neg,r,ch])))
@@ -107,7 +74,7 @@ scoreReplicatesByNPI <- function(object, posControls, negControls)
                                                    mean(xnorm[neg, r, ch], na.rm=TRUE))
             }
     }
-    
+
     return(xnorm)
 }
 
@@ -120,7 +87,7 @@ summarizeReplicates <- function(object, summary="min")
 {
     if(dim(Data(object))[3]!=1)
         stop("Currently this function is implemented only for single-color data.")
-    
+
     ## 2) Summarize between scored replicates:
     ## we need these wrappers because the behavior of max(x, na.rm=TRUE) if all
     ##   elements of x are NA is to return -Inf, which is not what we want.
@@ -155,7 +122,7 @@ summarizeReplicates <- function(object, summary="min")
 
     ## 2) Summarize between replicates:
     xnorm <- Data(object)
-    
+
     if(dim(xnorm)[2]>1)
     { # we don't need to do anything in case we don't have replicates!
 
@@ -203,7 +170,7 @@ summarizeReplicates <- function(object, summary="min")
 
 ## x - scored cellHTS object
 ## z0 - centre of the sigmoidal transformation
-## lambda - parameter that controls the smoothness of the transition from low values 
+## lambda - parameter that controls the smoothness of the transition from low values
 ## to higher values (the higher this value, more steeper is this transition). Should be > 0 (but usually
 ## it makes more sense to use a value >=1)
 
