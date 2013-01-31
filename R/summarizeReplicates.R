@@ -85,17 +85,15 @@ scoreReplicatesByNPI <- function(object, posControls, negControls)
 ## ======================================================================
 summarizeReplicates <- function(object, summary="min")
 {
-    if(dim(Data(object))[3]!=1)
-        stop("Currently this function is implemented only for single-color data.")
-
-    ## 2) Summarize between scored replicates:
+    ## Summarize between scored replicates:
     ## we need these wrappers because the behavior of max(x, na.rm=TRUE) if all
-    ##   elements of x are NA is to return -Inf, which is not what we want.
+    ## elements of x are NA is to return -Inf, which is not what we want.
     myMax <- function(x)
     {
         x <- x[!is.na(x)]
         ifelse(length(x)>=1, max(x), as.numeric(NA))
     }
+
     myMin <- function(x)
     {
         x <- x[!is.na(x)]
@@ -120,34 +118,35 @@ summarizeReplicates <- function(object, summary="min")
         ifelse(length(x)>=1, sqrt(sum(x^2)/length(x)), as.numeric(NA))
     }
 
-    ## 2) Summarize between replicates:
+    ## Summarize between replicates:
     xnorm <- Data(object)
 
     if(dim(xnorm)[2]>1)
     { # we don't need to do anything in case we don't have replicates!
 
-        xnorm <- xnorm[,,1]       # NB - the function is only implemented for one-channel data
-        score <- switch(summary,
-                        mean = rowMeans(xnorm, na.rm=TRUE),
-                        median = rowMedians(xnorm, na.rm=TRUE),
-                        max  = apply(xnorm, 1, myMax),
-                        min  = apply(xnorm, 1, myMin),
-                        rms = apply(xnorm, 1, myRMS),
-                        closestToZero = apply(xnorm, 1, myClosestToZero),
-                        furthestFromZero = apply(xnorm, 1, myFurthestFromZero),
+         score <- switch(summary,
+                        mean = if(dim(xnorm)[3]==1) rowMeans(xnorm[,,1], na.rm=TRUE) else apply(xnorm, c(1,3), mean, na.rm=TRUE),
+                        median = if(dim(xnorm)[3]==1) rowMedians(xnorm[,,1], na.rm=TRUE) else apply(xnorm, c(1,3), median, na.rm=TRUE),
+                        median = apply(xnorm, c(1,3), median, na.rm=TRUE),
+                        max  = apply(xnorm, c(1,3), myMax),
+                        min  = apply(xnorm, c(1,3), myMin),
+                        rms = apply(xnorm, c(1,3), myRMS),
+                        closestToZero = apply(xnorm, c(1,3), myClosestToZero),
+                        furthestFromZero = apply(xnorm, c(1,3), myFurthestFromZero),
                         stop(sprintf("Invalid value '%s' for argument 'summary'", summary)))
-
-        ## Store the scores in 'assayData' slot. Since now there's a single sample (replicate) we
-        ## need to construct a new cellHTS object.
-        z <- object[, 1] # construct a cellHTS object just with the first sample
-        assayData(z) <- assayDataNew("score"=matrix(score, dimnames=list(featureNames(object), 1)))
+         # ensure proper dimensionality of score
+         dim(score)=c(dim(xnorm)[1], Channels=dim(xnorm)[3])
+	 dimnames(score)=list(Features=featureNames(object), Channels=channelNames(object))
+         ## Store the scores in 'assayData' slot. Since now there's a single sample (replicate) we
+         ## need to construct a new cellHTS object.
+         z <- object[, 1] # construct a cellHTS object just with the first sample
+         matrices = sapply(channelNames(object), function(nm) matrix(score[,nm], dimnames=list(featureNames(object), 1)), simplify=FALSE)
+         assayData(z) = do.call(assayDataNew, matrices)
     }
     else
     {
-
         z <- object
     }
-
     ## NB - the state "scored" of the cellHTS object is only changed to TRUE after data scoring
     ## and replicate summarization.
     z@state[["scored"]] <- TRUE

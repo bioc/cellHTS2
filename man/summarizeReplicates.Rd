@@ -7,7 +7,7 @@
 This function summarizes the replicate values stored in slot \code{assayData} of a \code{\linkS4class{cellHTS}} object 
 and calculates a single score for each probe. Data are stored in slot \code{assayData} overridding its current content.
 
-Currently this function is implemented only for single-color data.
+This function is implemented for single- and multi-channel data.
 }
 \usage{
 summarizeReplicates(object, summary ="min")
@@ -31,7 +31,7 @@ summarizeReplicates(object, summary ="min")
 }
 
 \value{
-  The \code{cellHTS} object with the summarized scored values stored in slot \code{assayData}. This is an object of class \code{assayData} corresponding to a single matrix of dimensions Features x 1.
+  The \code{cellHTS} object with the summarized scored values stored in slot \code{assayData}. This is an object of class \code{assayData} corresponding to matrices of dimensions Features x 1 for each channel.
   Moreover, the processing status of the \code{cellHTS} object is updated
   in the slot \code{state} to \code{object@state[["scored"]]= TRUE}.}
 

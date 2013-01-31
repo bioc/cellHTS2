@@ -1,3 +1,6 @@
+version 2.23.1
+- summarizeReplicates now has multi-channel support
+
 version 2.19.4
 - removed redundant makeFile in inst/doc
 - now build the longer version of vignette cellHTS2Complete
