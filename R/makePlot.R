@@ -21,14 +21,12 @@
 ## ...:           Additional arguments that will be passed on to 'fun' 
 makePlot <- function(path, name, w, h, fun, psz=12,
                      thumbPsz=12, font="Helvetica", pdfArgs=list(),
-                     pngArgs=list(), thumbFactor=1,
-                     maxRasters=pdf.options()$maxRasters, ...) 
+                     pngArgs=list(), thumbFactor=1, ...)
 {
     ## The pdf version first
     thumbFactor <- rep(thumbFactor, 2)
     outf <- paste(name, c("pdf", "png"), sep=".")
-    pdf(file.path(path, outf[1]), width=w, height=h, pointsize=psz, fonts=font,
-        maxRasters=maxRasters)
+    pdf(file.path(path, outf[1]), width=w, height=h, pointsize=psz, fonts=font)
     do.call(fun, args=append(pdfArgs, list(...)))
     dev.off()
     ## Now the png thumbnail
