@@ -18,7 +18,7 @@ writeHtml.plateConf <- function(cellHTSList, module, nrPlate, posControls,
                         psz=settings$fontSize, thumbPsz=settings$thumbFontSize,
                         pdfArgs=list(legend=TRUE,
                         main=sprintf("Plate Configuration for screen '%s'", name(xr))),
-                        maxRasters=nrPlate+10, fun=function(...)
+                        fun=function(...)
                     {
                         do.call(fnam, 
                                 args=list(x=xr, verbose=FALSE,
