@@ -543,8 +543,10 @@ getScreendesc <- function(filename, path, ...)
 ## Functions for dealing with alphanumeric identifiers for larger well plates
 ## There may be one or two letters in the string
 getAlphaNumeric = function(horizontal, vertical) {
-    alpha1=(horizontal-1) %/% length(LETTERS)
-    alpha1 = ifelse(alpha1>0, LETTERS[alpha1], '')
+    if (any(horizontal>702)) stop(sprintf("Indices of 'horizontal' well must not exceed %d", 26^2 + 26))
+    if (any(vertical>99)) stop(sprintf("Indices of 'horizontal' well must not exceed %d.", 99))
+    
+    alpha1 = c("", LETTERS) [(horizontal - 1)%/%length(LETTERS) + 1]
     alpha2=LETTERS[(horizontal-1) %% length(LETTERS) +1]
     id.num=sprintf('%02d', vertical)
     id.alpha=paste(alpha1, alpha2, sep='')
@@ -569,7 +571,6 @@ setMethod("configure", signature("cellHTS"),
                    logFile, path=NA, descFunArgs=NULL,
                    confFunArgs=NULL, logFunArgs=NULL)
       {
-          
           ## If 'path' is given, we assume that all the files are in this directory.
           if (!missing(path))
 	    if (!is.na(path)) 
@@ -650,7 +651,7 @@ setMethod("configure", signature("cellHTS"),
               ## get well IDs (remove heading and trailing whitespace)
               if(iconf$Well != " *")
                   iconf$Well <- gsub("^ *| *$", "", iconf$Well)
-              ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0], pdimo)$num
+	      ww <- convertWellCoordinates(pWells[regexpr(iconf$Well, pWells)>0], pdimo)$num
               if(!length(wp))
                   stop(sprintf(paste("In the plate configuration file '%s', no plate matches",
                                      "were found for rule specified by line %d:\n\t %s \n\t %s"),
