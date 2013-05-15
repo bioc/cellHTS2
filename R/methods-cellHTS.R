@@ -200,8 +200,6 @@ setReplaceMethod("Data",
                      assayDataElement(object, ch[i]) <- matrix(value[,,i], nrow=d[1], ncol=d[2], 
                                                                dimnames=dimnames(value)[1:2])
 
-                 #if(any(dimnames(value)[[3]]!=channelNames(object)))
-                 #    channelNames(object) <- dimnames(value)[[3]]
                  ## in case 'value' had different sample names in it.
                  sampleNames(phenoData(object)) <- sampleNames(object)
                  featureNames(object) <- dimnames(value)[[1]]
@@ -543,7 +541,7 @@ getScreendesc <- function(filename, path, ...)
 ## Functions for dealing with alphanumeric identifiers for larger well plates
 ## There may be one or two letters in the string
 getAlphaNumeric = function(horizontal, vertical) {
-    if (any(horizontal>702)) stop(sprintf("Indices of 'horizontal' well must not exceed %d", 26^2 + 26))
+    if (any(horizontal>702)) stop(sprintf("Indices of 'horizontal' well must not exceed %d", 26*27))
     if (any(vertical>99)) stop(sprintf("Indices of 'horizontal' well must not exceed %d.", 99))
     
     alpha1 = c("", LETTERS) [(horizontal - 1)%/%length(LETTERS) + 1]
@@ -908,22 +906,3 @@ setMethod("meanSdPlot", signature="cellHTS", definition =
 })
 
 
-
-## Replace the channel names in a cellHTS2 object
-setReplaceMethod("channelNames",
-		signature=signature(object="cellHTS", value="character"),
-		function(object, value) 
-		{
-			if(length(channelNames(object)) != length(value))
-				stop("Length of replacement values does not match number of channels.")
-			if(storageMode(object) == "list") 
-				names(assayData(object)) <- value
-			else {
-				keys <- assayDataElementNames(object) 
-				for(i in seq_along(keys)) {
-					assayDataElement(object, value[i]) <- assayDataElement(object, keys[i])
-					assayDataElement(object, keys[i]) <- NULL
-				}
-			}
-			return(object)
-		})

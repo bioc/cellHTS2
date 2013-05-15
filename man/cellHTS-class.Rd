@@ -9,8 +9,6 @@
 \alias{name<-}
 \alias{name,cellHTS-method}
 \alias{name<-,cellHTS,character-method}
-\alias{channelNames<-}
-\alias{channelNames<-,cellHTS,character-method}
 \alias{initialize,cellHTS-method}
 %\alias{pdim,cellHTS-method}
 \alias{nbatch}
@@ -207,11 +205,6 @@
       Obtain the plate dimension for the data stored in \code{object}.
     }
 
-    \item{\code{channelNames<-(object, value)}}{
-      \code{signature(object = "cellHTS", value = "character")}.
-      Replace the channel names in \code{object}.
-    }
-    
     \item{\code{nbatch(object)}}{
       \code{signature(object = "cellHTS")}.
       Obtain the total number of batches for the data stored in \code{object}.
@@ -227,7 +220,7 @@
 
   Methods with functionality derived from class
       \code{\link[Biobase:class.NChannelSet]{NChannelSet}}:
-      \code{channel}, \code{channelNames}, \code{selectChannels},
+      \code{channel}, \code{channelNames}, \code{channelNames<-}, \code{selectChannels},
       \code{object[features, samples]}, \code{sampleNames}
 
       Methods with functionality derived from

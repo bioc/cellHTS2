@@ -271,9 +271,15 @@ buildCellHTS2 = function(xd, measurementNames) {
   }
   
   x = readPlateList(buildPlist, importFun=importFun, xd=xd)
+
   if (missing(measurementNames)) measurementNames = colnames(xd)[-c(iplate, ireplicate, iwell)]
-  if (!is.null(measurementNames)) channelNames(x) = measurementNames
-  x
+  if (!is.null(measurementNames)) {
+   chNew = channelNames(x)
+   names(chNew) = measurementNames
+   channelNames(x) <- chNew
+  }
+
+  return(x)
 }
 
 ## parse the LetterNumber representation of well coordinates into something

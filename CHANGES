@@ -1,3 +1,8 @@
+version 2.25.1
+- channelNames<- has been ported to Biobase and is now removed from cellHTS2
+- TODO list is outdated and has therefore been removed
+- bug in getAlphaNumeric() for large plates has been corrected
+
 version 2.23.1
 - summarizeReplicates now has multi-channel support
 
