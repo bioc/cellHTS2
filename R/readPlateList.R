@@ -61,7 +61,7 @@ readPlateList <- function(filename,
     if (!missing(importFun))
     {
         if (!is(importFun, "function"))
-            stop("'importFun' should be a function uses to read the raw data files\n.",
+            stop("'importFun' should be a function that can be used to read the raw data files\n.",
                  "Please see '?readPlateList' for details.")
     }
     else

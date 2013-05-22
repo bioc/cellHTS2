@@ -323,16 +323,6 @@ setMethod("annotate",
           checkColumns(geneIDs, file, mandatory=c("Plate", "Well", "GeneID"),
                        numeric=c("Plate"))
 
-          ## sort the data by Plate and then by well
-          ## ordering by well might be problematic when we have "A2" instead of "A02"...
-          ## so first check if all well IDs are given as alphanumeric characters with
-          ## 3 characters.
-          ## if(any(nchar(geneIDs$Well)!=3)) 
-          ##    stop(sprintf(paste("Well IDs in the gene annotation file '%s' must ",
-          ##                       "contain 1 letter and 2 digits. E.g. 'A02'."), geneIDFile))
-          ## geneIDs <- geneIDs[order(geneIDs$Plate, geneIDs$Well),]
-          ## Why not simply convert wellIDs to that format? Sorting is also not needed
-          ## anymore because we map by name
           geneIDs$Well <- standardizeWellID(geneIDs$Well)
 
           ## Some checkings for dimension of "Plate" and "Well"
