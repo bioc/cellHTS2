@@ -1,3 +1,6 @@
+version 2.25.3
+- getTopTable now outputs raw and normalized multi-channel information correctly
+
 version 2.25.1
 - channelNames<- has been ported to Biobase and is now removed from cellHTS2
 - TODO list is outdated and has therefore been removed

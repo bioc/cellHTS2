@@ -105,14 +105,14 @@ getTopTable <- function(cellHTSlist, file="topTable.txt", verbose=interactive())
     ## array with corrected wellAnno information (by taking into account the wells
     ## that were flagged in the screen log file, or even manually by the user).
     ## Besides the categories in wellAnno(x), it contains the category "flagged".
-    scoresWellAnno <- getArrayCorrectWellAnno(xsc)
+    scoresWellAnno <- getArrayCorrectWellAnno(xsc)[,1,1]
     
     ## include also the final well annotation (after the screen log file)
     out <- data.frame(plate=plate(xsc),
                       position=position(xsc),
-                      well=well(xsc),
-                      score=as.vector(Data(xsc)), 
-                      wellAnno = wAnno,
+                      score=as.vector(Data(xsc)[,1,1]),
+	              well=well(xsc),
+                      wellAnno=wAnno,
                       finalWellAnno = as.vector(scoresWellAnno))
 
     ## add columns with 
