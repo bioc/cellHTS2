@@ -1,3 +1,7 @@
+version 2.25.5
+- readPlateList now returns an error if all files cannot be read properly,
+  rather than just giving warnings.
+
 version 2.25.4
 - added R (>= 2.10) dependency in DESCRIPTION
 - resaved rda files due to warning

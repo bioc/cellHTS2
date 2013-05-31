@@ -217,6 +217,8 @@ readPlateList <- function(filename,
 
     ## output the possible errors that were encountered along the way:
     whHadProbs <- which(status!="OK")
+    if (length(whHadProbs) == length(status))
+        stop(sprintf("All %d files returned warnings. Please check that the data is in the correct format.", length(whHadProbs)))
     if(length(whHadProbs)>0 & verbose) {
         idx <- whHadProbs[1:min(5, length(whHadProbs))]
         msg <- paste("Please check the following problems encountered while reading the data:\n",
