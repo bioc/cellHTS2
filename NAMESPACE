@@ -2,7 +2,7 @@ importFrom("methods", "show")
 importFrom("stats4", "plot")
 importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
-importFrom("prada", "devDims", "plotPlate", "devRes")
+importFrom("prada", "devDims", "plotPlate", "devRes", "getAlphaNumeric")
 importFrom("graphics", "lines")
 import("grid")
 
