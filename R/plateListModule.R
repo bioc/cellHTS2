@@ -4,7 +4,7 @@ writeHtml.plateList <- function(cellHTSList, module, exptab, links, center,
                                 outdir, htmldir, configured, expOrder, con, ...)
 {
     ## Copy the original intensity files for the compedium and also generate HTML files
-    nn <- writeIntensityFiles(outdir=outdir, xr=cellHTSList$raw, htmldir=htmldir)
+    nn <- writeIntensityFiles(outdir=outdir, xr=cellHTSList$raw, htmldir=htmldir)[expOrder]
     ## Now the QC results
     writeHtml.header(con, path="../html")
     links[!is.na(links[, "Filename"]),"Filename"] <- nn
