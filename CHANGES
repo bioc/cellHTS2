@@ -1,3 +1,6 @@
+version 2.27.1
+- typo fix in readPlateList documentation
+
 version 2.25.5
 - readPlateList now returns an error if all files cannot be read properly,
   rather than just giving warnings.

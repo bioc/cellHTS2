@@ -125,7 +125,7 @@ dec=".", verbose=interactive(), ...)
   \code{\link[cellHTS2]{getEnVisionRawData}}.
 
   Direct data base import without the need for any flat files at all
-  could for instance be archived by:
+  could for instance be achieved by:
 
   \itemize{
 
