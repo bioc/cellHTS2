@@ -450,7 +450,7 @@ out
 and you can view it by directing a web browser to that file.
 %
 <<browseReport1>>=
-browseURL(out)
+if (interactive()) browseURL(out)
 @ 
 
 %------------------------------------------------------------
@@ -1056,7 +1056,7 @@ out <- writeReport(raw=x, normalized=xn, scored=xsc,
 and use a web browser to view the resulting report.
 %
 <<browseReport2, eval=FALSE>>=
-browseURL(out)
+if (interactive()) browseURL(out)
 @ 
 % 
 The report contains a quality report for each plate, and also for the
@@ -1517,7 +1517,7 @@ argument.
 out <- writeReport(raw=x, normalized=xn, scored=xsc, 
                    force=TRUE,
                    outdir=tempdir(), gseaModule=gmod)
-browseURL(out)
+if (interactive()) browseURL(out)
 @ 
 
 

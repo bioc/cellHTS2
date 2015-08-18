@@ -259,7 +259,7 @@ After this function has finished, we can view the index page of the
 report:
 %
 <<browseReport1, eval=FALSE>>=
-browseURL(out)
+if (interactive()) browseURL(out)
 @ 
 %
 
@@ -489,7 +489,7 @@ The quality reports have been created in the folder \Robject{logRatio}
 in the working directory.
 
 <<browse2, eval=FALSE>>=
-browseURL(out)
+if (interactive()) browseURL(out)
 @ 
 % 
 The quality reports have been created in the folder \Robject{logRatio}
