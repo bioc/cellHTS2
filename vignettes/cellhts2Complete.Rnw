@@ -1916,47 +1916,34 @@ from 1.  Hence, for the data examined here, the choice between
 original scale and logarithmic scale is one of taste, rather
 than necessity.
 %
-<<transfplots, echo=FALSE, results=hide>>=
-library("vsn")
-png("cellhts2Complete-transfplots.png", width=324, height=474)
-par(mfcol=c(3,2))
-myPlots=function(z,...) 
+<<transfplots, echo=FALSE, results=hide, eval=TRUE>>=
+library(vsn)
+myPlots=function(z, main, plotCol) 
 {
-  hist(z[,1], 100, col="lightblue", xlab="",...)
-  meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 
-                                   0.95, 
-                                   na.rm=TRUE)), ...)
-  qqnorm(z[,1], pch='.', ...)
-  qqline(z[,1], col='blue')
+  z <- as.data.frame(z)
+  colnames(z) <- paste0("Sample", seq_len(ncol(z)))
+  gh <- ggplot2::ggplot(z, ggplot2::aes(x=Sample1))+
+    ggplot2::geom_histogram(fill="darkblue")+
+    ggplot2::ggtitle(main)
+  gm <- meanSdPlot(as.matrix(z), plot=FALSE)$gg+
+    ggplot2::ylim(c(0, quantile(abs(z[,2]-z[,1]), 0.95, na.rm=TRUE)))+
+    ggplot2::theme(legend.key.size=unit(0.02, "npc"), legend.position="top")
+  gq <- ggplot2::qplot(sample=z$Sample1)
+  print(gh, vp=viewport(layout.pos.row=1, layout.pos.col=plotCol))
+  print(gm, vp=viewport(layout.pos.row=2, layout.pos.col=plotCol))
+  print(gq, vp=viewport(layout.pos.row=3, layout.pos.col=plotCol))
 }
+png("cellhts2Complete-transfplots.png", width=400, height=600)
+grid.newpage()
+pushViewport(viewport(layout=grid.layout(3, 2)))
 dv <- Data(xn)[,,1]
-myPlots(dv, main="untransformed")
+myPlots(dv, main="untransformed", plotCol=1)
 xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
-                        method="median", 
-                        varianceAdjust="byExperiment")
+                        method="median", varianceAdjust="byExperiment")
 dvlog <- Data(xlog)[,,1]
-myPlots(dvlog, main="log2")
+myPlots(dvlog, main="log2", plotCol=2)
 dev.off()
 @
-<<transfplotsShow, eval=FALSE>>=
-library("vsn")
-par(mfcol=c(3,2))
-myPlots=function(z,...) 
-{
-    hist(z[,1], 100, col="lightblue", xlab="",...)
-    meanSdPlot(z, ylim=c(0, quantile(abs(z[,2]-z[,1]), 0.95,
-                                     na.rm=TRUE)), ...)
-    qqnorm(z[,1], pch='.', ...)
-    qqline(z[,1], col='blue')
-}
-dv <- Data(xn)[,,1]
-myPlots(dv, main="untransformed")
-xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
-                        method="median", 
-                        varianceAdjust="byExperiment")
-dvlog <- Data(xlog)[,,1]
-myPlots(dvlog, main="log2")
-@ 
 %
 
 %---------------------------------------------------------
