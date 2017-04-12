@@ -69,7 +69,7 @@ channel.}
     xs <- spatialNormalization(x, save.model = TRUE, h=3)
 
     ## Calling spatialNormalization function from "normalizePlates":
-    xopt <- normalizePlates(x, varianceAdjust="none", save.model = TRUE)
-
+    xopt <- normalizePlates(x, varianceAdjust="none", save.model = TRUE, method="locfit", h=3)
+    all(xs@rowcol.effects == xopt@rowcol.effects)
 }
 \keyword{manip}

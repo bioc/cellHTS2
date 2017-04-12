@@ -1,3 +1,6 @@
+version 2.39.3
+- fixed test in spatialNormalization.Rd
+
 version 2.27.1
 - typo fix in readPlateList documentation
 
