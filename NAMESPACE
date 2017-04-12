@@ -1,10 +1,25 @@
-importFrom("methods", "show")
+import("methods")
+importFrom("BiocGenerics", "getObjectSlots")
+import("Biobase")
+importFrom("grDevices", "colorRampPalette", "dev.off", "dev.size",
+           "gray", "pdf", "png", "rainbow")
+importFrom("graphics", "abline", "axis", "barplot", "box", "boxplot",
+           "hist", "image", "layout", "legend", "mtext", "par",
+           "points", "rug", "segments", "text")
+importFrom("stats", "IQR", "cor", "density", "mad", "median",
+           "medpolish", "phyper", "predict", "qqline", "qqnorm",
+           "quantile", "runif", "sd")
+importFrom("utils", "combn", "modifyList", "read.table", "tail",
+           "write.table")
 importFrom("stats4", "plot")
-importClassesFrom("Biobase", "NChannelSet", "eSet", "VersionedBiobase", "Versioned")
 importFrom("vsn", "meanSdPlot")
 importFrom("prada", "devDims", "plotPlate", "devRes", "getAlphaNumeric")
 importFrom("graphics", "lines")
+importFrom("RColorBrewer", "brewer.pal")
+importFrom("hwriter", "hwrite", "hwriteImage")
+importFrom("locfit", "locfit", "locfit.robust")
 import("grid")
+importFrom("splots", "plotScreen")
 
 importFrom("GSEABase", "GeneSetCollection", "incidence")
 importMethodsFrom("GSEABase", "geneIds")
