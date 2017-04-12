@@ -317,7 +317,7 @@ setMethod("annotate",
               stop("'path' must be character of length 1")
 
           geneIDs <- read.table(file.path(path, file), sep="\t", header=TRUE,
-                                stringsAsFactors=FALSE, na.string="", quote="",
+                                stringsAsFactors=FALSE, na.strings="", quote="",
                                 fill=FALSE)
           
           checkColumns(geneIDs, file, mandatory=c("Plate", "Well", "GeneID"),
