@@ -86,8 +86,9 @@ and of some other add-on packages. Within R, the following commands
 can be used to install \Rpackage{cellHTS2} along with all dependent
 packages.
 <<install, eval=FALSE>>=
-source("http://www.bioconductor.org/biocLite.R")
-biocLite("cellHTS2")
+if (!requireNamespace("BiocManager", quietly=TRUE))
+    install.packages("BiocManager")
+BiocManager::install("cellHTS2")
 @ 
 
 To reproduce the computations shown here, you do not need to type them
