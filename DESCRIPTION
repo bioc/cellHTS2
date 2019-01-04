@@ -1,5 +1,5 @@
 Package: cellHTS2
-Version: 2.47.0
+Version: 2.47.1
 Title: Analysis of cell-based screens - revised version of cellHTS
 Author: Ligia Bras, Wolfgang Huber <whuber@embl.de>, Michael Boutros <m.boutros@dkfz.de>, Gregoire Pau <gpau@embl.de>, Florian Hahne <florian.hahne@novartis.com>
 Maintainer: Joseph Barry <joseph.barry@embl.de>
@@ -11,7 +11,7 @@ Reference: Michael Boutros and Ligia P. Bras and Wolfgang Huber.
 	Analysis of cell-based RNAi screens. Genome Biology 7:7 R66 (2006).
 License: Artistic-2.0
 URL: http://www.dkfz.de/signaling, http://www.ebi.ac.uk/huber
-biocViews: CellBasedAssays, Preprocessing, Visualization
+biocViews: ImmunoOncology, CellBasedAssays, Preprocessing, Visualization
 Collate: AllClasses.R
 	 AllGenerics.R
 	 adjustVariance.R
