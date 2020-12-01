@@ -13,7 +13,6 @@ importFrom("utils", "combn", "modifyList", "read.table", "tail",
            "write.table")
 importFrom("stats4", "plot")
 importFrom("vsn", "meanSdPlot")
-importFrom("prada", "devDims", "plotPlate", "devRes", "getAlphaNumeric")
 importFrom("graphics", "lines")
 importFrom("RColorBrewer", "brewer.pal")
 importFrom("hwriter", "hwrite", "hwriteImage")

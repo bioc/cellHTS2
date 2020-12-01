@@ -1,3 +1,6 @@
+version 2.55.1
+- added functions from the now-deprecated package prada
+
 version 2.39.3
 - fixed test in spatialNormalization.Rd
 

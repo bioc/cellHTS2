@@ -15,7 +15,7 @@ pdfkeywords={Bioconductor},%
 pagebackref,bookmarks,colorlinks,linkcolor=darkblue,citecolor=darkblue,%
 pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 
-\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5} 
+\SweaveOpts{keep.source=TRUE,eps=FALSE,include=FALSE,width=4,height=4.5}
 
 \newcommand{\Robject}[1]{\texttt{#1}}
 \newcommand{\Rpackage}[1]{\textit{#1}}
@@ -32,6 +32,7 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 }
 
 \begin{document}
+\SweaveOpts{concordance=TRUE}
 
 %------------------------------------------------------------
 \title{End-to-end analysis of cell-based screens: from raw intensity readings
@@ -43,13 +44,13 @@ pagecolor=darkblue,raiselinks,plainpages,pdftex]{hyperref}
 
 <<Ropts, echo=FALSE, results=hide>>=
 options(width=70)
-@ 
+@
 
 \section{Introduction}\label{sec:Intro}
-The package \Rpackage{cellHTS2} is a revised and improved version of 
-the \Rpackage{cellHTS} package~\footnote{To convert a S3 class 
-\Rclass{cellHTS} object that was made using the \Rpackage{cellHTS} package 
-into an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2}, 
+The package \Rpackage{cellHTS2} is a revised and improved version of
+the \Rpackage{cellHTS} package~\footnote{To convert a S3 class
+\Rclass{cellHTS} object that was made using the \Rpackage{cellHTS} package
+into an S4 class \Rclass{cellHTS} object suitable for \Rpackage{cellHTS2},
 please see the function \Rfunction{convertOldCellHTS}.}.
 
 This report describes the structure of the \Rclass{cellHTS} class,
@@ -78,7 +79,7 @@ First, we load the package.
 %
 <<setup1, results=hide>>=
 library("cellHTS2")
-@ 
+@
 %
 <<setup2, echo=FALSE, results=hide>>=
 ## working path:
@@ -90,10 +91,10 @@ if (!("cellhts.bib" %in% dir()) )
 
 ## for debugging:
 options(error=recover)
-## for software development, when we do not want to install 
+## for software development, when we do not want to install
 ## the package after each minor change:
 ##   for(f in dir("~/huber/projects/Rpacks/cellHTS2/R", full.names=TRUE, pattern=".R$"))source(f)
-@ 
+@
 %
 %------------------------------------------------------------
 \section{Reading the intensity data}
@@ -140,8 +141,8 @@ step. First we define the path where the input files can be found.
 %
 <<dataPath>>=
 experimentName <- "KcViab"
-dataPath <- system.file(experimentName, package="cellHTS2") 
-@ 
+dataPath <- system.file(experimentName, package="cellHTS2")
+@
 %
 In this example, the input files are in the
 \Robject{\Sexpr{experimentName}} directory of the \Rpackage{cellHTS2}
@@ -152,32 +153,32 @@ our example directory:
 <<dirDataPath>>=
 dataPath
 rev(dir(dataPath))[1:12]
-@ 
+@
 %
 and read the data into the object \Robject{x}
 %
 <<readPlateList, results=hide>>=
-x <- readPlateList("Platelist.txt", 
-                   name=experimentName, 
+x <- readPlateList("Platelist.txt",
+                   name=experimentName,
                    path=dataPath)
-@ 
+@
 %
 <<showX>>=
 x
-@ 
+@
 %
 The plate format used in the screen (96-well or 384-well plate design)
 is automatically determined from the raw intensity files when calling
 the \Rfunction{readPlateList} function.
 
 %% Create the example table:
-%% it would have been nice to use the "xtable" package but it insists on 
+%% it would have been nice to use the "xtable" package but it insists on
 %%   adding row numbers, which we don't like.
 <<plateFileTable, results=hide, echo=FALSE>>=
 cellHTS2:::tableOutput(file.path(dataPath, "Platelist.txt"), "plate list")
-cellHTS2:::tableOutput(file.path(dataPath, names(intensityFiles(x))[1]), 
+cellHTS2:::tableOutput(file.path(dataPath, names(intensityFiles(x))[1]),
                        "signal intensity", header=FALSE)
-@ 
+@
 
 %------------------------------------------------------------
 \subsection{Importing intensity data files with other formats}
@@ -218,10 +219,10 @@ assays (data and experimental meta-data) performed in multi-plate
 format.  This class extends the class \Rclass{NChannelSet} of the
 \Rpackage{Biobase} package~\cite{BioC2004}.
 
-The data can be thought of as being organised in a two- or 
+The data can be thought of as being organised in a two- or
 three-dimensional array as follows:
 \begin{enumerate}
-  
+
 \item The first dimension corresponds to reagents (e.g. siRNAs,
   chemical compounds) that were used in the assays. For example, if
   the screen used 100 plates of 384 wells (24 columns, 16 rows), then
@@ -232,7 +233,7 @@ three-dimensional array as follows:
   following terms are used synonymously for the elements of the first
   dimension: \emph{reagents}, \emph{features}, \emph{probes},
   \emph{genes}.
-  
+
 \item The second dimension corresponds to assays, including replicates
   and different experimental conditions (cell type, treatment, genetic
   background).  A potentially confusing terminology is that the data
@@ -242,10 +243,10 @@ three-dimensional array as follows:
   \Rpackage{Biobase} package, that uses this unfortunate term for this
   purpose.  Sometimes, the elements of this second dimension are also
   called \emph{samples}.
-  
+
 \item The (optional) third dimension corresponds to different
   channels (e.g. different luminescence reporters)
-  
+
 \end{enumerate}
 
 \noindent The main structures contained in a \Rclass{cellHTS} object
@@ -263,14 +264,14 @@ are:
   \Rclass{AnnotatedDataFrame}) containing information about the
   screens, such as the replicate number and the type of biological
   assay.  It must have the following columns in its data component:
-  
+
   \begin{description}
-  
+
   \item[replicate] a vector of integers giving the replicate number
-  
+
   \item[assay] a character vector giving the name of the biological
     assay or condition
-  
+
 \end{description}
 
 Both of these columns have the same length as the number of samples in
@@ -282,20 +283,20 @@ this structure is unfortunate, it has nothing to do with phenotypes.
   reagents used in the experiment. There are three mandatory columns,
   in addition there can be an arbitrary number of additional columns,
   for example a target gene identifier. The mandatory columns are:
-  
+
   \begin{description}
-  
+
   \item[plate] integers specifying the plate number (e.\,g.\ $1, 2,
     \ldots$)
-  
+
   \item[well] alphanumeric character strings giving the well ID within
     the plate (e.g. A01, B01, ..., P24).
-    
+
   \item[controlStatus] a factor specifying the annotation for each well
     with possible levels: \emph{empty}, \emph{other}, \emph{neg},
     \emph{sample}, \emph{pos}. Other levels besides \emph{pos} and
     \emph{neg} may be employed for the positive and negative controls.
-    
+
   \end{description}
 
 \item[plateData] a list of dataframes, where each list item contains
@@ -354,7 +355,7 @@ called \Robject{state} helps to keep track of the preprocessing state of our
 %
 <<see object state>>=
 state(x)
-@ 
+@
 %
 It contains a logical vector of length \Sexpr{length(state(x))}
 representing the processing status of the object. It should have the
@@ -411,14 +412,14 @@ Returning to our example data set, we create a report using the
 function \Rfunction{writeReport}. Since until now we only have
 unnormalized experimental data, the \Rclass{cellHTS} object should be
 given to the function as the \Robject{raw} argument:
- 
+
 %
 <<writeReport1Show, eval=FALSE>>=
 out <- writeReport(raw=x)
-@ 
+@
 <<writeReport1Do, echo=FALSE, results=hide>>=
 out <- writeReport(raw=x, force=TRUE, outdir=tempdir())
-@ 
+@
 %
 This will write the report into the directory given by the argument
 \Robject{outdir}. The option \Robject{force=TRUE} tells the function
@@ -445,20 +446,20 @@ page of the report will be in the file indicated by the variable
 %
 <<printout>>=
 out
-@ 
+@
 %
 and you can view it by directing a web browser to that file.
 %
 <<browseReport1>>=
 if (interactive()) browseURL(out)
-@ 
+@
 
 %------------------------------------------------------------
 \section{Screen configuration: annotating the plate results}
 \label{sec:screenconf}
 %------------------------------------------------------------
-\input{cellhts2-plateconfiguration} 
-\input{cellhts2-screenlog} 
+\input{cellhts2-plateconfiguration}
+\input{cellhts2-screenlog}
 
 The next step of the analysis involves reading and processing three
 input files specific of the screening experiment:
@@ -491,11 +492,11 @@ To apply the information contained in these three files in our
 \Rclass{cellHTS} object, we call:
 <<annotatePlateRes>>=
 x <- configure(x,
-               descripFile="Description.txt", 
-               confFile="Plateconf.txt", 
-               logFile="Screenlog.txt", 
+               descripFile="Description.txt",
+               confFile="Plateconf.txt",
+               logFile="Screenlog.txt",
                path=dataPath)
-@ 
+@
 %
 Note that the function \Rfunction{configure}\footnote{More precisely,
   \Rfunction{configure} is a method for the S4 class
@@ -507,11 +508,11 @@ function \Rfunction{configure} should be omitted.
 %%
 %% Create the example table for plateConf and screenLog
 <<plateConfscreenLogTable, results=hide, echo=FALSE>>=
-cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"), 
+cellHTS2:::tableOutputWithHeaderRows(file.path(dataPath, "Plateconf.txt"),
                                      "plate configuration", selRows=NULL)
-cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"), 
+cellHTS2:::tableOutput(file.path(dataPath, "Screenlog.txt"),
                        "screen log", selRows=1:3)
-@ 
+@
 
 
 %%--------------------------------------------------
@@ -571,7 +572,7 @@ each well annotation in the example data:
 %
 <<>>=
 table(wellAnno(x))
-@ 
+@
 %
 
 We can also use the function \Rfunction{configurationAsScreenPlot} to
@@ -584,7 +585,7 @@ dev.off()
 @
 <<configurationplotShow, eval=FALSE>>=
 configurationAsScreenPlot(x)
-@ 
+@
 
 The result is shown in Figure~\ref{fig:configurationplot}. This can be
 useful to verify the correctness of the plate configuration when a
@@ -592,7 +593,7 @@ complex set of rules with regular expressions are used.
 \begin{figure}[tp]
 \begin{center}
 \includegraphics[width=324pt,height=324pt]{cellhts2Complete-configurationplot.png}
-\caption{\label{fig:configurationplot}Screen plot of the plate 
+\caption{\label{fig:configurationplot}Screen plot of the plate
 configuration.}
 \end{center}
 \end{figure}
@@ -647,21 +648,21 @@ accessor method.
 \label{sec:screenlog}
 %%--------------------------------------------------
 The screen log file is a tabulator delimited file with mandatory
-columns \emph{Plate}, \emph{Well}, \emph{Flag}. 
-If there are multiple samples (replicates or conditions), a column 
-called \emph{Sample} should also be present; a column named \emph{Channel} 
+columns \emph{Plate}, \emph{Well}, \emph{Flag}.
+If there are multiple samples (replicates or conditions), a column
+called \emph{Sample} should also be present; a column named \emph{Channel}
 must also be provided when there are multiple channels.
-In addition, it can 
-contain arbitrary optional columns. 
-Each row corresponds to one flagged measurement, 
-identified by the plate number (and possible sample number and channel number) and 
-the well identifier (alphanumeric identifier). 
+In addition, it can
+contain arbitrary optional columns.
+Each row corresponds to one flagged measurement,
+identified by the plate number (and possible sample number and channel number) and
+the well identifier (alphanumeric identifier).
 The type of flag is specified in the column \emph{Flag}. Most commonly,
 this will have the value ``NA'', indicating that the measurement
 should be discarded and regarded as missing.\\
 
-For those users that have been using \Rpackage{cellHTS} package and need to migrate 
-their projects to \Rpackage{cellHTS2} package, 
+For those users that have been using \Rpackage{cellHTS} package and need to migrate
+their projects to \Rpackage{cellHTS2} package,
 we explain how this can be smoothly performed in Appendix~\ref{sec:migratingProjects}.
 
 
@@ -669,7 +670,7 @@ we explain how this can be smoothly performed in Appendix~\ref{sec:migratingProj
 %------------------------------------------------------------
 \section{Normalization, scoring and summarization of replicates}
 \label{sec:norm}
-%------------------------------------------------------------ 
+%------------------------------------------------------------
 
 The data normalization, replicates scoring and summarization functions
 available in \Rpackage{cellHTS2} package work on the data stored in
@@ -696,17 +697,17 @@ dual-channel data, further steps are required, as explained in the
 vignette \textit{Analysis of multi-channel cell-based screens},
 accompanying this package.
 
-The function \Rfunction{normalizePlates} can be called to perform per-plate 
-data transformation, normalization and variance adjustment. The normalization 
-is performed in a plate-by-plate fashion and has three components: 
+The function \Rfunction{normalizePlates} can be called to perform per-plate
+data transformation, normalization and variance adjustment. The normalization
+is performed in a plate-by-plate fashion and has three components:
 \begin{description}
-\item[Data transformation] logarithmic transformation 
+\item[Data transformation] logarithmic transformation
 (optional, this can be advisable if the data are on multiplicative scale)
-\item[Per-plate normalization] location adjustment for possible 
+\item[Per-plate normalization] location adjustment for possible
 plate effects and/or possible spatial effects, using a choice of methods
 that you need to adapt to your data
 \item[Variance adjustment] plate-specific scale (variance) adjustment
-(optional) 
+(optional)
 \end{description}
 
 For more details about this function and available normalization
@@ -738,8 +739,8 @@ argument \Robject{varianceAdjust}, as follows:
 
 \begin{itemize}
 
-\item \Robject{varianceAdjust="byPlate"}: per plate normalized intensities are 
-divided by the per-plate median absolute deviations (MAD) in "sample" wells. 
+\item \Robject{varianceAdjust="byPlate"}: per plate normalized intensities are
+divided by the per-plate median absolute deviations (MAD) in "sample" wells.
 This is done separately for each replicate and channel;
 
 \item \Robject{varianceAdjust="byBatch"}: using the content of slot
@@ -764,70 +765,70 @@ As explained above, the parameter \Robject{method} of
 of per-plate normalization methods.  Returning to our example data
 set, we choose to apply \emph{plate median scaling}:
 
-\begin{eqnarray} 
+\begin{eqnarray}
 x'_{ki} &=& \frac{x_{ki}}{M_i}\quad\quad\forall k,i \label{eq:normalizePlateMedian}\\
 M_{i}&=&\mathop{\operatorname{median}}_{m\in\,\mbox{\scriptsize samples}} x_{mi} \label{eq:plateMedian}
 \end{eqnarray}
 
 where $x_{ki}$ is the raw intensity for the $k$-th well in the $i$-th
-replicate file, and $x'_{ki}$ is the corresponding normalized intensity. 
-The median is calculated across the wells annotated as \textit{sample} in 
-the $i$-th result file. 
+replicate file, and $x'_{ki}$ is the corresponding normalized intensity.
+The median is calculated across the wells annotated as \textit{sample} in
+the $i$-th result file.
 This is achieved by calling:
 %
 <<normalizePlateMedian>>=
-xn <- normalizePlates(x, 
-                      scale="multiplicative", 
-                      log=FALSE, 
-                      method="median", 
+xn <- normalizePlates(x,
+                      scale="multiplicative",
+                      log=FALSE,
+                      method="median",
                       varianceAdjust="none")
-@ 
-after which we obtain a \Rclass{cellHTS} object with the normalized 
+@
+after which we obtain a \Rclass{cellHTS} object with the normalized
 intensities stored in the slot
-\Robject{assayData}. 
-In the previous call to \Rfunction{normalizePlates} function, 
-we have chosen not to adjust the data variance (default behaviour of 
+\Robject{assayData}.
+In the previous call to \Rfunction{normalizePlates} function,
+we have chosen not to adjust the data variance (default behaviour of
 \Rfunction{normalizePlates}).
-For example, we can use function \Rfunction{compare2cellHTS} provided with the package to check whether these 
+For example, we can use function \Rfunction{compare2cellHTS} provided with the package to check whether these
 two \Rclass{cellHTS} objects, \Robject{x} and \Robject{xn} belong to the same experiment:
 
 <<compare cellHTs objects>>=
 compare2cellHTS(x, xn)
-@ 
+@
 
-After normalizing the data, we standardize the values for each 
-replicate experiment using Equation~\eqref{eq:defz}. In this equation, 
+After normalizing the data, we standardize the values for each
+replicate experiment using Equation~\eqref{eq:defz}. In this equation,
 $\hat{\mu}$ and $\hat{\sigma}$ are estimators of location and
-scale of the distribution of $x'_{ki}$ taken across all plates and 
+scale of the distribution of $x'_{ki}$ taken across all plates and
 wells of a given replicate experiment. This function uses robust estimators,
-namely, median and median absolute deviation (MAD). 
-Moreover, it only considers the wells 
+namely, median and median absolute deviation (MAD).
+Moreover, it only considers the wells
 containing ``sample'' for estimating $\hat{\mu}$ and $\hat{\sigma}$.
 %As the values $x'_{ki}$ were obtained using plate median
 %normalization~\eqref{eq:normalizePlateMedian}, it holds that
-%$\hat{\mu}=1$.  
+%$\hat{\mu}=1$.
 The symbol $\pm$ indicates that we allow for either
 plus or minus sign in Equation~\eqref{eq:defz}; the minus sign can be
 useful in the application to an inhibitor assay, where an effect
 results in a decrease of the signal and we may want to see this
 represented by a large score.
-This is done by calling the \Rfunction{scoreReplicates} function, 
-where arguments \Robject{sign} and \Robject{method} define 
-the sign and the scoring method to apply (robust $z$-scores, in this case), 
+This is done by calling the \Rfunction{scoreReplicates} function,
+where arguments \Robject{sign} and \Robject{method} define
+the sign and the scoring method to apply (robust $z$-scores, in this case),
 respectively:
 %
 <<score replicates>>=
-xsc <- scoreReplicates(xn, sign="-", method="zscore") 
-@ 
+xsc <- scoreReplicates(xn, sign="-", method="zscore")
+@
 %
-After data standardization, we summarize the replicates, 
-calculating a single score for each gene. 
-This is performed using the \Rfunction{summarizeReplicates} function, 
+After data standardization, we summarize the replicates,
+calculating a single score for each gene.
+This is performed using the \Rfunction{summarizeReplicates} function,
 where we use its argument \Robject{summary} to select the summary to apply.
-One option is \emph{rms}, which corresponds to take the 
-root mean square of the replicates values, and is shown in 
-Equation~\eqref{eq:scoresSummary}. The chosen summary is 
-taken over all the $n_{\mbox{\scriptsize rep}_k}$ replicates of probe $k$. 
+One option is \emph{rms}, which corresponds to take the
+root mean square of the replicates values, and is shown in
+Equation~\eqref{eq:scoresSummary}. The chosen summary is
+taken over all the $n_{\mbox{\scriptsize rep}_k}$ replicates of probe $k$.
 
 
 \begin{eqnarray}
@@ -849,10 +850,10 @@ of Boutros \textit{et al.}~\cite{Boutros2004}, we choose to consider
 the mean as a summary:
 %
 <<summarize replicates>>=
-xsc <- summarizeReplicates(xsc, summary="mean") 
-@ 
+xsc <- summarizeReplicates(xsc, summary="mean")
+@
 %
-after which we obtain a \Rclass{cellHTS} object with the 
+after which we obtain a \Rclass{cellHTS} object with the
 resulting single $z$-score value per probe
 stored in \Robject{assayData} slot.
 
@@ -862,11 +863,11 @@ in Figure~\ref{cellhts2Complete-boxplotzscore}.
 <<boxplotzscore, fig=TRUE, include=FALSE, width=4.5, height=5.5>>=
 scores <- Data(xsc)
 ylim <- quantile(scores, c(0.001, 0.999), na.rm=TRUE)
-boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE, 
+boxplot(scores ~ wellAnno(x), col="lightblue", outline=FALSE,
         ylim=ylim)
-@ 
+@
 %
-\myincfig{cellhts2Complete-boxplotzscore}{0.5\textwidth}{Boxplots of $z$-scores 
+\myincfig{cellhts2Complete-boxplotzscore}{0.5\textwidth}{Boxplots of $z$-scores
 for the different types of probes.}
 %
 
@@ -896,14 +897,14 @@ This transformation can be done by calling the function
 y <- scores2calls(xsc, z0=1.5, lambda=2)
 png("cellhts2Complete-callvalues.png")
 plot(Data(xsc), Data(y), col="blue", pch=".",
-     xlab="z-scores", ylab="calls", 
+     xlab="z-scores", ylab="calls",
      main=expression(1/(1+e^{-lambda *(z-z[0])})))
 dev.off()
 @
 <<callvaluesShow, eval=FALSE>>=
 y <- scores2calls(xsc, z0=1.5, lambda=2)
 plot(Data(xsc), Data(y), col="blue", pch=".",
-     xlab="z-scores", ylab="calls", 
+     xlab="z-scores", ylab="calls",
      main=expression(1/(1+e^{-lambda *(z-z[0])})))
 @
 \myincfig{cellhts2Complete-callvalues.png}{180px}{A
@@ -917,7 +918,7 @@ $z$-score values instead of the call values.
 \section{Probe annotation}
 \label{sec:annotation}
 %------------------------------------------------------------
-\input{cellhts2-geneID} 
+\input{cellhts2-geneID}
 
 Up to now, the assayed genes have been identified solely by the
 identifiers of the plate and the well that contains the probe for
@@ -934,16 +935,16 @@ CG-identifiers for the genes of \textit{Drosophila melanogaster}.
 <<geneIDs>>=
 xsc <- annotate(xsc, geneIDFile="GeneIDs_Dm_HFA_1.1.txt",
                 path=dataPath)
-@ 
+@
 %% Create the example table:
 <<geneIDsTable, results=hide, echo=FALSE>>=
-cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs_Dm_HFA_1.1.txt"), 
+cellHTS2:::tableOutput(file.path(dataPath, "GeneIDs_Dm_HFA_1.1.txt"),
                        "gene ID", selRows = 3:6)
-@ 
+@
 %
-An optional column named \textit{GeneSymbol} can be included in the 
-\emph{annotation file}, and its content will be displayed by the tooltips 
-added to the plate plots and screen-wide 
+An optional column named \textit{GeneSymbol} can be included in the
+\emph{annotation file}, and its content will be displayed by the tooltips
+added to the plate plots and screen-wide
 plot in the HTML quality report (see Section~\ref{sec:report}).
 
 
@@ -960,7 +961,7 @@ alternative methods to annotate a list of gene identifiers with public
 annotation -- pick your favourite one.
 
 This section demonstrates how to do it with the package
-\Rpackage{biomaRt}. It is optional, you can move on to 
+\Rpackage{biomaRt}. It is optional, you can move on to
 Section \ref{sec:report} if you do not have the \Rpackage{biomaRt}
 package or do not want to use it. If you do skip this section, then
 for the purpose of this vignette, please load a cached version of the
@@ -969,17 +970,17 @@ gene annotation:
 <<bdgpbiomart1, eval=TRUE>>=
 data("bdgpbiomart")
 fData(xsc) <- bdgpbiomart
-fvarMetadata(xsc)[names(bdgpbiomart), "labelDescription"] <- 
-  sapply(names(bdgpbiomart), 
-    function(i) sub("_", " ", i) 
+fvarMetadata(xsc)[names(bdgpbiomart), "labelDescription"] <-
+  sapply(names(bdgpbiomart),
+    function(i) sub("_", " ", i)
 )
-@ 
+@
 
 
-%--------------------------- 
+%---------------------------
 \subsubsection{Installation}
 \label{sec:install}
-%--------------------------- 
+%---------------------------
 The installation of the \Rpackage{biomaRt} package can be a little bit
 tricky, since it relies on the two packages \Rpackage{RCurl} and
 \Rpackage{XML}, which in turn rely on the presence of the system
@@ -1007,7 +1008,7 @@ rnwPath <- system.file("doc/Rnw", package="cellHTS2")
 setwd(rnwPath)
 system(sprintf("cp biomart.tex %s", workPath))
 setwd(workPath)
-@ 
+@
 %
 <<runBiomart, echo=FALSE, eval=FALSE>>=
 cat("Weaving the biomart vignette part...")
@@ -1015,7 +1016,7 @@ setwd(rnwPath)
 Sweave("biomart.Rnw")
 setwd(workPath)
 stop()
-@ 
+@
 %
 \input{Rnw/biomart.tex}
 %\input{biomart.tex}
@@ -1024,41 +1025,41 @@ stop()
 \section{Report}
 \label{sec:report}
 %------------------------------------------------------------
-We have now completed the analysis tasks: the dataset has been read, 
+We have now completed the analysis tasks: the dataset has been read,
 configured, normalized, scored, and annotated:
 %
 <<printxagain>>=
 xsc
 @
 %
-We can now save the scored data set to a file. 
+We can now save the scored data set to a file.
 %
 <<savex>>=
 save(xsc, file=paste(experimentName, ".rda", sep=""))
-@ 
-% 
+@
+%
 The data set can be loaded again for subsequent analysis, or passed on
 to others. To produce a comprehensive report, we can call the function
 \Rfunction{writeReport} again, this time specifying the three
 \Rclass{cellHTS} objects as separate function arguments: ``raw'',
 ``normalized'' and ``scored''. We also alter some of the default
-output settings using the \Rfunction{setSettings} functions (more details 
+output settings using the \Rfunction{setSettings} functions (more details
 are given in section \ref{settings})
 
 <<writeReport2, results=hide, eval=FALSE>>=
-setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE), 
+setSettings(list(plateList=list(reproducibility=list(include=TRUE, map=TRUE),
                                 intensities=list(include=TRUE, map=TRUE)),
                  screenSummary=list(scores=list(range=c(-4, 8), map=TRUE))))
-out <- writeReport(raw=x, normalized=xn, scored=xsc, 
+out <- writeReport(raw=x, normalized=xn, scored=xsc,
                    force=TRUE)
-@ 
+@
 %
 and use a web browser to view the resulting report.
 %
 <<browseReport2, eval=FALSE>>=
 if (interactive()) browseURL(out)
-@ 
-% 
+@
+%
 The report contains a quality report for each plate, and also for the
 whole screening assays.  The per-plate HTML reports display the
 scatterplot between duplicated plate measurements, the histogram of
@@ -1118,7 +1119,7 @@ respectively. For example,
 
 <<imageScreen, eval=FALSE, results=hide>>=
 imageScreen(xsc, ar=1, zrange=c(-3,4))
-@ 
+@
 
 It should be noted that the per-plate and per-experiment quality
 reports are constructed based on the normalized \Rclass{cellHTS}
@@ -1176,7 +1177,7 @@ present example data set, it has the following columns:
   respectively. This corresponds to the data stored in the normalized
   \Rclass{cellHTS} object \Robject{xn}.
 
-\end{itemize} 
+\end{itemize}
 
 Additionally, if any of the \Rclass{cellHTS} objects provided in the
 argument \Robject{cellHTSlist} to \Rfunction{writeReport} has been
@@ -1215,7 +1216,7 @@ the probe information (i.e. the probe identifiers stored in column
 %
 <<exportData, results=hide, eval=FALSE>>=
 writeTab(xsc, file="Scores.txt")
-@ 
+@
 %
 Since you might be interestered in saving other values to a tab
 delimited file, below we demonstrate how you can create a matrix with
@@ -1231,24 +1232,24 @@ file using the function \Rfunction{write.tabdel}~\footnote{This
 y <- array(as.numeric(NA), dim=dim(Data(x)))
 nrWell <- prod(pdim(x))
 nrPlate <- max(plate(x))
-for(p in 1:nrPlate) 
+for(p in 1:nrPlate)
 {
     j <- (1:nrWell)+nrWell*(p-1)
     samples <- wellAnno(x)[j]=="sample"
-    y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3, 
-                      function(w) w/median(w[samples], 
-                                           na.rm=TRUE)) 
+    y[j, , ] <- apply(Data(x)[j, , , drop=FALSE], 2:3,
+                      function(w) w/median(w[samples],
+                                           na.rm=TRUE))
 }
 
 y <- signif(y, 3)
 out <- y[,,1]
 out <- cbind(fData(xsc), out)
-names(out) = c(names(fData(xsc)), 
-sprintf("Well/Median_r%d_ch%d", rep(1:dim(y)[2], dim(y)[3]), 
+names(out) = c(names(fData(xsc)),
+sprintf("Well/Median_r%d_ch%d", rep(1:dim(y)[2], dim(y)[3]),
 rep(1:dim(y)[3], each=dim(y)[2])))
 write.tabdel(out, file="WellMedianRatio.txt")
-@ 
- 
+@
+
 %
 At this point we are finished with the basic analysis of the
 screen. As one example for how one could continue to further mine the
@@ -1271,17 +1272,17 @@ from other studies.
 %
 <<category, results=hide>>=
 library("Category")
-@ 
+@
 %
 Now we can create the category matrix. Conceptually, this a matrix
 with one column for each probe and one row for each category.  The
 matrix element \Robject{[i,j]} is \Robject{1} if probe \Robject{j}
 belongs to the \Robject{j}-th category, and \Robject{0} if not.
-%In practice, this matrix would be rather large (and perhaps 
-%exhaust the memory of your computer), hence we use a type of sparse 
-%matrix representation, implemented by the \Rclass{graph} object 
-%\Robject{categs}. This bipartite graph's nodes correspond to the rows 
-%and columns of the matrix and there is an edge if the matrix element 
+%In practice, this matrix would be rather large (and perhaps
+%exhaust the memory of your computer), hence we use a type of sparse
+%matrix representation, implemented by the \Rclass{graph} object
+%\Robject{categs}. This bipartite graph's nodes correspond to the rows
+%and columns of the matrix and there is an edge if the matrix element
 %is non-zero.
 
 % <<find obsolete GO ids, echo=FALSE, eval=FALSE>>=
@@ -1297,42 +1298,42 @@ belongs to the \Robject{j}-th category, and \Robject{0} if not.
 % s3 = ux %in% ls(GOCCANCESTOR)
 % s4 = is.na(ux)
 % obsolete = sort(ux[which(!(s1|s2|s3|s4))])
-% @ 
+% @
 
 <<obsolete GO ids>>=
 obsolete <- c("GO:0005489", "GO:0015997", "GO:0045034", "GO:0005660",
-              "GO:0006118", "GO:0006512", "GO:0045045", "GO:0006125", 
+              "GO:0006118", "GO:0006512", "GO:0045045", "GO:0006125",
               "GO:0043072", "GO:0006100", "GO:0048740")
-@ 
+@
 
-Some distractions are the GO terms 
-\Robject{\Sexpr{paste(obsolete, collapse=", ")}}, 
+Some distractions are the GO terms
+\Robject{\Sexpr{paste(obsolete, collapse=", ")}},
 which are annotated to some of the genes, but are obsolete.
 %
 <<cat1>>=
 scores <- as.vector(Data(xsc))
 names(scores) <- geneAnno(xsc)
-sel <- !is.na(scores) & 
+sel <- !is.na(scores) &
        (!is.na(fData(xsc)$go_biological_process_id))
-goids <- strsplit(fData(xsc)$go_biological_process_id[sel], 
+goids <- strsplit(fData(xsc)$go_biological_process_id[sel],
                   ", ")
 goids <- lapply(goids, function(x) x[!(x %in% obsolete)])
 genes <- rep(geneAnno(xsc)[sel], listLen(goids))
 categs <- cateGOry(genes, unlist(goids, use.names=FALSE))
-@ 
-% 
+@
+%
 We will select only those categories that contain at least 3 and no
 more than 1000 genes.
 <<cat2>>=
 nrMem <- rowSums(categs) # number of genes per category
 remGO <- which(nrMem < 3 | nrMem > 1000)
 categs <- categs[-remGO,,drop=FALSE]
-##  see if there are genes that don't belong to any category 
+##  see if there are genes that don't belong to any category
 ## after applying the filter
 nrMem <- rowSums(t(categs))
 rem <- which(nrMem==0)
 if(length(rem)!=0) categs <- categs[,-rem, drop=FALSE]
-@ 
+@
 %
 As the statistic for the category analysis we use the
 $z$-score. First, we need to select the subset of genes that actually
@@ -1352,12 +1353,12 @@ table(isDup)
 dupNames <- names(stats)[isDup]
 sp <- stats[names(stats) %in% dupNames]
 sp <- split(sp, names(sp))
-table(sapply(sp, length)) 
+table(sapply(sp, length))
 aux <- stats[!isDup]
 aux[names(sp)] <- sapply(sp, max)
 stats <- aux
 rm(aux)
-@ 
+@
 %
 Before calling the category summary functions, we need to order our
 statistic vector according to the names of the columns of the category
@@ -1368,17 +1369,17 @@ m <- match(colnames(categs), names(stats))
 stats <- stats[m]
 stopifnot(colnames(categs)==names(stats))
 @
-% 
+%
 Finally, we are ready to call the category summary functions:
 %
 <<cat6>>=
 acMean <- applyByCategory(stats, categs)
-acTtest <- applyByCategory(stats, categs, 
-                           FUN=function(v) 
+acTtest <- applyByCategory(stats, categs,
+                           FUN=function(v)
                            t.test(v, stats)$p.value)
 acNum <- applyByCategory(stats, categs, FUN=length)
 isEnriched <- (acTtest<=1e-3) & (acMean>0.5)
-@ 
+@
 %
 A volcano plot of the $-\log_{10}$ of the $p$-value \Robject{acTtest}
 versus the per category mean $z$-score \Robject{acMean} is shown in
@@ -1393,9 +1394,9 @@ mean $z$-score greater than $0.5$. This led to the
 Figure~\ref{cellhts2Complete-volcano.png} are listed in
 Table~\ref{tab:enrichedGoCateg}.
 
- 
+
 %
-\input{cellhts2-enrichedGoCateg} 
+\input{cellhts2-enrichedGoCateg}
 %
 \myincfig{cellhts2Complete-volcano.png}{180px}{Volcano plot of the
   $t$-test $p$-values and the mean $z$-values of the category analysis
@@ -1405,20 +1406,20 @@ Table~\ref{tab:enrichedGoCateg}.
 png("cellhts2Complete-volcano.png", width=180, height=180)
 par(mai=c(0.9,0.9,0.1,0.1))
 px <- cbind(acMean, -log10(acTtest))
-plot(px, main='', xlab=expression(z[mean]), 
+plot(px, main='', xlab=expression(z[mean]),
      ylab=expression(-log[10]~p), pch=".", col="black")
 points(px[isEnriched, ], pch=16, col="red", cex=0.7)
 dev.off()
-stopifnot(identical(names(acMean), names(acTtest)),  
-          identical(names(acMean), names(acNum))) 
-@ 
+stopifnot(identical(names(acMean), names(acTtest)),
+          identical(names(acMean), names(acNum)))
+@
 %
 <<enrichedGoCateg, echo=FALSE, results=hide>>=
 enrichedGOCateg <- names(which(isEnriched))
 require("GO.db")
 res <- data.frame(
-   "$n$" = acNum[isEnriched], 
-    "$z_{\\mbox{\\scriptsize mean}}$" = signif(acMean[isEnriched],2), 
+   "$n$" = acNum[isEnriched],
+    "$z_{\\mbox{\\scriptsize mean}}$" = signif(acMean[isEnriched],2),
     "$p$" = signif(acTtest[isEnriched],2),
     "GOID" = I(enrichedGOCateg),
     "Ontology" = I(sapply(enrichedGOCateg, function(x) Ontology(get(x, GOTERM)))),
@@ -1429,97 +1430,10 @@ mt <- match(res$Ontology, c("CC", "BP", "MF"))
 stopifnot(!any(is.na(mt)))
 res <- res[order(mt, res$"$p$"), ]
 
-cellHTS2:::dataframeOutput(res, header=TRUE, 
+cellHTS2:::dataframeOutput(res, header=TRUE,
   caption=sprintf("Top %d Gene Ontology categories with respect to $z$-score.", nrow(res)),
   label="enrichedGoCateg", gotable=TRUE)
-@ 
-%
-
-We have recently added an experimental feature to the
-\Rpackage{cellHTS2} package in order to integrate such category
-analyses into the HTML report framework. It leverages functionality
-from the \Rpackage{GSEABase} package, which was specifically designed
-to deal with gene sets. The feature is exemplyfied using the KEGG
-pathway information available though the \Rpackage{KEGG.db} package.
-
-First we have to create an object of class \Rclass{GeneSetCollection}
-which represents the mapping of genes to KEGG pathways. The geneIDs in
-the gene set collection are supposed to map to the geneIDs of the
-assay scores. From the \Rpackage{KEGG.db} package we get a list of
-pathway mapping to FlyBase identifiers.
-<<geneset>>=
-library(KEGG.db)
-library(GSEABase)
-kegg <- as.list(KEGGPATHID2EXTID)
-kegg <- kegg[grep("dme", names(kegg))]
-gsc <- 
-    GeneSetCollection(mapply(function(keggId, geneId)
-                             GeneSet(unique(geneId), 
-                                     geneIdType=EntrezIdentifier(),
-                                     collectionType=KEGGCollection(keggId),
-                                     setName=keggId), 
-                             names(kegg), kegg))
-@ 
-%
-In a subsequent step we want to filter out all the assay scores
-without proper annotation (e.g., control wells) and also restrict our
-collection of gene sets to those containing at least 5 genes. The gene
-annotations of our assay are the old CG identifiers, but we have
-retrieved a mapping to proper FlyBase identifiers in the previous
-\Rpackage{biomaRt} step.
-<<filterGeneset>>=
-scores <- as.vector(Data(xsc))
-names(scores) <- fData(xsc)$flybase_gene_id
-sel <- !is.na(scores) & !is.na(names(scores))
-scores <- scores[sel]
-                                
-## Only consider set with more than 5 genes
-gsc <- gsc[sapply(gsc, length) > 5]
-gsNames <- mget(gsub("dme", "", names(gsc)), KEGGPATHID2NAME)
-ann <- data.frame(Name=I(unlist(gsNames)))
-rownames(ann) <- names(gsc)
-@ 
-%
-Finally, we need to bundle up the assay scores and the gene set
-collection and define one or several summary statistics to show in the
-HTML report. Each of these statistics is supposed to be created by a
-separate function, which takes one mandatory and one optional
-argument. The mandatory argument is simply a vector of assay scores
-for the respective gene set. The optional second argument is a numeric
-vector of all available scores. This setup allows to compute simple
-statistics like means or medians, but also more complicated test
-statistics, for instance a $t$-test. The container for this
-information is an object of class \Rclass{gseaModule} and there is a
-convenient constructor which does most of the job.
-
-In the following example, we define four test statistics (mean,
-$p$-value of a $t$-test, its $t$-statistic and the number of genes in
-the gene set) and pass them to the constructor as a list. We also add
-a data.frame with further gene set annotation (in this case more human
-readable names for the pathways) and the vector of assays scores. Note
-that if no explicit vector is given, the scores of the
-\Rclass{cellHTS} object are used. In our case their identifiers don't
-match the gene sets FlyBase identifiers, and we also wanted to do a
-couple of extra filtering steps.
-<<gseamodule>>=
-gmod <- gseaModule(gsc, list("Mean"=function(x,...) mean(x),
-                             "P-value"=function(x,y) t.test(x, y)$p.value,
-                             "T-statistic"=function(x,y) t.test(x, y)$statistic,
-                             "NrGenes"=function(x,...) length(x)),
-                   annotation=ann, scores=scores)
-@ 
-%
-We can now re-write the \Rclass{cellHTS} report using the familiar
-Rfunction{writeReport} function with the addition \Robject{gseaModule}
-argument.
-<<rewriteReport, eval=FALSE>>=
-## Now load the cellHTS objects and rewrite the report
-out <- writeReport(raw=x, normalized=xn, scored=xsc, 
-                   force=TRUE,
-                   outdir=tempdir(), gseaModule=gmod)
-if (interactive()) browseURL(out)
-@ 
-
+@
 
 %------------------------------------------------------------
 \section{Comparison with the results previously reported}
@@ -1533,22 +1447,22 @@ i.\,e.\, in \Robject{\Sexpr{experimentName}} directory of the
 \Rpackage{cellHTS} package.  First, We will load this file:
 %
 <<load file with previous analysis>>=
-data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"), 
+data2003 <- read.table(file.path(dataPath, "Analysis2003.txt"),
                        header=TRUE, as.is=TRUE, sep="\t")
-@ 
-% 
-The file contains the columns 
-\Robject{\Sexpr{paste(names(data2003),collapse=", ")}}.  
+@
+%
+The file contains the columns
+\Robject{\Sexpr{paste(names(data2003),collapse=", ")}}.
 The scored values in the \Robject{Scores}
 column will be compared with the ones obtained in our analysis. For
 that, I will start by adding to \Robject{data2003}, a column with the
 corresponding $z$-score values calculated using the \Rpackage{cellHTS}
 package.
-% 
+%
 <<add the current scored values>>=
 i <- data2003$Position + 384*(data2003$Plate-1)
 data2003$ourScore <- as.vector(Data(xsc))[i]
-@ 
+@
 %
 %
 \myincfig{cellhts2Complete-scoresComparison.png}{324px}{Scored values
@@ -1560,13 +1474,13 @@ data2003$ourScore <- as.vector(Data(xsc))[i]
 <<scoresComparison,echo=FALSE,results=hide>>=
 png("cellhts2Complete-scoresComparison.png", width=324, height=324)
 par(mfrow=c(7,9), mai=c(0,0,0,0))
-for(i in 1:max(data2003$Plate)) 
+for(i in 1:max(data2003$Plate))
 {
    sel <- (data2003$Plate==i)
    plot(data2003$ourScore[sel], data2003$Score[sel], pch=19, cex=0.6)
 }
 dev.off()
-@ 
+@
 %
 Figure~\ref{cellhts2Complete-scoresComparison.png} shows the
 scatterplot between Boutros \textit{et al.}'s scores and our scores in
@@ -1620,16 +1534,16 @@ out
 readLines(out)
 @
 %
-\input{cellhts2-cellHTSpackage-specificplateconfiguration} 
-\input{cellhts2-cellHTSpackage-specificscreenlog} 
+\input{cellhts2-cellHTSpackage-specificplateconfiguration}
+\input{cellhts2-cellHTSpackage-specificscreenlog}
 
 % Create the example table for the older formats of plate configuration and screen log files
 <<old plateConfscreenLogTable, results=hide, echo=FALSE>>=
-cellHTS2:::tableOutput(file.path(dataPath, "old-Plateconf.txt"), 
+cellHTS2:::tableOutput(file.path(dataPath, "old-Plateconf.txt"),
                        "cellHTS package-specific plate configuration", selRows=1:28)
-cellHTS2:::tableOutput(file.path(dataPath, "old-Screenlog.txt"), 
+cellHTS2:::tableOutput(file.path(dataPath, "old-Screenlog.txt"),
                        "cellHTS package-specific screen log", selRows=1:3)
-@ 
+@
 %
 
 % Screen log file
@@ -1756,7 +1670,7 @@ x_{ki}^{\text{NPI}} = \frac{\mu_i^{\text{pos}}-x_{ki}}{\mu_i^{\text{pos}}-\mu_i^
 %------------------------------------------------------------
 
 % Z score
-% plate-median normalization 
+% plate-median normalization
 % B score
 % spatial normalization ("loess" or "locfit")
 
@@ -1792,8 +1706,8 @@ follows:
 <<Z score method, eval=FALSE>>=
 xZ <- normalizePlates(x, scale="additive", log=FALSE,
                       method="median",
-                      varianceAdjust="byPlate") 
-@ 
+                      varianceAdjust="byPlate")
+@
 
 %
 %------------------------------------------------------------
@@ -1838,7 +1752,7 @@ data in a per-plate fashion~\cite{Brideau2003}:
 \begin{eqnarray}
 e_{rci} = x_{rci} - \hat{x}_{rci} = x_{rci} - \left( \hat{\mu}_i + \hat{R}_{ri} + \hat{C}_{ci}\right) \\ \label{eq:BscoreResiduals}
 x^{\text{B}}_{rci} = \frac{e_{rci}}{MAD_i}	\label{eq:BscoreVarAdj}
-\end{eqnarray} 
+\end{eqnarray}
 \noindent
 Here, $x_{rci}$ is the measurement value in the $r$th row and $c$th
 column of the plate corresponding to the $i$th result file,
@@ -1900,7 +1814,7 @@ logarithmic one.  Many statistical analysis methods, as well as
 visualizations work better if (to sufficient approximation)
 \begin{itemize}
 \item replicate values are normally distributed,
-\item the data are evenly distributed along their dynamic range, 
+\item the data are evenly distributed along their dynamic range,
 \item the variance is homogeneous along the dynamic range~\cite{Huber2002ismb}.
 \end{itemize}
 
@@ -1918,7 +1832,7 @@ than necessity.
 %
 <<transfplots, echo=FALSE, results=hide, eval=TRUE>>=
 library(vsn)
-myPlots=function(z, main, plotCol) 
+myPlots=function(z, main, plotCol)
 {
   z <- as.data.frame(z)
   colnames(z) <- paste0("Sample", seq_len(ncol(z)))
@@ -1938,7 +1852,7 @@ grid.newpage()
 pushViewport(viewport(layout=grid.layout(3, 2)))
 dv <- Data(xn)[,,1]
 myPlots(dv, main="untransformed", plotCol=1)
-xlog <- normalizePlates(x, scale="multiplicative", log=TRUE, 
+xlog <- normalizePlates(x, scale="multiplicative", log=TRUE,
                         method="median", varianceAdjust="byExperiment")
 dvlog <- Data(xlog)[,,1]
 myPlots(dvlog, main="log2", plotCol=2)
@@ -1953,10 +1867,10 @@ dev.off()
 \begin{minipage}{\textwidth}
 <<sessionInfo, results=tex, print=TRUE>>=
 toLatex(sessionInfo())
-@ 
+@
 \end{minipage}
 \caption{\label{tab:sessioninfo}%
-The output of \Rfunction{sessionInfo} on the build system 
+The output of \Rfunction{sessionInfo} on the build system
 after running this vignette.}
 \end{table*}
 
